@@ -1,0 +1,111 @@
+ul.web-images
+  list-style: none
+  li
+    width: 100px
+    height: 100px
+    background-size: cover
+    float: left
+    margin: 10px 10px 0 0
+    border: 5px solid white
+    box-shadow: -1px 1px 1px #aaa
+    position: relative
+    &.selected
+      border-color: #007AD6
+      box-shadow: none
+    &.opaque
+      opacity: 0.2
+    .loader
+      top: 27px
+      left: 3px
+      .circle:after
+        background-color: #444
+
+ul.web-files
+  list-style: none
+  margin-right: 20px
+  li
+    margin-bottom: 5px
+    padding: 5px
+    border: 1px solid #ddd
+    background-color: #F3F3F3;
+    background-image: -moz-linear-gradient(center top , #F3F3F3, #EfEfEf)
+    background-image: -webkit-gradient(linear, left top, left bottom, from(#F3F3F3), to(#EfEfEf))
+    background-repeat: repeat-x
+    font-size: 12px
+    position: relative
+    a.link-text
+      color: #333
+      text-decoration: none
+      margin-left: 10px
+    .btn.content-type
+      font-size: 10px
+    &.selected
+      background-color: #118be7;
+      background-image: -moz-linear-gradient(center top, #118be7, #007ad6)
+      background-image: -webkit-gradient(linear, left top, left bottom, from(#118be7), to(#007ad6))
+      background-repeat: repeat-x
+      box-shadow: none
+    &.opaque
+      opacity: 0.2
+    .loader
+      top: 2px
+      left: 2px
+      height: 16px
+      width: 16px
+      .circle
+        width: 16px
+        height: 16px
+      .circle:after
+        background-color: #444
+
+.no-file-selected
+  font-size: 12px
+  color: #999
+  margin: 100px 20px
+  text-align: center
+
+.file-details
+  margin: 15px 20px
+  .btn
+    margin-top: -5px
+  .lbl
+    font-size: 10px
+  input[type=text]
+    width: 100%
+  .text
+    font-size: 12px
+
+.web-files-control
+  height: 30px
+  .btn
+    padding: 6px 2px 0
+    margin-right: 2px
+    border: none
+    background: none
+    box-shadow: none
+    opacity: 0.8
+    &.enableable
+      opacity: 0.2
+      cursor: default
+      &:hover
+        opacity: 0.2
+      &.enabled
+        cursor: poiokit
+        opacity: 0.8
+        &:hover
+          opacity: 1
+    &:hover
+      opacity: 1
+  .desc
+    margin: 5px 0 0 0
+  .selected-counter
+    display:none
+
+.iokit-modal
+  .source-editor
+    position: absolute
+    top: 10px
+    left: 10px
+    right: 10px
+    bottom: 10px
+    

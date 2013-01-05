@@ -1,0 +1,92 @@
+iokit.main.html(<%- JSON.stringify(partial( 'articles/form.jade', { article: web_element, moment: moment, currentUser: currentUser } )) %>);
+iokit.main.find('#editor').kendoEditor({
+  encoded: false,
+  tools: [
+    "bold",
+    "italic",
+    "underline",
+    "strikethrough",
+    "foreColor",
+    "backColor",
+    "justifyLeft",
+    "justifyCenter",
+    "justifyRight",
+    "justifyFull",
+    "insertUnorderedList",
+    "insertOrderedList",
+    "indent",
+    "outdent",
+    "formatBlock",
+    "createLink",
+    "unlink",
+    "insertImage",
+    "viewHtml"
+  ]
+});
+
+iokit.main.find('#article_name').on('keyup', function(e){
+  var v = $(this).val();
+  if( v.length < 1 )
+    v = $.t('articles.new');
+
+  $(this).closest('.iokit-main-content-inner').find('.article-title').text( v );
+});
+
+$("#article_veranstaltung_ac").kendoAutoComplete({
+  minLength: 2,
+  dataTextField: "name",
+  dataSource: {
+    type: "json",
+    serverFiltering: true,
+    serverPaging: true,
+    pageSize: 20,
+    transport: {
+        read: iokit.host.master+'/veranstaltungen'
+    }
+  },
+  select: function( e ){
+  console.log($(e.item).find('.selected-val').val() );
+    $('#article_veranstaltung').val( $(e.item).find('.selected-val').val() );
+  },
+  template: "#= name # - #= moment(firstDate).format('DD.MM.YYYY') # - #= location.name ? location.name : '' # <input type='hidden' value='#= _id #' class='selected-val' />"
+});
+
+
+setTimeout( function(e){
+  iokit.main.find('#article_name').focus();
+}, 500)
+
+
+/*
+iokit.main.find("#photos").kendoUpload({
+    async: {
+        saveUrl: iokit.main.find('form').attr('action')+'/photos',
+        autoUpload: true
+    },
+    success: function( e ){
+      if( e.response.flash.notice && e.response.flash.notice.length > 0 ){
+        $(modal).fadeOut(200);
+      } else {
+        $('#iokit-modal form').slideDown(200);
+        $('#upload-progress').hide();
+        $(modal).animate({height: UPLOAD_FORM_HEIGHT}, 200);
+      }
+      iokit.notify(e.response.flash);
+    },
+    error: function( e ){
+      console.log('error', e);
+    },
+    progress: function( e ){
+      $('#upload-progress .bar').css('width', e.percentComplete+'%');
+    },
+    upload: function( e ){
+      $('#iokit-modal form').slideUp(200);
+      $(modal).animate({height: 100}, 200);
+      $('#upload-progress').show();
+      e.data = {_csrf: $('#_csrf').val(),
+                copyright: $('#file_copyright').val(),
+                description: $('#file_description').val(),
+                parent: $('#file_parent').val()};
+    }
+});
+*/

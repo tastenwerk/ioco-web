@@ -1,0 +1,135 @@
+ul.web-images {
+  list-style: none;
+}
+ul.web-images li {
+  width: 100px;
+  height: 100px;
+  background-size: cover;
+  float: left;
+  margin: 10px 10px 0 0;
+  border: 5px solid #fff;
+  box-shadow: -1px 1px 1px #aaa;
+  position: relative;
+}
+ul.web-images li.selected {
+  border-color: #007ad6;
+  box-shadow: none;
+}
+ul.web-images li.opaque {
+  opacity: 0.2;
+}
+ul.web-images li .loader {
+  top: 27px;
+  left: 3px;
+}
+ul.web-images li .loader .circle:after {
+  background-color: #444;
+}
+ul.web-files {
+  list-style: none;
+  margin-right: 20px;
+}
+ul.web-files li {
+  margin-bottom: 5px;
+  padding: 5px;
+  border: 1px solid #ddd;
+  background-color: #f3f3f3;
+  background-image: -moz-linear-gradient(center top, #f3f3f3, #efefef);
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#f3f3f3), to(#efefef));
+  background-repeat: repeat-x;
+  font-size: 12px;
+  position: relative;
+}
+ul.web-files li a.link-text {
+  color: #333;
+  text-decoration: none;
+  margin-left: 10px;
+}
+ul.web-files li .btn.content-type {
+  font-size: 10px;
+}
+ul.web-files li.selected {
+  background-color: #118be7;
+  background-image: -moz-linear-gradient(center top, #118be7, #007ad6);
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#118be7), to(#007ad6));
+  background-repeat: repeat-x;
+  box-shadow: none;
+}
+ul.web-files li.opaque {
+  opacity: 0.2;
+}
+ul.web-files li .loader {
+  top: 2px;
+  left: 2px;
+  height: 16px;
+  width: 16px;
+}
+ul.web-files li .loader .circle {
+  width: 16px;
+  height: 16px;
+}
+ul.web-files li .loader .circle:after {
+  background-color: #444;
+}
+.no-file-selected {
+  font-size: 12px;
+  color: #999;
+  margin: 100px 20px;
+  text-align: center;
+}
+.file-details {
+  margin: 15px 20px;
+}
+.file-details .btn {
+  margin-top: -5px;
+}
+.file-details .lbl {
+  font-size: 10px;
+}
+.file-details input[type=text] {
+  width: 100%;
+}
+.file-details .text {
+  font-size: 12px;
+}
+.web-files-control {
+  height: 30px;
+}
+.web-files-control .btn {
+  padding: 6px 2px 0;
+  margin-right: 2px;
+  border: none;
+  background: none;
+  box-shadow: none;
+  opacity: 0.8;
+}
+.web-files-control .btn.enableable {
+  opacity: 0.2;
+  cursor: default;
+}
+.web-files-control .btn.enableable:hover {
+  opacity: 0.2;
+}
+.web-files-control .btn.enableable.enabled {
+  cursor: poiokit;
+  opacity: 0.8;
+}
+.web-files-control .btn.enableable.enabled:hover {
+  opacity: 1;
+}
+.web-files-control .btn:hover {
+  opacity: 1;
+}
+.web-files-control .desc {
+  margin: 5px 0 0 0;
+}
+.web-files-control .selected-counter {
+  display: none;
+}
+.iokit-modal .source-editor {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+}

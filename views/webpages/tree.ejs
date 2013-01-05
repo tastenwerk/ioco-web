@@ -1,0 +1,349 @@
+function WebpageModel( data ){
+
+  var self = this;
+  $.extend( this, DocumentBaseModel(self) );
+
+  self.children = ko.observableArray([]);
+
+  if( !data )
+    data = {name: '', layout: 'default', _subtype: 'Webpage'};
+
+  for( var i in data )
+    if( i.match(/nothing/) )
+      self[i] = ko.observableArray(data[i]);
+    else if( i.match(/_id|acl|createdAt|updatedAt|holder|tags/) )
+      self[i] = data[i];
+    else
+      self[i] = ko.observable(data[i]);
+
+  self.tags = self.tags || [];
+  self.t = function( key ){
+    return $.i18n.t(key);
+  };
+
+  self.loadForm = function(){
+    $('#webpages-form-container').load( '/webpages/'+self._id+'/edit', function(){
+      ko.applyBindings( self, $('#webpage-'+self._id+'-form').get(0) );
+    });
+  }
+
+  self.formattedUpdatedAt = ko.computed(function() {
+    return moment(self.updatedAt).fromNow();
+  });
+
+  self.formattedFullUpdatedAt = ko.computed(function() {
+    return moment(self.updatedAt).format('DD.MM.YYYY HH:mm');
+  });
+
+  self.formattedCreatedAt = ko.computed(function() {
+    return moment(self.createdAt).format('DD.MM.YYYY HH:mm');
+  });
+
+  self.stringifiedTags = ko.computed({
+    read: function(){
+      return self.tags.join(',');
+    },
+    write: function( value ){
+      if( value )
+        self.tags = value.split(',');
+    },
+    owner: self
+  });
+  ko.observable( self.stringifiedTags );
+
+  self.changePublicStatus = function changePublicStatus( model, e ){
+    $.ajax({ url: '/documents/'+self._id+'/change_public_status.json', 
+              type: 'put',
+              dataType: 'json',
+              data: { _csrf: $('#_csrf').val() },
+              success: function( data ){
+                if( data.success ){
+                  self.published( data.published );
+                  if( data.published )
+                    $(e.target).removeClass('locked').text($.i18n.t('document.published'));
+                  else
+                    $(e.target).addClass('locked').text($.i18n.t('document.locked'));
+                  iokit.notify( data.flash );
+                } else
+                  iokit.notify({ error: $.i18n.t('document.publishing_failed_unknown')});
+              }
+    })
+  }
+
+  self.saveWebpageContent = function saveWebpageContent( model, e ){
+    self.content = $(e.target).closest('.iokit-editor').find('.iokit-editor-content').html();
+    webElement = {name: self.name, _subtype: self._subtype, slug: self.slug, pos: self.pos, content: self.content, tags: self.tags };
+    $.ajax({ url: '/web_elements/'+self._id, type: 'put', dataType: 'json', 
+             data: { 
+              _csrf: $('#_csrf').val(),
+              webElement: webElement
+             },
+             success: function( data ){
+              if( data.success )
+                iokit.notify( data.flash );
+              else
+                iokit.notify( {error: [ $.i18n.t('saving.failed') ] } );
+             }
+    });
+  }
+
+  self.showInfo = function( model, e ){
+    $('.info-modal-part').remove();
+    var left = $(e.target).offset().left + $(e.target).width() + 5
+      , top = $(e.target).closest('.tree-item').offset().top + $(e.target).closest('.tree-item').height()/2 // + $(e.target).height() / 2
+      , infoModal = '<div class="info-modal-part js-remove-on-click hide" data-id="'+self._id+'" id="info-modal">'+
+        '<div class="info-modal-title">'+
+        '<span class="close-icn pull-right" onclick="$(\'.info-modal-part\').remove()">&times;</span>'+
+        '<h1 class="title" data-bind="text: name">Document Name</h1>'+
+        '</div>'+
+        '<div class="side-tabs">'+
+        '<ul class="side-tabs-nav">'+
+        '<li original-title="'+$.i18n.t('document.info.general')+'" class="live-tipsy-r"><a><span class="icn icn-preferences" /></a></li>'+
+        '<li original-title="'+$.i18n.t('document.info.comments')+'" class="live-tipsy-r"><a><span class="icn icn-comments" /></a></li>'+
+        '</ul>'+
+        '<div class="side-tabs-content">'+
+        '<div>'+
+        '<p>'+
+        '<label class="pull-left">'+$.i18n.t('document.public_status')+'</label>'+
+        '<span original-title="'+$.i18n.t('document.click_to_change_public_status')+'" class="live-tipsy lbl public-status" data-bind="click: changePublicStatus, css: {locked: !published()}, text: published() ? t(\'document.published\') : t(\'document.locked\')" />'+
+        '</p>'+
+        '<p>'+
+        '<label class="pull-left">'+$.i18n.t('createdAt')+'</label>'+
+        '<span data-bind="text: formattedCreatedAt" /><br />'+
+        '</p>'+
+        '<p>'+
+        '<label class="pull-left">'+$.i18n.t('updatedAt')+'</label>'+
+        '<span class="live-tipsy" data-bind="text: formattedUpdatedAt, attr: { \'original-title\': formattedFullUpdatedAt}" />'+
+        '</p>'+
+        '</div>'+
+        '<div>'+
+        'comments'+
+        '</div>'+
+        '</div>'+
+        '</div>'+
+        '</div>'+
+        '<div class="info-modal-part js-remove-on-click hide" id="info-modal-caret"><div class="caret-inner" /><div class="caret-outer" /></div>';
+    $('body').append( infoModal );
+    $('#info-modal .side-tabs').iokitSideTabs();
+    infoModal = $('#info-modal');
+    $('#info-modal-caret').css({ top: top, left: left-2 });
+    if( top-infoModal.height()/2 > 10 )
+      top = top-infoModal.height()/2;
+    else
+      top = 10;
+    infoModal.css({ top: top, left: left+19 });
+    $('.info-modal-part').fadeIn(200);
+    ko.applyBindings( self, infoModal.get(0) );
+  };
+
+  self.toggleChildren = function( model, e ){
+    if( $(e.target).hasClass('open') ){
+      $(e.target).removeClass('open');
+      self.children.removeAll();
+      return;
+    }
+    $(e.target).addClass('loading');
+    $.getJSON( '/webpages.json?parentId='+model._id, function( data ){
+      self.children.removeAll();
+      if( data.length === 0 )
+        $(e.target).removeClass('loading').css('opacity',0);
+      for( var i in data )
+        self.children.push( new WebpageModel( data[i] ) );
+      $(e.target).removeClass('loading').addClass('open');
+    });
+  };
+
+  self.sortFunction = function(a, b) {
+    return (a.pos && b.pos ? ((a.pos > b.pos) ? 1 : -1) : (typeof(a.pos) !== 'undefined' || typeof(b.pos) !== 'undefined' ) );
+  };
+
+  self.sortedChildren = ko.dependentObservable( function() {
+    return self.children.slice().sort(self.sortFunction);
+  }, webpagesTreeViewModel );
+
+
+}
+
+var webpagesTreeViewModel = {
+
+  webpages: ko.observableArray([]),
+
+  webpage: new WebpageModel(),
+
+  refresh: function(){
+    var self = this;
+    self.webpages.removeAll();
+    $.getJSON( '/webpages.json?roots=true', function( data ){
+      for( var i in data )
+        self.webpages.push( new WebpageModel(data[i]) );
+    })
+  },
+
+  removeWebpage: function( model ){
+    var model = model || this;
+    $.ajax({url: '/documents/'+this._id, type: 'delete', data: { _csrf: $('#_csrf').val() },
+            success: function( data ){
+              if( data.success ){
+                webpagesTreeViewModel.webpages.remove( model );
+                iokit.notify( data.flash );
+              } else
+                iokit.notify( { error: $.i18n.t('deletion.failed', {name: model.name}) } );
+            } 
+    });
+  },
+
+  createWebpage: function(){
+    var self = this
+      , webElement = {};
+    for( var i in self.webpage )
+      if( i.match(/stringifiedTags/) )
+        webElement[i.replace('stringified','').toLowerCase()] = self.webpage[i]();
+      else if( i.match(/parent|name|content|slug|noRobots|hidden|layout|_subtype/) )
+        if( typeof(self.webpage[i]) === 'function' )
+          webElement[i] = self.webpage[i]();
+        else
+          webElement[i] = self.webpage[i];
+
+    if( $('input.parent').length === 1 )
+      webElement.parent = $('input.parent').val();
+    var formData = { _csrf: $('#_csrf').val(),
+                     webElement: webElement };
+    jQuery.post( '/web_elements', formData, function( data ){
+      if( data.success ){
+        self.webpages.push( new WebpageModel(data.webElement) );
+        self.webpage = new WebpageModel();
+        iokit.notify( data.flash );
+        iokit.modal('close');
+      } else{
+        iokit.notify( { error: [$.i18n.t('saving.failed', {name: self.webpage.name()})] } );
+      }
+    });
+  
+  },
+
+};
+
+webpagesTreeViewModel.sortFunction = function(a, b) {
+  try{
+    return a.pos > b.pos ? 1 : -1
+  }catch(e){ return 1 }
+};
+
+webpagesTreeViewModel.sortedWebpages = ko.dependentObservable( function() {
+  return this.webpages.slice().sort(this.sortFunction);
+}, webpagesTreeViewModel );
+
+webpagesTreeViewModel.deleteSelected = function( webpage, e ){
+  if( !$(e.target).hasClass('enabled') && !$(e.target).closest('a').hasClass('enabled') ) return;
+  var items = $(e.target).closest('.iokit-tree').find('.tree-item.selected');
+  if( items.length < 1 )
+    return;
+  items.each( function( i, item ){
+    $(item).find('.icn-trash').click();
+  });
+}
+
+$.fn.webpagesTree = function webpagesTree( options ){
+  
+  var self = $(this);
+
+  var controls = $('<div class="tree-controls" />');
+  controls.append('<a href="/webpages/new" data-remote="true" class="btn w-icn-only pull-left live-tipsy" original-title="<%= t('webpages.new') %>"><span class="icn icn-plus" /></a>')
+          .append('<a class="btn w-icn-only pull-left live-tipsy" data-bind="click: webpagesTreeViewModel.refresh" original-title="<%= t('refresh') %>"><span class="icn icn-refresh" /></a>')
+          .append('<a class="btn w-icn-only pull-left live-tipsy enableable" data-bind="click: webpagesTreeViewModel.deleteSelected" original-title="<%= t('delete_selected') %>"><span class="icn icn-trash" /></a>');
+
+  self.addClass('iokit-tree')
+      .append(controls)
+      .append('<script type="text/html" id="webpageTemplate">'+
+        '<li class="tree-li" data-bind="attr: { \'data-id\': _id, id: _id, \'data-_type\': _type }">'+
+        '<div class="tree-item">'+
+        '<div class="show-options-trigger js-remove-on-click-trigger tree-trigger"><span class="caret" /></div>'+
+        '<span class="pull-right icn icn-locked published-status" data-bind="css: { \'unlocked\': published() }" />'+
+        '<a href="#" class="link-trigger" data-bind="text: name, click: loadForm" />'+
+        '<span class="children-caret tree-trigger" data-bind="click: toggleChildren" />'+
+        '<div class="tree-item-control">'+
+        '<a href="#" data-bind="attr: { \'original-title\': t(\'rename\'), click: renameItem }" class="tree-trigger btn live-tipsy"><span class="icn icn-pencil" />'+
+        '<a data-bind="click: webpagesTreeViewModel.removeWebpage, attr: { \'original-title\': t(\'delete\')}" class="tree-trigger btn live-tipsy"><span class="icn icn-trash" />'+
+        '<a data-bind="attr: { \'original-title\': t(\'info\')}, click: showInfo" class="js-remove-on-click-trigger js-show-document-info btn live-tipsy tree-trigger"><span class="icn icn-info" />'+
+        '</div>'+
+        '</div>'+
+        '<ul data-bind="template: { name: \'webpageTemplate\', foreach: children }"></ul>'+
+        '</li>'+
+        '</script>')
+      .append('<ul class="iokit-tree-list" data-bind="template: { name: \'webpageTemplate\', foreach: sortedWebpages }">'+
+        '</ul>');
+
+  webpagesTreeViewModel.refresh();
+
+  self.find('ul:first').nestedSortable({
+      listType: 'ul',
+      forcePlaceholderSize: true,
+      handle: 'div',
+      helper: 'clone',
+      items: 'li',
+      opacity: .6,
+      placeholder: 'placeholder',
+      revert: 250,
+      delay: 250,
+      tolerance: 'poiokit',
+      toleranceElement: '> div',
+      maxLevels: 5,
+      isTree: true,
+      expandOnHover: 700,
+      startCollapsed: true,
+      stop: function( e, ui ){
+        function collectChildren( parent ){
+          var arr = [];
+          parent.find('ul:first').children().each(function(){ arr.push( $(this).attr('data-id') ); });
+          return arr;
+        }
+        var parent = $(ui.item).parent().closest('li.tree-li');
+        var children;
+
+        if( parent.length )
+          children = collectChildren( parent );
+        else
+          children = collectChildren( self );
+        var formData = { _csrf: $('#_csrf').val(), ids: children.join(',') };
+        if( parent.length )
+          formData.path = $(parent).attr('data-id') + ':' + $(parent).attr('data-_type');
+        $.post( '/documents/sort', formData, function( data ){
+          if( data.success )
+            iokit.notify( data.flash );
+          else
+            iokit.notify( { error: $.i18n.t('document.order.saving.failed')})
+        })
+      }
+  });
+  
+  ko.applyBindings( webpagesTreeViewModel, self.get(0) );
+
+  self.on('click', '.tree-item', function(e){
+    if( $(e.target).hasClass('tree-trigger') || $(e.target).closest('.tree-trigger').length ) return;
+    if( $(e.target).hasClass('link-trigger') ){
+      $(this).closest('.iokit-tree-list').find('.selected').removeClass('selected');
+      $(this).addClass('selected');
+    } else {
+      $(this).removeClass('show-options')
+             .toggleClass('selected');
+    }
+    if( $(this).closest('.iokit-tree').find('.tree-item.selected').length > 0 )
+      $(this).closest('.iokit-tree').find('.tree-controls .enableable').addClass('enabled');
+    else
+      $(this).closest('.iokit-tree').find('.tree-controls .enableable').removeClass('enabled');
+  }).on('click', '.tree-item .show-options-trigger', function(e){
+    $(this).closest('.tree-item').toggleClass('show-options').removeClass('selected');
+  }).on('mouseenter', '.tree-item', function(e){
+    var elem = this;
+    $(elem).data('mouseHasEntered', true);
+    setTimeout( function(){
+      if( $('#info-modal').length && $('#info-modal').attr('data-id') === $(elem).attr('data-id') )
+        return;
+      if( $(elem).is(':visible') && $(elem).data('mouseHasEntered') )
+        $(elem).find('.js-show-document-info').click();
+    }, 3000);
+  }).on('mouseleave', '.tree-item', function(e){
+    $(this).data('mouseHasEntered', false);
+  });
+
+}

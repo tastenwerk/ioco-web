@@ -1,0 +1,11 @@
+<% if( flash.notice && flash.notice.length > 0 ){ %>
+
+  var webElement = <%- JSON.stringify( webElement ) %>;
+  <% if( iokit.view.lookup( webElement._subtype.toLowerCase()+'s/create.ejs' ) ){ %>
+    <%- JSON.stringify( partial( webElement._subtype.toLowerCase()+'s/create.ejs' ) ) %>
+  <% } %>
+  $('.iokit-<%= webElement._subtype.toLowerCase()+'s' %>-tree .iokit-tree-list')
+
+<% } %>
+  
+iokit.notify( <%- JSON.stringify( flash ) %> );

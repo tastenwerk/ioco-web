@@ -1,0 +1,47 @@
+.sidebar-margin
+  a.icnbtn.pull-right( href='/webpages/new', data-remote='true' )
+    i.icn.icn-plus
+  p.desc-header=t('web.navigation')
+
+  #webpages-view.iokit-list
+
+  include ../web_elements/tmpl
+
+  script
+    var dataSource = new kendo.data.DataSource({
+        transport: {
+          read: {
+            url: iokit.host.master+'/web_elements',
+            type: "get",
+            dataType: "json",
+            data: {
+              _subtype: 'Webpage',
+              navElem: true
+            }
+          }
+        }
+    });
+
+    $("#webpages-view").kendoListView({
+        dataSource: dataSource,
+        pageable: false,
+        template: kendo.template($("#kendo-webpage-template").html())
+    });
+
+    $('#webpages-view .delete').live('click', function( e ){
+      e.preventDefault();
+      var treeView = $('#iokit-folders').data('kendoTreeView');
+      var uid = $(this).closest('li').attr('data-uid');
+      var item = treeView.dataSource.getByUid( uid );
+
+      $.ajax({ url: '/documents/' + item._id,
+        type: 'delete',
+        dataType: 'json',
+        data: { _csrf: $('#_csrf').val() },
+        success: function( data ){
+          if( data.flash && data.flash.notice && data.flash.notice.length > 0 )
+            treeView.detach( treeView.findByUid( uid ) );
+          iokit.notify( data.flash );
+        }
+      })
+    });

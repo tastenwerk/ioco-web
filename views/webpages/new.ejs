@@ -1,0 +1,18 @@
+iokit.modal( <%- JSON.stringify( partial( 'webpages/new.jade', { iokit: iokit, partial: partial } ) ) %>, {
+              title: '<%= t('webpages.new') %>',
+              height: 300,
+              before: function( modal ){
+                var pathItem = $('.iokit-webpages-tree .tree-item.selected');
+                if( pathItem.length )
+                  modal.find('.path-info')
+                        .find('span.lbl').text( pathItem.find('a').first().text() ).end()
+                        .show()
+                        .end()
+                        .find('input.parent').val( pathItem.closest('li').attr('data-id') + ':' + pathItem.closest('li').attr('data-_type') );
+              },
+              completed: function( modal ){
+                modal.find('.js-get-focus:first').focus();
+                ko.applyBindings( webpagesTreeViewModel, modal.get(0) );
+              }
+              
+});
