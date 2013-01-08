@@ -5,12 +5,10 @@ module.exports = exports = {
    */
   webpages: {
 
-    name: 'webpages',
-
     /**
      * routes for expressjs
      */
-    routes: require(__dirname+'/routes'),
+    routes: __dirname+'/routes',
 
     /**
      * iomapper (mongoosejs) models)
@@ -31,9 +29,9 @@ module.exports = exports = {
       public: __dirname + '/public'
     },
 
-    sidebarWidget: {
-      sidebarRemote: true
-    },
+    views: __dirname+'/views',
+
+    sidebarWidget: true,
 
     allowedRoles: ['manager', 'editor'],
 
@@ -47,11 +45,9 @@ module.exports = exports = {
 
   articles: {
 
-    name: 'articles',
+    sidebarWidget: true,
 
-    sidebarWidget: { 
-      sidebarRemote: true 
-    }
+    views: __dirname+'/views',
 
   }
 
