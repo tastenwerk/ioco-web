@@ -75,7 +75,7 @@ module.exports = exports = function( app ){
             req.streambuffer.ondata( function( chunk ) {
                 if( bytesUploaded+chunk.length > (iokit.config.max_upload_size_mb || 5)*1024*1024 ) {
                   fileStream.end();
-                  res.send(JSON.stringify({error: "Too big."}));
+                  return res.send(JSON.stringify({error: "Too big."}));
                 }
                 fileStream.write(chunk);
                 bytesUploaded += chunk.length;

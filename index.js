@@ -45,7 +45,7 @@ module.exports = exports = {
 
   articles: {
 
-    sidebarWidget: true,
+    sidebarWidget: false,
 
     views: __dirname+'/views',
 
