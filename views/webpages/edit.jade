@@ -51,6 +51,7 @@ script
         preferences: function( btn ){
           $(btn).on('click', function(e){
             $(btn).closest('.form-content').hide().closest('form').find('.preferences-form').fadeIn(200);
+            e.preventDefault();
           })
         },
         image: function( btn ){
@@ -78,11 +79,13 @@ script
 
               }
             });
+            e.preventDefault();
           });
         },
         preview: function( btn ){
           $(btn).on('click', function( e ){
             window.open( iokit.host.master + '/p#{webpage.slug}' );
+            e.preventDefault();
           });
         }
       }

@@ -31,7 +31,10 @@ module.exports = exports = {
 
     views: __dirname+'/views',
 
-    sidebarWidget: true,
+    sidebarWidget: {
+      limitSearch: [ 'WebElmenet' ],
+      overrideName: 'webelements'
+    },
 
     allowedRoles: ['manager', 'editor'],
 

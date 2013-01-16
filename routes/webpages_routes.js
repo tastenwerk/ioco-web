@@ -24,6 +24,10 @@ module.exports = exports = function( app ){
     res.render( iokit.view.lookup( 'webpages/new.ejs'), { webElement: webElement } );
   });
 
+  app.get('/webelements/:id', iokit.plugins.auth.check, function( req,res ){
+    res.render( iokit.view.lookup('/webpages/index.jade'), {webElementId: req.params.id} );
+  });
+
   app.get('/webpages:format?', iokit.plugins.auth.check, function( req, res ){
 
     res.format({

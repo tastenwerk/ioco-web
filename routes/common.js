@@ -5,24 +5,24 @@ var iokit = require('iokit')
 module.exports = exports = function( app ){
 
   /**
-   * retreive all web_elements with
+   * retreive all webelements with
    * given query
    *
    */
-  app.get('/web_elements:format?', iokit.plugins.auth.check, common.getWebElements, function( req, res ){
+  app.get('/webelements:format?', iokit.plugins.auth.check, common.getWebElements, function( req, res ){
 
     if( req.webElements )
       res.json( req.webElements );
     else
       res.json( [] );
-    
+        
   });
 
 
   /**
    * create a web_element
    */
-  app.post('/web_elements', iokit.plugins.auth.check, function( req, res ){
+  app.post('/webelements', iokit.plugins.auth.check, function( req, res ){
     var attrs = { holder: res.locals.currentUser };
     for( var i in req.body.webElement )
       attrs[i] = req.body.webElement[i];
@@ -41,7 +41,9 @@ module.exports = exports = function( app ){
    * get a web_element, lookup if there is a layout to render it with
    * and render it
    */
-  app.get('/web_elements/:id', iokit.plugins.auth.checkWithoutRedirect, common.getPublicWebElement, function( req, res ){
+  app.get('/webelements/:id', iokit.plugins.auth.checkWithoutRedirect, common.getPublicWebElement, function( req, res ){
+    if( req.query.fio )
+      return res.render( iokit.view.lookup('/webpages/index.jade'), {webElementId: req.params.id} );
     if( req.webElement )
       res.render( iokit.view.lookup( '/'+req.webElement._subtype.toLowerCase()+'s/layouts/'+( req.webElement.layout || 'default' )+'.jade' ), 
           {webElement: req.webElement} );
@@ -52,7 +54,7 @@ module.exports = exports = function( app ){
   /**
    * update a web_element
    */
-  app.put('/web_elements/:id', iokit.plugins.auth.check, common.getWebElement, function( req, res ){
+  app.put('/webelements/:id', iokit.plugins.auth.check, common.getWebElement, function( req, res ){
     if( req.webElement ){
       for( var i in req.body.webElement )
         if( !i.match(/_id|createdAt|_creator|_updater|updatedAt|deletedAt|acl/) )

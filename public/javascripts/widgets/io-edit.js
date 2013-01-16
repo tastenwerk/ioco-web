@@ -217,7 +217,7 @@ $(function(){
         var img = document.createElement('img');
         img.src = imgSrc;
         editor.insertNodeOverSelection(img, document.getElementById('editable'));
-      });
+      })
 
       // NOT WORKING!
       /*
