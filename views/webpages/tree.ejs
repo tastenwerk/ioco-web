@@ -4,13 +4,17 @@ function WebpageModel( data ){
   $.extend( this, DocumentBaseModel(self) );
 
   self.children = ko.observableArray([]);
+  self.comments = ko.observableArray([]);
 
   if( !data )
     data = {name: '', layout: 'default', _subtype: 'Webpage'};
 
   for( var i in data )
-    if( i.match(/nothing/) )
-      self[i] = ko.observableArray(data[i]);
+    if( i === 'comments' )
+      for( var j=0,comment; comment=data[i][j]; j++ ){
+      console.log('adding comment');
+        self.comments.push( new IOComment( comment, self ) );
+      }
     else if( i.match(/_id|acl|createdAt|updatedAt|holder|tags/) )
       self[i] = data[i];
     else
@@ -85,11 +89,15 @@ function WebpageModel( data ){
                 iokit.notify( {error: [ $.i18n.t('saving.failed') ] } );
              }
     });
+  };
+
+  self.createComment = function(){
+    return(new IOComment( {content: ''}, self ));
   }
 
   self.showInfo = function( model, e ){
     $('.info-modal-part').remove();
-    var left = $(e.target).offset().left + $(e.target).width() + 5
+    var left = $(e.target).offset().left + $(e.target).width() + 60
       , top = $(e.target).closest('.tree-item').offset().top + $(e.target).closest('.tree-item').height()/2 // + $(e.target).height() / 2
       , infoModal = '<div class="info-modal-part js-remove-on-click hide" data-id="'+self._id+'" id="info-modal">'+
         '<div class="info-modal-title">'+
@@ -116,8 +124,10 @@ function WebpageModel( data ){
         '<span class="live-tipsy" data-bind="text: formattedUpdatedAt, attr: { \'original-title\': formattedFullUpdatedAt}" />'+
         '</p>'+
         '</div>'+
-        '<div>'+
-        'comments'+
+        '<div class="comments">'+
+        '<h1>'+$.i18n.t('comments.title')+'</h1>'+
+        '<div data-bind=\'template: { name: "commentFormTemplate", data: createComment() }\' />'+
+        '<ul class="comments-list" data-bind="template: { name: \'commentsListTemplate\', foreach: comments}" />'+
         '</div>'+
         '</div>'+
         '</div>'+
@@ -259,8 +269,8 @@ $.fn.webpagesTree = function webpagesTree( options ){
         '<div class="tree-item">'+
         '<div class="show-options-trigger js-remove-on-click-trigger tree-trigger"><span class="caret" /></div>'+
         '<span class="pull-right icn icn-locked published-status" data-bind="css: { \'unlocked\': published() }" />'+
-        '<a href="#" class="link-trigger" data-bind="text: name, click: loadForm" />'+
         '<span class="children-caret tree-trigger" data-bind="click: toggleChildren" />'+
+        '<a href="#" class="link-trigger" data-bind="text: name, click: loadForm" />'+
         '<div class="tree-item-control">'+
         '<a href="#" data-bind="attr: { \'original-title\': t(\'rename\'), click: renameItem }" class="tree-trigger btn live-tipsy"><span class="icn icn-pencil" />'+
         '<a data-bind="click: webpagesTreeViewModel.removeWebpage, attr: { \'original-title\': t(\'delete\')}" class="tree-trigger btn live-tipsy"><span class="icn icn-trash" />'+
@@ -341,7 +351,7 @@ $.fn.webpagesTree = function webpagesTree( options ){
         return;
       if( $(elem).is(':visible') && $(elem).data('mouseHasEntered') )
         $(elem).find('.js-show-document-info').click();
-    }, 3000);
+    }, 2000);
   }).on('mouseleave', '.tree-item', function(e){
     $(this).data('mouseHasEntered', false);
   });

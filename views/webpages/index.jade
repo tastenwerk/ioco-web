@@ -4,22 +4,26 @@
 
   #webpages-form-container.second-main-container
 
+include ../../../iokit/lib/plugins/comments/snippets/comments-list-template.jade
+include ../../../iokit/lib/plugins/comments/snippets/comment-form-template.jade
+
 script
   var webElementId = !{typeof(webElementId) !== 'undefined' && webElementId ? '\''+webElementId+'\'' : 'null'};
-  $.getScript('/webpages/tree', function(){
-    $('.iokit-webpages-tree').webpagesTree( {completed: function( treeElem ){
-      setTimeout(function(){
-        if( webElementId )
-          if( $('li#'+webElementId).length )
-            $('li#'+webElementId+' a.link-trigger').click();
-          else
-            $.getJSON( '/documents/'+webElementId, function( data ){
-              console.log(data);
-              $('#webpages-form-container').load( '/webpages/'+webElementId+'/edit', function(){
-                ko.applyBindings( new WebpageModel( data ), $('#webpage-'+self._id+'-form').get(0) );
+  $.getScript('/javascripts/models/io-comment.js', function(){
+    $.getScript('/webpages/tree', function(){
+      $('.iokit-webpages-tree').webpagesTree( {completed: function( treeElem ){
+        setTimeout(function(){
+          if( webElementId )
+            if( $('li#'+webElementId).length )
+              $('li#'+webElementId+' a.link-trigger').click();
+            else
+              $.getJSON( '/documents/'+webElementId, function( data ){
+                $('#webpages-form-container').load( '/webpages/'+webElementId+'/edit', function(){
+                  ko.applyBindings( new WebpageModel( data ), $('#webpage-'+self._id+'-form').get(0) );
+                });
               });
-            });
-        },500);
-      }
+          },500);
+        }
+      });
     });
   });
