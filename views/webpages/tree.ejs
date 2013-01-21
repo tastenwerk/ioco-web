@@ -11,8 +11,7 @@ function WebpageModel( data ){
 
   for( var i in data )
     if( i === 'comments' )
-      for( var j=0,comment; comment=data[i][j]; j++ ){
-      console.log('adding comment');
+      for( var j=data.comments.length-1,comment; comment=data.comments[j]; j-- ){
         self.comments.push( new IOComment( comment, self ) );
       }
     else if( i.match(/_id|acl|createdAt|updatedAt|holder|tags/) )

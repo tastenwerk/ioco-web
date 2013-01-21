@@ -18,11 +18,12 @@ module.exports = exports = function( app ){
         
   });
 
-
   /**
    * create a web_element
    */
   app.post('/webelements', iokit.plugins.auth.check, function( req, res ){
+    if( !res.locals.currentUser || (res.locals.currentUser && res.locals.currentUser.roles.indexOf('editor') < 0 ))
+      return res.json( {flash: {error: req.i18n.t('insufficient_rights')}} );
     var attrs = { holder: res.locals.currentUser };
     for( var i in req.body.webElement )
       attrs[i] = req.body.webElement[i];

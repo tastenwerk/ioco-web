@@ -71,5 +71,5 @@ module.exports = exports = function( app ){
 
 function getWebpages( user, q, callback ){
   //q._subtype = 'Webpage';
-  WebElement.find(q).populate('comments._user').sort({position: 1, name: 1}).execWithUser( user, callback );
+  WebElement.find(q).sort({position: 1, name: 1}).execWithUser( user, callback );
 }
