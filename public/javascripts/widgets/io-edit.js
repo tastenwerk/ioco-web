@@ -40,13 +40,15 @@ $(function(){
 
       setupMethods: {
         link: function( btn ){
-          $(btn).on('click', function(){
+          $(btn).on('click', function(e){
+            e.preventDefault();
             var link = prompt('Link','');
             document.execCommand('createLink', false, link);
           });
         },
         source: function( btn ){
           $(btn).on('click', function(e){
+            e.preventDefault();
             $.getScript('/javascripts/3rdparty/ace.js', function(){
               $.getScript('/javascripts/3rdparty/ace/theme-tomorrow.js', function(){
                 $.getScript('/javascripts/3rdparty/ace/mode-html.js', function(){
@@ -137,6 +139,7 @@ $(function(){
       editor.controls.append( btn );
       if( type.match(editor.simpleCommands) )
         btn.on('click', function( e ){
+          e.preventDefault();
           document.execCommand(type, false, null);
         });
       else
