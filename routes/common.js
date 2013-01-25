@@ -29,10 +29,13 @@ module.exports = exports = function( app ){
       attrs[i] = req.body.webElement[i];
     var webElement = new WebElement( attrs );
     webElement.save( function( err ){
-      console.log(err);
-      if( err )
-        req.flash('error', err);
-      else
+      if( err ){
+        console.log(err);
+        if( err.code === 11000 ) // duplicate key
+          req.flash('error', req.i18n.t('duplicate_error', {name: webElement.name }) );
+        else
+          req.flash('error', err);
+      }else
         req.flash('notice', req.i18n.t('saving.ok', {name: webElement.name}));
       res.json( {webElement: webElement, flash: req.flash(), success: ( err === null ) } );
     });

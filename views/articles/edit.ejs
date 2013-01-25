@@ -41,7 +41,7 @@ $("#article_veranstaltung_ac").kendoAutoComplete({
     serverPaging: true,
     pageSize: 20,
     transport: {
-        read: iokit.host.master+'/veranstaltungen'
+        read: iokit.host.native+'/veranstaltungen'
     }
   },
   select: function( e ){

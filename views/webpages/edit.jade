@@ -84,7 +84,7 @@ script
         },
         preview: function( btn ){
           $(btn).on('click', function( e ){
-            window.open( iokit.host.master + '/p#{webpage.slug}' );
+            window.open( iokit.host.native + '/p#{webpage.slug}' );
             e.preventDefault();
           });
         }
