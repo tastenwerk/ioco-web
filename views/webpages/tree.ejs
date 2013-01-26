@@ -76,7 +76,7 @@ function WebpageModel( data ){
   self.saveWebpageContent = function saveWebpageContent( model, e ){
     self.content = $(e.target).closest('.iokit-editor').find('.iokit-editor-content').html();
     webElement = {name: self.name, _subtype: self._subtype, slug: self.slug, pos: self.pos, content: self.content, tags: self.tags };
-    $.ajax({ url: '/web_elements/'+self._id, type: 'put', dataType: 'json', 
+    $.ajax({ url: '/webelements/'+self._id, type: 'put', dataType: 'json', 
              data: { 
               _csrf: $('#_csrf').val(),
               webElement: webElement
