@@ -1,29 +1,76 @@
-#webpages-plugin.content-padding
-  
-  .iokit-webpages-tree.second-sidebar
+link( rel='stylesheet', href='/stylesheets/web.css' )
+#iokit-webelements
+  .iokit-sidebar
+    .iokit-tree
 
-  #webpages-form-container.second-main-container
+      h1.title=t('webelements.title')
 
-include ../../../iokit/lib/plugins/comments/snippets/comments-list-template.jade
-include ../../../iokit/lib/plugins/comments/snippets/comment-form-template.jade
+      .tree-controls
+        a.btn.w-icn-only.live-tipsy( href='/webpages/new', original-title=t('webelements.new'), data-bind='click: newItemForm' )
+          span.icn-plus.icn
+        a.btn.w-icn-only.live-tipsy( href='#', original-title=t('refresh'), data-bind='click: fetchData' )
+          span.icn.icn-refresh
+        a.btn.w-icn-only.live-tipsy.enableable( href='#', original-title=t('delete_selected'), data-bind='css: {enabled: selectedItems().length > 0}, click: deleteSelected')
+          span.icn.icn-trash
 
-script
-  var webElementId = !{typeof(webElementId) !== 'undefined' && webElementId ? '\''+webElementId+'\'' : 'null'};
-  $.getScript('/javascripts/models/io-comment.js', function(){
-    $.getScript('/webpages/tree', function(){
-      $('.iokit-webpages-tree').webpagesTree( {completed: function( treeElem ){
-        setTimeout(function(){
-          if( webElementId )
-            if( $('li#'+webElementId).length )
-              $('li#'+webElementId+' a.link-trigger').click();
-            else
-              $.getJSON( '/documents/'+webElementId, function( data ){
-                $('#webpages-form-container').load( '/webpages/'+webElementId+'/edit', function(){
-                  ko.applyBindings( new WebpageModel( data ), $('#webpage-'+self._id+'-form').get(0) );
-                });
-              });
-          },500);
-        }
+      br.clearfix
+
+      ul.tree-content( data-bind='template: {name: "webItemTemplate", foreach: items}' )
+
+  .iokit-content
+
+    .click-for-details.no-item-form
+      h1.title=t('webelements.title')
+      span=t('document.click_for_details')
+
+    #iokit-user-form.item-form( data-bind='template: {name: "webItemForm"}' )
+
+script(type='text/html', id='webItemTemplate')
+  li.tree-li( data-bind='attr: { "data-id": _id }, click: markSelected')
+    .tree-item
+      a.pull-right.show-details-arr( data-bind='click: showForm')
+        span.icn.icn-arr-right
+        | &nbsp;
+      a.link-trigger( href='#', data-bind='text: name, click: showForm' )
+
+script(type='text/html', id='webItemForm')
+
+  .top-tabs
+
+    ul.top-tabs-nav
+      li=t('webelement.design')
+      li=t('webelement.preferences')
+
+    .top-tabs-content
+
+      .content-padding
+
+        include snippets/form
+
+      .content-padding
+
+        include snippets/preferences
+
+
+script(type='text/javascript')
+  $('#iokit-webelements .iokit-tree').iokitTree({
+    url: '/webelements.json',
+    saveUrl: '/webelements/',
+    saveKey: 'web_element',
+    saveAttrs: [ 'name', 'tags', 'layout', '_subtype', 'slug', 'preferences' ],
+    defaultValues: { name: '', content: ''},
+    before: function( tree ){
+      tree.TreeItemModel.prototype.tags = ko.observableArray([]);
+      tree.TreeItemModel.prototype.preferences = ko.observable({});
+      tree.TreeItemModel.prototype.stringifiedTags = ko.computed({
+        read: function(){
+          return typeof(this.tags) !== 'undefined' ? this.tags.join(',') : '';
+        },
+        write: function( value ){
+          if( value )
+            this.tags = value.split(',');
+        },
+        owner: this
       });
-    });
+    }
   });

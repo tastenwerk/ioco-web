@@ -1,0 +1,27 @@
+ul.top-tabs-action-nav
+  li.action-nav
+    a.btn.green(data-bind='click: submitSaveForm')
+      =t('save')
+  li.action-nav
+    a.btn(data-bind='click: hideForm')
+      =t('cancel')
+
+form.wide( data-bind="submit: saveForm" )
+
+    p
+      label.pull-left Subtype
+      input.span400( type='text', data-bind='value: _subtype' )
+
+    p
+      label.pull-left=t('webelement.slug')
+      input.span400( type='text', data-bind='value: slug' )
+
+    p
+      label.pull-left=t('webelement.hidden')
+      input( type='checkbox', data-bind='value: preferences.hidden' )
+      span.desc=t('webelement.hidden_desc')
+
+    p
+      label.pull-left=t('webelement.no_robots')
+      input( type='checkbox', data-bind='value: preferences.noRobots' )
+      span.desc=t('webelement.no_robots_desc')

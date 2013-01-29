@@ -12,7 +12,7 @@ module.exports = exports = function( app ){
   app.get('/webelements:format?', iokit.plugins.auth.check, common.getWebElements, function( req, res ){
 
     if( req.webElements )
-      res.json( req.webElements );
+      res.json( { data: req.webElements, success: true } );
     else
       res.json( [] );
         
