@@ -14,7 +14,8 @@ module.exports = exports = {
      * iomapper (mongoosejs) models)
      */
     models: {
-      WebElement: require( __dirname+'/models/web_element' )
+      WebElement: require( __dirname+'/models/web_element' ),
+      WebBit: require( __dirname+'/models/web_bit' )
     },
 
     /**
@@ -38,7 +39,10 @@ module.exports = exports = {
 
     allowedRoles: ['manager', 'editor'],
 
-    translations: __dirname+'/locales'
+    translations: __dirname+'/locales',
+
+    pageDesignerJSPlugins: [ '/javascripts/widgets/io-page-designer/image-browser.js',
+                              '/javascripts/widgets/io-page-designer/text-content.js' ]
 
   },
 

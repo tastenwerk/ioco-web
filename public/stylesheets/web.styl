@@ -109,3 +109,73 @@ ul.web-files
     right: 10px
     bottom: 10px
     
+.iokit-page-designer
+  position: absolute
+  top: 0
+  right: 0
+  width: 40px
+  bottom: 0
+  background: #eee
+  border: 1px solid #aaa
+  padding: 5px
+
+  .switch-btn
+    margin: 0 0 10px
+    float: left
+
+  .page-designer-part
+    display: none
+
+  .switch-btns
+    position: absolute
+    left: -113px
+    top: 42px
+    width: 200px
+    transform: rotate( 270deg )
+    -ms-transform: rotate( 270deg )
+    -moz-transform: rotate( 270deg )
+    -webkit-transform: rotate( 270deg )
+    -o-transform: rotate( 270deg )
+    a
+      border: 1px solid #aaa
+      border-bottom: none
+      margin: 0 1px
+      color: #777
+      font-size: 12px
+      padding: 2px 10px
+      text-decoration: none
+      &.active
+        background-color: #eee
+
+  .design-btn
+    margin: 10px 0
+    padding: 10px
+    border: 1px solid #ccc
+    text-align: center
+    background-color: #f0f0f0
+    cursor: move
+    opacity: 0.8
+    &:hover
+      opacity: 1
+      background-color: #fff
+      border: 1px solid #ccc
+      box-shadow: 1px 1px 3px rgba(0,0,0,0.5)
+    &.small
+      padding: 0
+      margin: 1px
+      line-height: 5px
+      float: left
+      cursor: pointer
+
+
+  .iokit-page
+    min-height: 500px
+    width: 100%
+    &.ui-state-highlight
+      background-color: #ffc
+
+    .iokit-page-box
+      width: 180px
+      height: 180px
+      border: 1px solid #aaa
+      padding: 10px

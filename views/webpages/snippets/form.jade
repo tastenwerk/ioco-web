@@ -6,17 +6,8 @@ ul.top-tabs-action-nav
     a.btn(data-bind='click: hideForm')
       =t('cancel')
 
-form.wide( data-bind="submit: saveForm" )
+form.wide.content-padding-w-overflow( data-bind="submit: saveForm" )
 
-  .form-content.edit-form
-  
-    .editable-content( data-bind='attr: {id: "webpage-content-"+(typeof(_id) !== "undefined" ? _id : "")}, text: content' )
+  #iokit-page-designer
 
-    p
-      label=t('document.tags.title')
-      br
-      input.iokit-tags.span-full( type='text', data-bind='value: stringifiedTags' )
-
-    p
-      label.pull-left=t('webelement.layout')
-      input.span400( type='text', data-bind='value: layout' )
+  .iokit-page(style='margin-right: 60px')

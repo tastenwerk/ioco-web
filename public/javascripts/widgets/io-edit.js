@@ -31,8 +31,8 @@ $(function(){
         image: { title: 'image' },
         source: { title: 'source' },
         save: { title: 'save', align: 'right', shortcut: 's' },
-        preferences: { title: 'preferences', align: 'right' },
-        preview: { title: 'preview', align: 'right', shortcut: 'p' }
+        //preferences: { title: 'preferences', align: 'right' },
+        //preview: { title: 'preview', align: 'right', shortcut: 'p' }
       },
       height: null,
       maxHeight: 300,

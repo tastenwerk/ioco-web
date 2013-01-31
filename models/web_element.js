@@ -11,11 +11,20 @@ var WebElementSchema = iomapper.mongoose.Schema({
   navElem: { type: Boolean, default: false},
   layout: { type: String, default: 'default'},
   title: String,
+  i18n: {
+    title: iomapper.mongoose.Schema.Types.Mixed,
+    subtitle: iomapper.mongoose.Schema.Types.Mixed,
+    meta: {
+      keywords: iomapper.mongoose.Schema.Types.Mixed,
+      description: iomapper.mongoose.Schema.Types.Mixed
+    }
+  },
   hidden: { type: Boolean, default: false},
   noRobots: {type: Boolean, default: false},
   subtitle: String,
   slug: { type: String, required: true, index: { unique: true }, lowercase: true },
-  settings: {type: iomapper.mongoose.Schema.Types.Mixed, default: { startpage: false } },
+  settings: {type: iomapper.mongoose.Schema.Types.Mixed, default: { startpage: false } }, // OBSOLETE AND DEPRECATED
+  preferences: {type: iomapper.mongoose.Schema.Types.Mixed, default: { startpage: false } },
   extra: {type: iomapper.mongoose.Schema.Types.Mixed, default: {} },
   _publicPerformance: {type: iomapper.mongoose.Schema.Types.ObjectId, ref: 'PublicPerformance' },
   rating: {type: Number, default: 0},
@@ -23,6 +32,7 @@ var WebElementSchema = iomapper.mongoose.Schema({
   locales: {type: iomapper.mongoose.Schema.Types.Mixed },
   tags: {type: Array, default: []},
   content: String,
+  bits: {type: iomapper.mongoose.Schema.Types.ObjectId, ref: 'WebBit' },
   shortContent: String
 })
 

@@ -8,6 +8,23 @@ ul.top-tabs-action-nav
 
 form.wide( data-bind="submit: saveForm" )
 
+  .form-content.edit-form
+  
+    p
+      label=t('name')
+      br
+      input.span-full( type='text', data-bind='value: name' )
+
+    p
+      label=t('webelement.title')
+      br
+      input.span-full( type='text', data-bind='value: i18n().title.'+iokit.config.site.fallbackLocale )
+
+    p
+      label=t('document.tags.title')
+      br
+      input.iokit-tags.span-full( type='text', data-bind='value: stringifiedTags' )
+      
     p
       label.pull-left Subtype
       input.span400( type='text', data-bind='value: _subtype' )
@@ -18,10 +35,15 @@ form.wide( data-bind="submit: saveForm" )
 
     p
       label.pull-left=t('webelement.hidden')
-      input( type='checkbox', data-bind='value: preferences.hidden' )
+      input( type='checkbox', data-bind='value: true, checked: preferences().hidden' )
       span.desc=t('webelement.hidden_desc')
 
     p
+      label.pull-left=t('webelement.frontpage')
+      input( type='checkbox', data-bind='value: true, checked: preferences().frontpage' )
+      span.desc=t('webelement.frontpage_desc')
+
+    p
       label.pull-left=t('webelement.no_robots')
-      input( type='checkbox', data-bind='value: preferences.noRobots' )
+      input( type='checkbox', data-bind='value: true, checked: preferences().noRobots' )
       span.desc=t('webelement.no_robots_desc')
