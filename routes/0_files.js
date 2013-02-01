@@ -20,10 +20,17 @@ var iomapper = require('iomapper')
 module.exports = exports = function( app ){
   
   /**
+   * displays a files modal
+   */
+  app.get('/webelements/files:format?', iokit.plugins.auth.check, function(req, res ){
+    res.render( iokit.view.lookup( 'web_elements/files/index.jade' ) );
+  });
+  
+  /**
    * load the upload form into a modal
    *
    */
-  app.get('/web_elements/:id/files:format?', iokit.plugins.auth.check, common.getWebElement, function( req, res ){
+  app.get('/webelements/:id/files:format?', iokit.plugins.auth.check, common.getWebElement, function( req, res ){
 
     res.format({
 
@@ -32,15 +39,10 @@ module.exports = exports = function( app ){
         iomapper.mongoose.models.File.find({ paths: req.webElement._id.toString()+':WebElement' }).execWithUser( res.locals.currentUser, function( err, files ){
           res.json( files );
         });
-      },
-
-      html: function(){
-        res.render( iokit.view.lookup( 'web_elements/files/index.jade' ), { webElement: req.webElement } );
       }
 
     });
   });
-
 
   /**
    * Upload a file to the server

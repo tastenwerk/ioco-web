@@ -150,6 +150,10 @@ ul.web-files li .loader .circle:after {
 .iokit-page-designer .page-designer-part {
   display: none;
 }
+.iokit-page-designer .page-designer-part.disabled .design-btn {
+  opacity: 0.1;
+  cursor: default;
+}
 .iokit-page-designer .switch-btns {
   position: absolute;
   left: -113px;
@@ -195,16 +199,133 @@ ul.web-files li .loader .circle:after {
   float: left;
   cursor: pointer;
 }
-.iokit-page-designer .iokit-page {
+.iokit-page-designer .design-btn.text {
+  font-size: 10px;
+  padding: 5px;
+  font-weight: 900;
+}
+.iokit-page-designer .spacer {
+  height: 1px;
+  border: none;
+  border-top: 1px solid #ccc;
+  margin: 5px 0;
+  width: 100%;
+  float: left;
+}
+body .highlight {
+  background-color: #ffe;
+}
+body .iokit-page {
   min-height: 500px;
   width: 100%;
+  position: relative;
 }
-.iokit-page-designer .iokit-page.ui-state-highlight {
-  background-color: #ffc;
-}
-.iokit-page-designer .iokit-page .iokit-page-box {
-  width: 180px;
-  height: 180px;
-  border: 1px solid #aaa;
+body .iokit-page .iokit-page-box {
+  height: 150px;
+  outline: 2px dashed rgba(0,0,0,0.3);
   padding: 10px;
+  position: relative;
+}
+body .iokit-page .iokit-page-box .box-controls {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  display: none;
+  height: 24px;
+}
+body .iokit-page .iokit-page-box .box-controls a.box-control {
+  margin: 1px;
+  padding: 2px 7px;
+}
+body .iokit-page .iokit-page-box .box-controls a.box-control .icn {
+  margin: 3px 0 -3px;
+}
+body .iokit-page .iokit-page-box .box-controls a.box-control.move-btn {
+  opacity: 0.1;
+}
+body .iokit-page .iokit-page-box .box-controls a.box-control.move-btn.move-enabled {
+  opacity: 1;
+  cursor: move;
+}
+body .iokit-page .iokit-page-box.hovered {
+  outline-color: #ddd;
+}
+body .iokit-page .iokit-page-box.active {
+  outline-color: #ff4040;
+}
+body .iokit-page .iokit-page-box.active .box-controls {
+  display: block;
+}
+body .iokit-page .iokit-page-box.float-left {
+  float: left;
+}
+body .iokit-page .iokit-page-box.float-right {
+  float: right;
+}
+body .iokit-page .iokit-page-box.float-left-all-over {
+  float: left;
+  height: 100%;
+}
+body .iokit-page .iokit-page-box.float-right-all-over {
+  float: right;
+  height: 100%;
+}
+body .iokit-page .iokit-page-box.position-absolute {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+body .iokit-page .iokit-page-box.span1,
+body .iokit-page .iokit-page-box.span2,
+body .iokit-page .iokit-page-box.span3,
+body .iokit-page .iokit-page-box.span4,
+body .iokit-page .iokit-page-box.span5,
+body .iokit-page .iokit-page-box.span6,
+body .iokit-page .iokit-page-box.span7 {
+  margin: 0 1%;
+}
+body .iokit-page .iokit-page-box.span1.first,
+body .iokit-page .iokit-page-box.span2.first,
+body .iokit-page .iokit-page-box.span3.first,
+body .iokit-page .iokit-page-box.span4.first,
+body .iokit-page .iokit-page-box.span5.first,
+body .iokit-page .iokit-page-box.span6.first,
+body .iokit-page .iokit-page-box.span7.first {
+  margin-left: 0;
+}
+body .iokit-page .iokit-page-box.span1.last,
+body .iokit-page .iokit-page-box.span2.last,
+body .iokit-page .iokit-page-box.span3.last,
+body .iokit-page .iokit-page-box.span4.last,
+body .iokit-page .iokit-page-box.span5.last,
+body .iokit-page .iokit-page-box.span6.last,
+body .iokit-page .iokit-page-box.span7.last {
+  margin-right: 0;
+}
+body .iokit-page .iokit-page-boxspan8 {
+  margin: 0;
+}
+body .iokit-page .iokit-page-box.span1 {
+  width: 12%;
+}
+body .iokit-page .iokit-page-box.span2 {
+  width: 24%;
+}
+body .iokit-page .iokit-page-box.span3 {
+  width: 36%;
+}
+body .iokit-page .iokit-page-box.span4 {
+  width: 48%;
+}
+body .iokit-page .iokit-page-box.span5 {
+  width: 60%;
+}
+body .iokit-page .iokit-page-box.span6 {
+  width: 72%;
+}
+body .iokit-page .iokit-page-box.span7 {
+  width: 84%;
+}
+body .iokit-page .iokit-page-box.span8 {
+  width: 98%;
 }
