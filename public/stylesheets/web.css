@@ -157,8 +157,8 @@ ul.web-files li .loader .circle:after {
 }
 .iokit-page-designer .switch-btns {
   position: absolute;
-  left: -144px;
-  top: 126px;
+  left: -226px;
+  top: 46px;
   width: 424px;
   transform: rotate(270deg);
   -ms-transform: rotate(270deg);
@@ -178,14 +178,24 @@ ul.web-files li .loader .circle:after {
 .iokit-page-designer .switch-btns a.active {
   background-color: #eee;
 }
-.iokit-page-designer .design-btn {
+.iokit-page-designer .design-btn,
+.iokit-page-designer .source-btn {
   margin: 10px 0;
   padding: 10px;
   border: 1px solid #ccc;
   text-align: center;
   background-color: #f0f0f0;
-  cursor: move;
   opacity: 0.8;
+  cursor: pointer;
+}
+.iokit-page-designer .design-btn.text,
+.iokit-page-designer .source-btn.text {
+  font-size: 10px;
+  padding: 5px;
+  font-weight: 900;
+}
+.iokit-page-designer .design-btn {
+  cursor: move;
 }
 .iokit-page-designer .design-btn:hover {
   opacity: 1;
@@ -200,18 +210,38 @@ ul.web-files li .loader .circle:after {
   float: left;
   cursor: pointer;
 }
-.iokit-page-designer .design-btn.text {
-  font-size: 10px;
-  padding: 5px;
-  font-weight: 900;
-}
 .iokit-page-designer .spacer {
   height: 1px;
   border: none;
   border-top: 1px solid #ccc;
   margin: 5px 0;
   width: 100%;
+}
+.iokit-page-designer .spacer.small {
   float: left;
+}
+.iokit-modal .sidebar-content .web-bit-props h1 {
+  font-size: 20px;
+  color: #555;
+  font-weight: 100;
+}
+.iokit-modal .sidebar-content .web-bit-props label {
+  color: #777;
+  font-size: 12px;
+}
+.iokit-modal .sidebar-content .web-bit-props p {
+  margin-top: 5px;
+}
+.iokit-modal .sidebar-content .web-bit-props input[type=text] {
+  width: 98%;
+}
+.iokit-modal .sidebar-content .web-bit-props .ace-editor {
+  width: 100%;
+  height: 270px;
+  position: absolute;
+  top: 120px;
+  left: 0;
+  font-size: 11px;
 }
 body .highlight {
   background-color: #ffe;

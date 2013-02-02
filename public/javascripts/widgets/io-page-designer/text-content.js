@@ -9,9 +9,9 @@ $(function(){
         editorId: null,
         icon: 'icn-pencil',
         hoverTitle: $.i18n.t('web.page_designer.plugins.text-content.edit'),
+        editorId: 'editor-'+(new Date()).getTime().toString(36),
         action: function( box, e ){
 
-          this.editorId = 'editor-'+(new Date()).getTime().toString(36);
           var editorId = this.editorId;
 
           function initEditor(){
@@ -33,13 +33,17 @@ $(function(){
         }
       }
     ],
-
+    addProperties: [
+      {
+        title: $.i18n.t('web.page_designer.plugins.text-content.languages'),
+        html: 'lang plugin'
+      }
+    ],
     onDeactivate: function( box ){
-      CKEDITOR.remove( this.editorId );
+      if( typeof( CKEDITOR ) === 'object' )
+        CKEDITOR.remove( this.addControls[0].editorId );
     },
     onActivate: function( box ){
-      if( typeof( CKEDITOR ) === 'object' )
-        CKEDITOR.inline( editorId );
     }
   })
 })

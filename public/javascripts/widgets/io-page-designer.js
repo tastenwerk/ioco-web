@@ -106,6 +106,45 @@ $(function(){
     function buildToolsContainer(){
       var toolsContainer = $('<div/>').addClass('page-designer-part').attr('id','page-designer-tools');
 
+      var sourceBtn = $('<div/>').addClass('source-btn')
+        .append($('<span/>').addClass('icn icn-source'))
+        .on('click', function( e ){
+          if( typeof(iokit.modal) === 'function' ){
+            iokit.modal({ 
+              title: options.i18n ? $.i18n.t('web.page_designer.edit_page_source') : 'Edit WebPage Source',
+              html: renderPropertiesModal( pageDesigner._page, options.webPage ),
+              completed: function( html ){      
+                html.find('#cssEditor').css({ height: html.find('.sidebar-content').height() - 125});
+                html.find('#jsEditor').css({ height: html.find('.sidebar-content').height() - 65, top: 60});
+              },
+              windowControls: {
+                save: {
+                  icn: 'icn-save',
+                  title: (options.i18n ? $.i18n.t('web.source.save') : 'save'),
+                  callback: function( modal ){
+                    options.webPage.properties = options.webPage.properties || {};
+                    options.webPage.properties.cssStyles = ace.edit(modal.find('#cssEditor').get(0)).getValue();
+                    options.webPage.properties.js = ace.edit(modal.find('#jsEditor').get(0)).getValue();
+                    options.webPage.properties.cssClasses = modal.find('#cssClasses').val();
+                    $.ajax({ url: (options.webBitUrl || '/web_bits')+'/'+options.webPage._id,
+                             type: 'put',
+                             data: { _csrf: (options.csrf || null), webBit: options.webPage },
+                             success: function( json ){
+                              if( json.success )
+                                applyProperties( pageDesigner._page, options.webPage ) && iokit.modal('close');
+                              if( typeof(iokit.notify) === 'function' )
+                                iokit.notify( json.flash );
+                             }
+                    })
+                  }
+                }
+              }
+            })
+          } else
+            throw( 'only iokit.modal is suppoerted for modal views right now')
+        });
+      toolsContainer.append(sourceBtn).append('<div class="spacer"/>');
+
       for( var i=0,plugin; plugin=iokit.pageDesigner._plugins[i]; i++ ){
         var pluginBtn = $('<div/>').addClass('design-btn')
                           .append($('<span/>').addClass('icn').addClass(plugin.icon ? plugin.icon : plugin.iconImg));
@@ -151,7 +190,7 @@ $(function(){
                     activeBox.draggable({ trigger: '.move-enabled' });
                   })
                 )
-        .append($('<div/>').addClass('spacer ui-helper-clearfix'));
+        .append($('<div/>').addClass('spacer small'));
 
       for( var i=1; i<=(options.gridSize || 8); i++ )
         container.append( renderDesignBtn('span'+i, 'grid-x') );
@@ -219,6 +258,68 @@ $(function(){
     }
 
     /**
+     * show dialog box with properties
+     *
+     */
+    function openPropertiesDialog( box, webBit, plugin ){
+      if( typeof(iokit.modal) === 'function' ){
+        iokit.modal({ 
+          title: options.i18n ? $.i18n.t('web.page_designer.web_bit-properties') : 'WebBit properties',
+          html: renderPropertiesModal( box, webBit, plugin ),
+          completed: function( html ){      
+            html.find('#cssEditor').css({ height: html.find('.sidebar-content').height() - 125});
+            html.find('#jsEditor').css({ height: html.find('.sidebar-content').height() - 65, top: 60});
+          },
+          windowControls: {
+            save: {
+              icn: 'icn-save',
+              title: (options.i18n ? $.i18n.t('web.source.save') : 'save'),
+              callback: function( modal ){
+                webBit.properties = webBit.properties || {};
+                webBit.properties.cssStyles = ace.edit(modal.find('#cssEditor').get(0)).getValue();
+                webBit.properties.js = ace.edit(modal.find('#jsEditor').get(0)).getValue();
+                webBit.properties.cssClasses = modal.find('#cssClasses').val();
+                $.ajax({ url: (options.webBitUrl || '/web_bits')+'/'+webBit._id,
+                         type: 'put',
+                         data: { _csrf: (options.csrf || null), webBit: webBit },
+                         success: function( json ){
+                          if( json.success )
+                            applyProperties( box, webBit, plugin ) && iokit.modal('close');
+                          if( typeof(iokit.notify) === 'function' )
+                            iokit.notify( json.flash );
+                         }
+                })
+              }
+            }
+          }
+        })
+      } else
+        throw( 'only iokit.modal is suppoerted for modal views right now')
+    }
+
+    /**
+     * applys properties to a box
+     * applys css classes
+     * and executes javascript
+     */
+    function applyProperties( box, webBit, plugin ){
+      if( webBit.properties ){
+        if( webBit.properties.cssClasses )
+          box.attr('class', 'iokit-web-bit '+webBit.properties.cssClasses);
+        if( webBit.properties.cssStyles ){
+          box.css(JSON.parse(webBit.properties.cssStyles));
+        }
+        if( webBit.properties.js && webBit.properties.js.length > 1 ){
+          var fnName = 'webBitFn'+webBit._id
+          var fnStr = 'function '+fnName+'( boxDom, webBit, plugin ){' + webBit.properties.js + '}';
+          eval( fnStr );
+          eval(fnName+'( box, webBit, plugin )');
+        }
+      }
+      return true;
+    }
+
+    /**
      * generates an empty box with the plugin's title
      *
      * @param {object} [plugin] - the plugin holder of this new box
@@ -228,9 +329,14 @@ $(function(){
 
       var content = $('<div/>').addClass('box-content');
       var closeBtn = $('<a/>').addClass('box-control btn live-tipsy').html('&times;')
-          .attr('original-title', (options.i18n ? $.i18n.t('web.page_designer.remove-box') : 'Remove box'))
+          .attr('original-title', (options.i18n ? $.i18n.t('web.page_designer.remove-web_bit') : 'Remove WebBit'))
           .on('click', function(e){
             removeBox( $(e.target).closest('.iokit-web-bit') );
+          })
+      var propBtn = $('<a/>').addClass('box-control btn live-tipsy').append($('<span/>').addClass('icn icn-properties'))
+          .attr('original-title', (options.i18n ? $.i18n.t('web.page_designer.web_bit-properties') : 'WebBit properties'))
+          .on('click', function(e){
+            openPropertiesDialog( box, webBit, plugin );
           })
       var moveBtn = $('<a/>').addClass('box-control move-btn btn live-tipsy')
         .append($('<span/>').addClass('icn icn-move'))
@@ -239,7 +345,8 @@ $(function(){
           console.log('storing a move is not implemented yet')
         })
       var controls = $('<div/>').addClass('box-controls')
-            .append(moveBtn);
+            .append(moveBtn)
+            .append(propBtn);
       if( plugin.addControls && plugin.addControls instanceof Array )
         plugin.addControls.forEach( function(controlDef){
           var controlBtn = $('<a/>').addClass('box-control btn')
@@ -270,7 +377,10 @@ $(function(){
       if( parent ){
 
         if( options && typeof(options.on) === 'object' && typeof(options.on.create) === 'function' )
-          options.on.create( plugin, webBit, box, function(){ parent && parent.append( box ); } );
+          options.on.create( plugin, webBit, box, function(){ 
+            parent.append( box );
+            applyProperties( box, webBit, plugin );
+          });
         else
           $.ajax({ url: '/web_bits',
                  type: 'post',
@@ -284,14 +394,20 @@ $(function(){
                    }
                    if( typeof(options.after) === 'object' && typeof(options.after.create) === 'function' )
                      options.after.create( plugin, webBit, box, json, function(){ parent && parent.append( box ); } );
-                   else
-                     parent && parent.append( box );
+                   else{
+                     parent.append( box );
+                     applyProperties( box, webBit, plugin );
+                   }
                  }
         });
       } else {
 
         if( options && typeof(options.after) === 'object' && typeof(options.after.load) === 'function' )
-          options.after.load( plugin, webBit, box, function(){} );
+          options.after.load( plugin, webBit, box, function(){
+            applyProperties( box, webBit, plugin );
+          });
+        else
+          applyProperties( box, webBit, plugin );
 
       }
     }
@@ -319,24 +435,18 @@ $(function(){
       function setupWebBit( domElem ){
         if( domElem.attr('data-id').length < 1 )
           return;
+        domElem.addClass('iokit-web-bit');
         var webBitId = domElem.attr('data-id');
-        domElem.addClass('iokit-web-bit float-left span2');
         for( var i=0, wB; wB=options.webPage.webBits[i]; i++ ){
-          if( typeof( wB ) === 'object' ){
-            if( webBitId === wB._id.toString() )
-              createBox( null, domElem, wB.content, iokit.pageDesigner.getPlugin( wB.plugin ) );
-          } else if( typeof( wB ) === 'string' ){
+          if( webBitId === wB ){
             $.getJSON( (options.webBitUrl || '/web_bits/')+wB, function( json ){
               if( json.success ){
                 var webBit = new iokit.pageDesigner.models.WebBit( json.webBit );
-                options.webPage.webBits.splice(i,1);
-                options.webPage.webBits.unshift( webBit );
-                createBox( null, domElem, webBit.content, iokit.pageDesigner.getPlugin( webBit.plugin ) );
+                createBox( null, domElem, webBit, iokit.pageDesigner.getPlugin( webBit.plugin ) );
               } else
                 throw('unsuccessful json request at')
             });
-          } else
-            console.log('cannot understand webBit',wB);
+          }
         }
       }
 
@@ -344,6 +454,7 @@ $(function(){
       if( !page.length )
         page = $(pageDesigner).next('.iokit-page');
       if( page.length ){
+        pageDesigner._page = page;
         page.droppable({
           accept: ".design-btn",
           activeClass: "highlight",
@@ -353,11 +464,12 @@ $(function(){
             if( boxName.length < 1 )
               return alert('no name given. aborted');
             var webBit = new iokit.pageDesigner.models.WebBit({ name: boxName, 
-                                                                properties: {},
+                                                                properties: { js: 'function afterWebBitRendered( boxDom, webBit, plugin ){\n}', 
+                                                                              cssClasses: 'float-left span2',
+                                                                              cssStyles: '{\n}' },
                                                                 plugin: plugin.name,
                                                                 content: (plugin.defaultContent ? plugin.defaultContent : '') });
-            console.log(webBit, plugin);
-            createBox( $(this), $('<div/>').addClass('iokit-web-bit float-left span2'), webBit, plugin );
+            createBox( $(this), $('<div/>').addClass('iokit-web-bit'), webBit, plugin );
           }
         });
         page.find('div[data-id]').each(function(){
@@ -425,6 +537,94 @@ $(function(){
       }).last().click();
 
     setupPageContent();
+
+
+    function renderPropertiesModal( box, webBit, plugin ){
+
+      var cssDiv = $('<div class="web-bit-props"/>')
+                    .append($('<h1 class="title"/>').text('Style definitions'))
+                    .append($('<p/>')
+                      .append($('<label/>').text('CSS Classes'))
+                      .append('<br />')
+                      .append($('<input type="text" id="cssClasses" placeholder="e.g.: span2 float-left" value="'+(webBit.properties.cssClasses || '')+'" />'))
+                    ).append($('<p/>')
+                      .append($('<label/>').text('CSS Rules for the box (not for children) in JSON notation'))
+                      .append('<br />')
+                      .append($('<div id="cssEditor" class="ace-editor"/>'))
+                    );
+      // set ace editor for textareas if ace option is enabled
+      if( typeof(ace) === 'object' ){
+        ace.config.set("modePath", "/javascripts/3rdparty/ace");
+        ace.config.set("workerPath", "/javascripts/3rdparty/ace");
+        ace.config.set("themePath", "/javascripts/3rdparty/ace");
+        aceEditor = ace.edit( cssDiv.find('#cssEditor').get(0) );
+        aceEditor.getSession().setMode("ace/mode/json");
+        aceEditor.getSession().setUseWrapMode(true);
+        aceEditor.getSession().setWrapLimitRange(80, 80);
+        if( webBit.properties.cssStyles )
+          aceEditor.setValue( webBit.properties.cssStyles );
+      }
+
+      var jsDiv = $('<div class="web-bit-props"/>')
+                    .append($('<h1 class="title"/>').text('Javascript'))
+                    .append($('<p/>')
+                      .append($('<label/>').text('Custom Code. Available vars: boxDom, webBit, plugin'))
+                      .append('<br />')
+                      .append($('<div id="jsEditor" class="ace-editor" />'))
+                    );
+
+      // set ace editor for textareas if ace option is enabled
+      if( typeof(ace) === 'object' ){
+        ace.config.set("modePath", "/javascripts/3rdparty/ace");
+        ace.config.set("workerPath", "/javascripts/3rdparty/ace");
+        ace.config.set("themePath", "/javascripts/3rdparty/ace");
+        aceEditor = ace.edit( jsDiv.find('#jsEditor').get(0) );
+        aceEditor.getSession().setMode("ace/mode/javascript");
+        aceEditor.getSession().setUseWrapMode(true);
+        aceEditor.getSession().setWrapLimitRange(80, 80);
+        if( webBit.properties.js )
+          aceEditor.setValue( webBit.properties.js );
+      }
+
+      var revisionsDiv = $('<div class="web-bit-props"/>')
+                    .append($('<h1 class="title"/>').text('Revisions'));
+
+      var accessDiv = $('<div class="web-bit-props"/>')
+                    .append($('<h1 class="title"/>').text('ACL'));
+
+      var sidebar = $('<ul class="sidebar-nav"/>')
+          .append($('<li/>').text( 'CSS' ))
+          .append($('<li/>').text( 'JS' ));
+
+      var sidebarContent = $('<div class="sidebar-content"/>')
+          .append(cssDiv)
+          .append(jsDiv)
+
+      if( plugin.addProperties && plugin.addProperties instanceof Array )
+        for( var i=0,propertyPlugin; propertyPlugin=plugin.addProperties[i]; i++ ){
+          sidebar.append($('<li/>').text( propertyPlugin.title ));
+          if( propertyPlugin.html )
+            sidebarContent.append( $('<div class="web-bit-props">').html(propertyPlugin.html) );
+          else if( propertyPlugin.remoteHtml )
+            $.get( propertyPlugin.remoteHtml, function( html ){
+              sidebarContent.append( $('<div class="web-bit-props">').html(html) );
+            });
+        }
+
+      sidebar
+        .append($('<li/>').text( 'Revisions' ))
+        .append($('<li/>').text( 'Access' ))
+
+      sidebarContent
+        .append(revisionsDiv)
+        .append(accessDiv)
+        
+      var html = $('<div class="modal-sidebar"/>')
+        .append(sidebar)
+        .append(sidebarContent);
+      
+      return html;
+    }
 
   }
 });
