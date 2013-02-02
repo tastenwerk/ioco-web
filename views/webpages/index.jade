@@ -1,13 +1,13 @@
 link( rel='stylesheet', href='/stylesheets/web.css' )
 link( rel='stylesheet', href='/stylesheets/iokit-page.css')
-#iokit-webelements
+#iokit-web_pages
   .iokit-sidebar
     .iokit-tree
 
-      h1.title=t('webelements.title')
+      h1.title=t('web_pages.title')
 
       .tree-controls
-        a.btn.w-icn-only.live-tipsy( href='/webpages/new', original-title=t('webelements.new'), data-bind='click: newItemForm' )
+        a.btn.w-icn-only.live-tipsy( href='/webpages/new', original-title=t('web_pages.new'), data-bind='click: newItemForm' )
           span.icn-plus.icn
         a.btn.w-icn-only.live-tipsy( href='#', original-title=t('refresh'), data-bind='click: fetchData' )
           span.icn.icn-refresh
@@ -21,7 +21,7 @@ link( rel='stylesheet', href='/stylesheets/iokit-page.css')
   .iokit-content
 
     .click-for-details.no-item-form
-      h1.title=t('webelements.title')
+      h1.title=t('web_pages.title')
       span=t('document.click_for_details')
 
     #iokit-user-form.item-form( data-bind='template: {name: "webItemForm"}' )
@@ -58,7 +58,7 @@ script(type='text/html', id='webItemForm')
 
         include snippets/preferences
 
-script(type='text/javascript', src='/javascripts/widgets/io-edit.js')
+//script(type='text/javascript', src='/javascripts/widgets/io-edit.js')
 script(type='text/javascript', src='/javascripts/widgets/io-page-designer.js')
 script(type='text/javascript', src='/javascripts/web_files_view_model.js')
 - for( i in iokit.plugins )
@@ -72,12 +72,12 @@ script(type='text/javascript')
   var title = {};
   title[$('#_fallbackLocale').val()] = '';
 
-  $('#iokit-webelements .iokit-tree').iokitTree({
-    url: '/webelements.json?roots=true',
-    saveUrl: '/webelements/',
-    saveKey: 'webElement',
-    saveAttrs: [ 'name', 'tags', 'layout', '_subtype', 'slug', 'preferences', 'i18n' ],
-    defaultValues: { name: '', i18n: { title: title }, preferences: {} },
+  $('#iokit-web_pages .iokit-tree').iokitTree({
+    url: '/web_pages.json?roots=true',
+    saveUrl: '/web_pages/',
+    saveKey: 'webPage',
+    saveAttrs: [ 'name', 'tags', 'layout', '_subtype', 'slug', 'preferences' ],
+    defaultValues: { name: { '#{iokit.config.fallbackLocale}': '' }, preferences: {} },
     before: function( tree ){
       tree.TreeItemModel.prototype.tags = ko.observableArray([]);
       tree.TreeItemModel.prototype.preferences = ko.observable({});
@@ -92,12 +92,13 @@ script(type='text/javascript')
         owner: this
       });
     },
-    afterShowForm: function( form ){
+    afterShowForm: function( item, form ){
+      $('.iokit-page').css('width', $('.iokit-page').width()-100);
       $('#iokit-page-designer').ioPageDesigner();
       //$(form).find('.editable-main-content').ioEdit();
     }
   });
-  $('#iokit-webelements .iokit-tree ul:first').nestedSortable({
+  $('#iokit-web_pages .iokit-tree ul:first').nestedSortable({
       listType: 'ul',
       forcePlaceholderSize: true,
       handle: 'div',

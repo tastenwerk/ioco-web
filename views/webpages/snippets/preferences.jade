@@ -16,11 +16,6 @@ form.wide( data-bind="submit: saveForm" )
       input.span-full( type='text', data-bind='value: name' )
 
     p
-      label=t('webelement.title')
-      br
-      input.span-full( type='text', data-bind='value: i18n().title.'+iokit.config.site.fallbackLocale )
-
-    p
       label=t('document.tags.title')
       br
       input.iokit-tags.span-full( type='text', data-bind='value: stringifiedTags' )

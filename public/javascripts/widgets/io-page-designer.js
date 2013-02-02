@@ -1,15 +1,84 @@
 /**
- * IOedit
- * html5 inline editing
+ * ioPageDesigner
+ * extensive page designer
+ *
+ * (c) TASTENWERK 2013
+ *
+ * wiki:
+ *
+ * http://github.com/tastenwerk/ioweb/wiki/ioPageDesigner
+ *
+ * usage:
+ *
+ * $(<mySelector>).ioPageDesigner( options );
+ *
+ * available options:
+ *   created: function( plugin, box, done ) // invoked after box is created
+ *            but before box is appended to the mySelector-dom.
  *
  */
 
 $(function(){
 
+  iokit = typeof(iokit) !== 'undefined' && iokit || {};
+
   iokit.pageDesigner = {
     _plugins: [],
     plugin: function( plugin ){
       this._plugins.push( plugin );
+    },
+    getPlugin: function( name ){
+      for( var i in this._plugins )
+        if( this._plugins[i].name === name )
+          return this._plugins[i];
+    },
+    allowedProperties: new RegExp('^_id$|^name$|^content$|^webBits$|^properties$|^plugin$'),
+    models: {
+      WebPage: function( attrs ){
+        for( var i in attrs )
+          if( i.match(iokit.pageDesigner.allowedProperties) )
+            if( typeof(attrs[i]) === 'function' )
+              this[i] = attrs[i]();
+            else
+              this[i] = attrs[i];
+      },
+      WebBit: function( attrs ){
+        for( var i in attrs )
+          if( i.match(iokit.pageDesigner.allowedProperties) )
+            if( typeof(attrs[i]) === 'function' )
+              this[i] = attrs[i]();
+            else
+              this[i] = attrs[i];
+      },
+      WebPropertiesCollection: function( attrs ){
+        for( var i in attrs )
+          this[i] = attrs[i];
+      }
+    },
+    cleanup: function( webBit ){
+      if( webBit.content && webBit.content.length > 0 ){
+        var tmpElem = $( webBit.content )
+          , tmpWebBits = [];
+        if( webBit.webBits && webBit.webBits instanceof Array )
+          for( var i=0, wB; wB=webBit.webBits[i]; i++ )
+            if( typeof( wB ) === 'object' )
+              tmpWebBits.push( wB._id.toString() )
+            else if( typeof( wB ) === 'string' )
+              tmpWebBits.push( wB )
+            else
+              throw('not recognized WebBit', wB);
+        webBit.webBits = tmpWebBits;
+        tmpElem.find('.iokit-web-bit').each( function(){
+          var found = false;
+          for( var i in webBit.webBits )
+            if( webBit.webBits[i] === $(this).attr('data-id') )
+              found = true;
+          if( !found )
+            webBit.webBits.push( $(this).attr('data-id') );
+          $(this).html('').removeAttr('class').removeAttr('style');
+        });
+        webBit.content = tmpElem.html();
+      }
     }
   };
 
@@ -43,10 +112,26 @@ $(function(){
         if( plugin.hoverTitle )
           pluginBtn.attr('original-title', plugin.hoverTitle).addClass('live-tipsy-l');
         setupToolActions( plugin, pluginBtn );
-        pluginBtn.data('pluginData', plugin);
+        pluginBtn.data('plugin', plugin);
         toolsContainer.append(pluginBtn);
       }
       return toolsContainer;
+    }
+
+    /**
+     * remotely loads library into this container
+     */
+    function buildLibraryContainer(){
+      var libContainer = $('<div/>').addClass('page-designer-part').attr('id','page-designer-library');
+      return libContainer;
+    }
+
+    /**
+     * remotely loads templates into this container
+     */
+    function buildTemplatesContainer(){
+      var templContainer = $('<div/>').addClass('page-designer-part').attr('id','page-designer-templates');
+      return templContainer;
     }
 
     /**
@@ -96,10 +181,12 @@ $(function(){
     function deactivateActiveBox(){
       if( activeBox ){
         activeBox.removeClass('active');
+        var plugin = activeBox.data('plugin');
+        if( typeof(plugin.onDeactivate) === 'function' )
+          plugin.onDeactivate( activeBox );
       }
       activeBox = null;
       pageDesigner.find('.page-designer-part.active-box-required').addClass('disabled');
-      pageDesigner.find('.page-designer-part.text-box-required').addClass('disabled')
     }
 
     /**
@@ -110,13 +197,14 @@ $(function(){
       if( $(e.target).closest('.box-controls').length )
         return;
       if( activeBox && activeBox.attr('data-id') == $(this).attr('data-id') )
-        return deactivateActiveBox();
+        return;
       deactivateActiveBox();
       activeBox = $(this);
       activeBox.addClass('active');
-      if( activeBox.data('pluginData').editorEnabled )
-        pageDesigner.find('.page-designer-part.text-box-required').removeClass('disabled')
       pageDesigner.find('.page-designer-part.active-box-required').removeClass('disabled');
+      var plugin = activeBox.data('plugin');
+      if( typeof(plugin.onActivate) === 'function' )
+        plugin.onActivate( activeBox );
     }
 
     /**
@@ -124,7 +212,10 @@ $(function(){
      * and it's content
      */
     function removeBox( box ){
-      box.remove();
+      if( options && typeof(options.on) === 'object' && typeof(options.on.delete) === 'function' )
+        options.on.delete( box.data('plugin'), box.data('webBit'), box, function(){ box.remove(); }  );
+      else
+        box.remove();
     }
 
     /**
@@ -133,17 +224,17 @@ $(function(){
      * @param {object} [plugin] - the plugin holder of this new box
      *
      */
-    function generateBox( plugin ){
-      var box = $('<div/>').addClass('iokit-page-box float-left span2');
+    function createBox( parent, box, webBit, plugin ){
+
       var content = $('<div/>').addClass('box-content');
       var closeBtn = $('<a/>').addClass('box-control btn live-tipsy').html('&times;')
-          .attr('original-title', $.i18n.t('web.page_designer.remove-box'))
+          .attr('original-title', (options.i18n ? $.i18n.t('web.page_designer.remove-box') : 'Remove box'))
           .on('click', function(e){
-            removeBox( $(e.target).closest('.iokit-page-box') );
+            removeBox( $(e.target).closest('.iokit-web-bit') );
           })
       var moveBtn = $('<a/>').addClass('box-control move-btn btn live-tipsy')
         .append($('<span/>').addClass('icn icn-move'))
-        .attr('original-title', $.i18n.t('web.page_designer.move') )
+        .attr('original-title', (options.i18n ? $.i18n.t('web.page_designer.move') : 'Move') )
         .on('click', function(e){
           console.log('storing a move is not implemented yet')
         })
@@ -159,7 +250,7 @@ $(function(){
           if( controlDef.hoverTitle )
             controlBtn.addClass('live-tipsy').attr('original-title', controlDef.hoverTitle);
           if( typeof(controlDef.action) === 'function' )
-            controlBtn.on('click', controlDef.action);
+            controlBtn.on('click', function( e ){ controlDef.action( box, e ) });
           controls.append(controlBtn);
         });
       controls.append(closeBtn)
@@ -168,12 +259,41 @@ $(function(){
       content.append(title);
       box.append(content);
       box.append(controls);
-      if( plugin.editorEnabled )
-        box.find('.box-content').attr('contenteditable', true);
-      if( typeof(plugin.renderBox) === 'function' )
-        plugin.renderBox( box );
-      box.data('pluginData', plugin);
-      return box;
+      box.data('plugin', plugin);
+      box.data('webBit', webBit);
+
+      // setup actions
+      setupBoxActions( box, plugin );
+
+      // if a parent is given, the webBit is new, otherwise
+      // it has been loaded and exists already in the database
+      if( parent ){
+
+        if( options && typeof(options.on) === 'object' && typeof(options.on.create) === 'function' )
+          options.on.create( plugin, webBit, box, function(){ parent && parent.append( box ); } );
+        else
+          $.ajax({ url: '/web_bits',
+                 type: 'post',
+                 data: { webBit: webBit,
+                         _csrf: ( options.csrf || null ) },
+                 success: function( json ){
+                   if( json.success ){
+                     webBit = json.webBit; // override webBit with server json data
+                     box.data('webBit', webBit);
+                     box.attr('data-id', webBit._id);
+                   }
+                   if( typeof(options.after) === 'object' && typeof(options.after.create) === 'function' )
+                     options.after.create( plugin, webBit, box, json, function(){ parent && parent.append( box ); } );
+                   else
+                     parent && parent.append( box );
+                 }
+        });
+      } else {
+
+        if( options && typeof(options.after) === 'object' && typeof(options.after.load) === 'function' )
+          options.after.load( plugin, webBit, box, function(){} );
+
+      }
     }
 
     /**
@@ -195,17 +315,54 @@ $(function(){
      * be droppable
      */
     function setupPageContent(){
-      if( $('.iokit-page:visible').length ){
-        $('.iokit-page:visible').droppable({
+
+      function setupWebBit( domElem ){
+        if( domElem.attr('data-id').length < 1 )
+          return;
+        var webBitId = domElem.attr('data-id');
+        domElem.addClass('iokit-web-bit float-left span2');
+        for( var i=0, wB; wB=options.webPage.webBits[i]; i++ ){
+          if( typeof( wB ) === 'object' ){
+            if( webBitId === wB._id.toString() )
+              createBox( null, domElem, wB.content, iokit.pageDesigner.getPlugin( wB.plugin ) );
+          } else if( typeof( wB ) === 'string' ){
+            $.getJSON( (options.webBitUrl || '/web_bits/')+wB, function( json ){
+              if( json.success ){
+                var webBit = new iokit.pageDesigner.models.WebBit( json.webBit );
+                options.webPage.webBits.splice(i,1);
+                options.webPage.webBits.unshift( webBit );
+                createBox( null, domElem, webBit.content, iokit.pageDesigner.getPlugin( webBit.plugin ) );
+              } else
+                throw('unsuccessful json request at')
+            });
+          } else
+            console.log('cannot understand webBit',wB);
+        }
+      }
+
+      var page = $(pageDesigner).prev('.iokit-page');
+      if( !page.length )
+        page = $(pageDesigner).next('.iokit-page');
+      if( page.length ){
+        page.droppable({
           accept: ".design-btn",
           activeClass: "highlight",
           drop: function( event, ui ) {
-            var box = generateBox( ui.draggable.data('pluginData') );
-            $(this).append( box );
-            setupBoxActions( box, ui.draggable.data('pluginData') );
+            var plugin = ui.draggable.data('plugin');
+            var boxName = prompt((options.i18n ? $.i18n.t('web_bit.name') : 'WebBit Name') );
+            if( boxName.length < 1 )
+              return alert('no name given. aborted');
+            var webBit = new iokit.pageDesigner.models.WebBit({ name: boxName, 
+                                                                properties: {},
+                                                                plugin: plugin.name,
+                                                                content: (plugin.defaultContent ? plugin.defaultContent : '') });
+            console.log(webBit, plugin);
+            createBox( $(this), $('<div/>').addClass('iokit-web-bit float-left span2'), webBit, plugin );
           }
         });
-        $('.iokit-page').css('width', $('.iokit-page').width()-100);
+        page.find('div[data-id]').each(function(){
+          setupWebBit( $(this) );
+        });
       } else
         alert('.iokit-page element not found!');
     }
@@ -219,7 +376,7 @@ $(function(){
      */
     function renderDesignBtn( name, type ){
       var div = $('<div/>').addClass('design-btn small live-tipsy-l')
-          .attr('original-title', $.i18n.t('web.page_designer.'+name));;
+          .attr('original-title', ( options.i18n ? $.i18n.t('web.page_designer.'+name) : name ) );
       if( type !== 'arrange' )
         div.addClass('text');
 
@@ -249,31 +406,16 @@ $(function(){
     $(this).addClass('iokit-page-designer')
       .append(
         $('<div/>').addClass('switch-btns')
-          //.append($('<a/>').attr('href', '#page-designer-library').text('Bibliothek'))
-          //.append($('<a/>').attr('href', '#page-designer-templates').text('Vorlagen'))
-          .append($('<a/>').attr('href', '#page-designer-text').text('Text'))
+          .append($('<a/>').attr('href', '#page-designer-library').text('Bibliothek'))
+          .append($('<a/>').attr('href', '#page-designer-templates').text('Vorlagen'))
           .append($('<a/>').attr('href', '#page-designer-grid').text('Grid'))
           .append($('<a/>').attr('href', '#page-designer-tools').text('Tools'))
       )
+      .append( buildLibraryContainer() )
+      .append( buildTemplatesContainer() )
       .append( buildToolsContainer() )
       .append( buildArrangeGridContainer() )
-      .append(
-        $('<div/>').addClass('page-designer-part text-box-required disabled').attr('id','page-designer-text')
-          .append(
-            $('<div/>').addClass('text-btn design-btn small')
-              .append($('<span/>').addClass('icn icn-bold'))
-              .on('click', function(e){
-                document.execCommand('bold', false, null);
-              })
-          )
-          .append(
-            $('<div/>').addClass('text-btn design-btn small')
-              .append($('<span/>').addClass('icn icn-italic'))
-              .on('click', function(e){
-                document.execCommand('italic', false, null);
-              })
-          )
-      )
+      .draggable()
       .find('.switch-btns a').on('click', function(e){
         e.preventDefault();
         $(pageDesigner).find('.page-designer-part').hide().end()

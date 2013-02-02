@@ -1,0 +1,145 @@
+link( rel='stylesheet', href='/stylesheets/web.css' )
+link( rel='stylesheet', href='/stylesheets/iokit-page.css')
+#iokit-web_pages
+  .iokit-sidebar
+    .iokit-tree
+
+      h1.title=t('web_pages.title')
+
+      .tree-controls
+        a.btn.w-icn-only.live-tipsy( href='/webpages/new', original-title=t('web_pages.new'), data-bind='click: newItemForm' )
+          span.icn-plus.icn
+        a.btn.w-icn-only.live-tipsy( href='#', original-title=t('refresh'), data-bind='click: fetchData' )
+          span.icn.icn-refresh
+        a.btn.w-icn-only.live-tipsy.enableable( href='#', original-title=t('delete_selected'), data-bind='css: {enabled: selectedItems().length > 0}, click: deleteSelected')
+          span.icn.icn-trash
+
+      br.clearfix
+
+      ul.tree-content( data-bind='template: {name: "webItemTemplate", foreach: items}' )
+
+  .iokit-content
+
+    .click-for-details.no-item-form
+      h1.title=t('web_pages.title')
+      span=t('document.click_for_details')
+
+    #iokit-user-form.item-form( data-bind='template: {name: "webItemForm"}' )
+
+script(type='text/html', id='webItemTemplate')
+  li.tree-li( data-bind='attr: { "data-id": _id }, click: markSelected')
+    .tree-item
+      span(class='children-caret tree-trigger', data-bind='click: toggleChildren')
+      a.pull-right.show-details-arr( data-bind='click: showForm')
+        span.icn.icn-arr-right
+        | &nbsp;
+      // ko if: properties().frontpage
+      a.pull-right(style='opacity:0.5')
+        .span.icn.icn-home
+      // /ko
+      a.link-trigger( href='#', data-bind='text: name, click: showForm' )
+    ul(data-bind='template: { name: \'webItemTemplate\', foreach: children }')
+
+script(type='text/html', id='webItemForm')
+
+  .top-tabs
+
+    ul.top-tabs-nav
+      li=t('web_page.layout')
+      li=t('web_page.properties')
+
+    .top-tabs-content
+
+      .content-padding
+
+        include snippets/designer
+
+      .content-padding
+
+        include snippets/properties
+
+//script(type='text/javascript', src='/javascripts/widgets/io-edit.js')
+script(type='text/javascript', src='/javascripts/widgets/io-page-designer.js')
+script(type='text/javascript', src='/javascripts/web_files_view_model.js')
+- for( i in iokit.plugins )
+  - if( iokit.plugins[i].pageDesignerJSPlugins )
+    - for( var j in iokit.plugins[i].pageDesignerJSPlugins )
+      script(type='text/javascript', src='#{iokit.plugins[i].pageDesignerJSPlugins[j]}')
+  
+
+script(type='text/javascript')
+  
+  $('#iokit-web_pages .iokit-tree').iokitTree({
+    url: '/web_pages.json?roots=true',
+    saveUrl: '/web_pages/',
+    saveKey: 'webPage',
+    saveAttrs: [ 'name', 'tags', 'content', '_subtype', 'slug', 'properties' ],
+    defaultValues: { name: '', properties: {}, content: '' },
+    beforeSave: function( form, data, save ){
+      if( typeof(data.webPage.name) === 'undefined' || data.webPage.name.length < 1 )
+        data.webPage.name = prompt('Name', '');
+      data.webPage.content = $('<div/>').append(form.find('.iokit-page').clone()).html();
+      iokit.pageDesigner.cleanup( data.webPage );
+      console.log( data.webPage );
+      save( data );
+    },
+    before: function( tree ){
+      //tree.TreeItemModel.prototype.tags = ko.observableArray([]);
+      //tree.TreeItemModel.prototype.properties = ko.observable({});
+    },
+    afterShowForm: function( item, form ){
+      //$('.iokit-page').css('width', $('.iokit-page').width()-100);
+      $('#iokit-page-designer').ioPageDesigner({
+        i18n: true,
+        csrf: $('#_csrf').val(),
+        webPage: new iokit.pageDesigner.models.WebPage( item ),
+        after: {
+          create: function( plugin, webBit, boxDom, json, done ){
+            iokit.notify( json.flash );
+            done();
+          }
+        }
+      });
+      //$(form).find('.editable-main-content').ioEdit();
+    }
+  });
+  $('#iokit-web_pages .iokit-tree ul:first').nestedSortable({
+      listType: 'ul',
+      forcePlaceholderSize: true,
+      handle: 'div',
+      helper: 'clone',
+      items: 'li',
+      opacity: .6,
+      placeholder: 'placeholder',
+      revert: 250,
+      delay: 250,
+      tolerance: 'poiokit',
+      toleranceElement: '> div',
+      maxLevels: 5,
+      isTree: true,
+      expandOnHover: 700,
+      startCollapsed: true,
+      stop: function( e, ui ){
+        function collectChildren( parent ){
+          var arr = [];
+          parent.find('ul:first').children().each(function(){ arr.push( $(this).attr('data-id') ); });
+          return arr;
+        }
+        var parent = $(ui.item).parent().closest('li.tree-li');
+        var children;
+
+        if( parent.length )
+          children = collectChildren( parent );
+        else
+          children = collectChildren( self );
+        var formData = { _csrf: $('#_csrf').val(), ids: children.join(',') };
+        if( parent.length )
+          formData.path = $(parent).attr('data-id') + ':' + $(parent).attr('data-_type');
+        $.post( '/documents/sort', formData, function( data ){
+          if( data.success )
+            iokit.notify( data.flash );
+          else
+            iokit.notify( { error: $.i18n.t('document.order.saving.failed')})
+        })
+      }
+  });

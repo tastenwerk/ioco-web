@@ -3,7 +3,7 @@ module.exports = exports = {
   /*
    * WEBPAGES plugin
    */
-  webpages: {
+  web_pages: {
 
     /**
      * routes for expressjs
@@ -15,6 +15,7 @@ module.exports = exports = {
      */
     models: {
       WebElement: require( __dirname+'/models/web_element' ),
+      WebPage: require( __dirname+'/models/web_page' ),
       WebBit: require( __dirname+'/models/web_bit' )
     },
 
@@ -33,8 +34,8 @@ module.exports = exports = {
     views: __dirname+'/views',
 
     sidebarWidget: {
-      limitSearch: [ 'WebElmenet' ],
-      overrideName: 'webelements'
+      limitSearch: [ 'WebPage' ],
+      overrideName: 'web_pages'
     },
 
     allowedRoles: ['manager', 'editor'],
@@ -42,19 +43,7 @@ module.exports = exports = {
     translations: __dirname+'/locales',
 
     pageDesignerJSPlugins: [ '/javascripts/widgets/io-page-designer/image-browser.js',
-                              '/javascripts/widgets/io-page-designer/text-content.js' ]
-
-  },
-
-  /**
-   * ARTICLES plugin
-   */
-
-  articles: {
-
-    sidebarWidget: false,
-
-    views: __dirname+'/views',
+                             '/javascripts/widgets/io-page-designer/text-content.js' ]
 
   }
 

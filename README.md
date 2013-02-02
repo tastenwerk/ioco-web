@@ -38,31 +38,12 @@ sidebar and new dashboard widgets you can use.
       body
         h1 Hello IOkit!
 
-### LAYOUTS
+### [ioPageDesigner](/tastenwerk/ioweb/wiki/iopagedesigner)
 
-In IOweb, you use a layout string stored to the database to render
-different layouts. This string causes IOweb to lookup for an associated
-layout file in the app/views/<_subtype>/layouts folder. The _subtype for
-webpages is "Webpage", therefore, the folder is called 
-app/views/webpages/layouts
+Please refer to the wiki for this entirely new concept of building, 
+templating and editing webpages.
 
-You configure your layout files in your app's config/iobox.json file:
-
-    {
-      ...,
-
-      "layouts": [ "default", "front", "gallery" ],
-
-      ...
-    }
-
-This means, IOweb will provide you with those 3 layouts in a select
-box in the webpage's settings form. If the webpage is now rendered, let's
-say a page with the "gallery"-layout, IOweb will lookup first in your
-application folder strucutre (app/views/webpages/layouts/gallery.jade) and
-then in all the other plugin's folder including IOweb's own.
-
-#### Overwriting default webElement layout
+### Overwriting default webElement layout
 
 In the IOweb folder structure, you will find a default.jade file in
 app/views/webpages/layouts/

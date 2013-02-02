@@ -8,7 +8,7 @@ $(function(){
       {
         icon: 'icn-image',
         hoverTitle: $.i18n.t('web.page_designer.plugins.image-browser.choose'),
-        action: function( e ){
+        action: function( box, e ){
           iokit.modal({ 
               title: $.i18n.t('web.files.manage'),
               windowControls: {

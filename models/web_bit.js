@@ -11,10 +11,10 @@
 var iomapper = require('iomapper');
 
 var WebBitSchema = iomapper.mongoose.Schema({
-  title: { type: iomapper.mongoose.Schema.Types.Mixed },
-  subtitle: { type: iomapper.mongoose.Schema.Types.Mixed },
+  plugin: String,
   content: { type: iomapper.mongoose.Schema.Types.Mixed },
-  preferences: { type: iomapper.mongoose.Schema.Types.Mixed },
+  webBits: { type: [iomapper.mongoose.Schema.ObjectId], ref: 'WebBit' },
+  properties: { type: iomapper.mongoose.Schema.Types.Mixed },
 })
 
 WebBitSchema.plugin( iomapper.plugin );
