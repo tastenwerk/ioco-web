@@ -76,8 +76,8 @@ script(type='text/javascript')
     url: '/web_pages.json?roots=true',
     saveUrl: '/web_pages/',
     saveKey: 'webPage',
-    saveAttrs: [ 'name', 'tags', 'layout', '_subtype', 'slug', 'preferences' ],
-    defaultValues: { name: { '#{iokit.config.fallbackLocale}': '' }, preferences: {} },
+    saveAttrs: [ 'name', 'tags', 'layout', '_subtype', 'slug', 'properties', 'content' ],
+    defaultValues: { name: { '#{iokit.config.fallbackLocale}': '' }, properties: {} },
     before: function( tree ){
       tree.TreeItemModel.prototype.tags = ko.observableArray([]);
       tree.TreeItemModel.prototype.preferences = ko.observable({});

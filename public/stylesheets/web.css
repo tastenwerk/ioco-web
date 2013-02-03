@@ -141,8 +141,34 @@ ul.web-files li .loader .circle:after {
   bottom: 0;
   background: #eee;
   border: 1px solid #aaa;
-  padding: 5px;
   z-index: 10;
+  -webkit-transition-property: all;
+  -moz-transition-property: all;
+  -o-transition-property: all;
+  -ms-transition-property: all;
+  transition-property: all;
+  -webkit-transition-duration: 0.3s;
+  -moz-transition-duration: 0.3s;
+  -o-transition-duration: 0.3s;
+  -ms-transition-duration: 0.3s;
+  transition-duration: 0.3s;
+}
+.iokit-page-designer .overflow-area {
+  overflow-y: auto;
+  margin-right: -5px;
+}
+.iokit-page-designer.expanded {
+  width: 161px;
+  -webkit-transition-property: all;
+  -moz-transition-property: all;
+  -o-transition-property: all;
+  -ms-transition-property: all;
+  transition-property: all;
+  -webkit-transition-duration: 0.3s;
+  -moz-transition-duration: 0.3s;
+  -o-transition-duration: 0.3s;
+  -ms-transition-duration: 0.3s;
+  transition-duration: 0.3s;
 }
 .iokit-page-designer .switch-btn {
   margin: 0 0 10px;
@@ -150,6 +176,39 @@ ul.web-files li .loader .circle:after {
 }
 .iokit-page-designer .page-designer-part {
   display: none;
+  padding: 5px;
+}
+.iokit-page-designer .page-designer-part ul {
+  list-style: none;
+  background: #fafafa;
+}
+.iokit-page-designer .page-designer-part ul li {
+  font-size: 10px;
+  padding: 3px 5px;
+  border-bottom: 1px solid #ddd;
+  cursor: move;
+}
+.iokit-page-designer .page-designer-part ul li:last-child {
+  border-bottom: none;
+}
+.iokit-page-designer .page-designer-part ul li:hover {
+  background-color: #8a0;
+  color: #fff;
+}
+.iokit-page-designer .page-designer-part h1 {
+  font-size: 16px;
+  font-weight: 100;
+  margin: 5px 0 10px;
+}
+.iokit-page-designer .page-designer-part .desc {
+  font-size: 10px;
+  color: #777;
+  margin-bottom: 10px;
+}
+.iokit-page-designer .page-designer-part h2 {
+  font-size: 14px;
+  font-weight: 100;
+  margin: 5px 0;
 }
 .iokit-page-designer .page-designer-part.disabled .design-btn {
   opacity: 0.1;
@@ -157,9 +216,9 @@ ul.web-files li .loader .circle:after {
 }
 .iokit-page-designer .switch-btns {
   position: absolute;
-  left: -226px;
-  top: 46px;
-  width: 424px;
+  left: -114px;
+  top: 150px;
+  width: 200px;
   transform: rotate(270deg);
   -ms-transform: rotate(270deg);
   -moz-transform: rotate(270deg);
@@ -174,6 +233,7 @@ ul.web-files li .loader .circle:after {
   font-size: 12px;
   padding: 2px 10px 3px;
   text-decoration: none;
+  background: #fafafa;
 }
 .iokit-page-designer .switch-btns a.active {
   background-color: #eee;
@@ -187,12 +247,6 @@ ul.web-files li .loader .circle:after {
   background-color: #f0f0f0;
   opacity: 0.8;
   cursor: pointer;
-}
-.iokit-page-designer .design-btn.text,
-.iokit-page-designer .source-btn.text {
-  font-size: 10px;
-  padding: 5px;
-  font-weight: 900;
 }
 .iokit-page-designer .design-btn {
   cursor: move;
@@ -209,6 +263,11 @@ ul.web-files li .loader .circle:after {
   line-height: 5px;
   float: left;
   cursor: pointer;
+}
+.iokit-page-designer .design-btn.text {
+  font-size: 10px;
+  padding: 5px;
+  font-weight: 900;
 }
 .iokit-page-designer .spacer {
   height: 1px;
@@ -263,13 +322,19 @@ body .iokit-page .iokit-web-bit .box-controls {
   right: 5px;
   display: none;
   height: 24px;
+  background: #eee;
+  border: 1px solid #ccc;
 }
 body .iokit-page .iokit-web-bit .box-controls a.box-control {
-  margin: 1px;
-  padding: 2px 7px;
+  margin: 0;
+  padding: 1px 3px;
+  float: left;
+  color: #333;
+  cursor: pointer;
+  font-size: 16px;
 }
 body .iokit-page .iokit-web-bit .box-controls a.box-control .icn {
-  margin: 3px 0 -3px;
+  margin: 3px 1px;
 }
 body .iokit-page .iokit-web-bit .box-controls a.box-control.move-btn {
   opacity: 0.1;

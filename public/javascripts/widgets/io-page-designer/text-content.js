@@ -24,7 +24,16 @@ $(function(){
               [ 'Bold','Italic','Underline','Strike','-','RemoveFormat', 'NumberedList','BulletedList','-',
   '-','JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock','-', 'Link','Unlink','Anchor' ]
             ]
-            CKEDITOR.inline( editorId );
+            CKEDITOR.inline( editorId, {
+              on: {
+                blur: function( event ) {
+                  box.data('webBit').content = event.editor.getData();
+                  box.find('.box-content').html( event.editor.getData() );
+                  this.destroy();
+                }
+              }
+            });
+            box.find('.box-content').focus();
           }
           if( typeof(CKEDITOR) === 'undefined')
             $.getScript( '/javascripts/3rdparty/ckeditor/ckeditor.js', initEditor);

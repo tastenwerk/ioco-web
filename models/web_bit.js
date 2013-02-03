@@ -12,7 +12,8 @@ var iomapper = require('iomapper');
 
 var WebBitSchema = iomapper.mongoose.Schema({
   plugin: String,
-  content: { type: iomapper.mongoose.Schema.Types.Mixed },
+  content: String,
+  category: String,
   webBits: { type: [iomapper.mongoose.Schema.ObjectId], ref: 'WebBit' },
   properties: { type: iomapper.mongoose.Schema.Types.Mixed },
 })

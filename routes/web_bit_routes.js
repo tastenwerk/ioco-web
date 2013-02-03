@@ -107,6 +107,7 @@ module.exports = exports = function( app ){
       for( var i in req.body.webBit )
         if( !i.match(/_id|createdAt|_creator|_updater|updatedAt|deletedAt|acl/) )
           req.webBit[i] = req.body.webBit[i];
+      req.webBit.markModified( 'properties' );
       req.webBit.save( function( err ){
         if( err )
           console.log(err);
