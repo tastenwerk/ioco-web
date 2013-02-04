@@ -78,16 +78,20 @@ script(type='text/javascript')
     saveAttrs: [ 'name', 'tags', 'content', '_subtype', 'slug', 'properties' ],
     defaultValues: { name: '', properties: {}, content: '' },
     beforeSave: function( form, data, save ){
+      data.webPage.content = form.find('.iokit-page').html();
+      iokit.pageDesigner.cleanup( data.webPage );
       if( typeof(data.webPage.name) === 'undefined' || data.webPage.name.length < 1 )
         data.webPage.name = prompt('Name', '');
-      data.webPage.content = $('<div/>').append(form.find('.iokit-page').clone()).html();
+      data.webPage.content = form.find('.iokit-page').html();
+      this.content( data.webPage.content );
       iokit.pageDesigner.cleanup( data.webPage );
-      console.log( data.webPage );
       save( data );
     },
     before: function( tree ){
-      //tree.TreeItemModel.prototype.tags = ko.observableArray([]);
-      //tree.TreeItemModel.prototype.properties = ko.observable({});
+      tree.TreeItemModel.prototype.previewWebPage = function(){
+        window.open( '/pub'+this.slug() );
+      }
+
     },
     afterShowForm: function( item, form ){
       //$('.iokit-page').css('width', $('.iokit-page').width()-100);

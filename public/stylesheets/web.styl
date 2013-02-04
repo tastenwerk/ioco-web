@@ -125,7 +125,7 @@ WEB_TRANSITION()
   position: absolute
   top: 0
   right: 0
-  width: 41px
+  width: 51px
   bottom: 0
   background: #eee
   border: 1px solid #aaa
@@ -261,19 +261,27 @@ WEB_TRANSITION()
 
 body
 
-  .highlight
-    background-color: #ffe
-
   .iokit-page
     min-height: 500px
     width: 100%
     position: relative
+
+    &.highlight
+      background-color: #ffe
 
     .iokit-web-bit
       height: 150px
       outline: 2px dashed #eee
       padding: 10px
       position: relative
+      z-index: 1
+
+      &.highlight-left
+        outline: none;
+        border-left: 20px solid #8a0
+
+      &.highlight
+        background-color: #fc6
 
       .box-controls
         position: absolute
@@ -283,6 +291,9 @@ body
         height: 24px
         background: #eee
         border: 1px solid #ccc
+        opacity: 0.3
+        &:hover
+          opacity: 1
         a.box-control
           margin: 0
           padding: 1px 3px
@@ -303,14 +314,30 @@ body
 
       &.active
         outline-color: #ff4040
+        z-index: 100 !important
         .box-controls
           display: block
 
+      h1.no-text
+        font-size: 32px
+        color: rgba(0,0,0,0.5)
+        font-weight: 100
+        position: absolute
+        top: 0
+        left: 0
+        right: 0
+        bottom: 0
+        margin: auto
+        text-align: center
+        line-height: 150px
+
       &.float-left
         float: left
+        z-index: 2
 
       &.float-right
         float: right
+        z-index: 2
 
       &.float-left-all-over
         float: left

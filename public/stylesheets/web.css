@@ -137,7 +137,7 @@ ul.web-files li .loader .circle:after {
   position: absolute;
   top: 0;
   right: 0;
-  width: 41px;
+  width: 51px;
   bottom: 0;
   background: #eee;
   border: 1px solid #aaa;
@@ -302,19 +302,27 @@ ul.web-files li .loader .circle:after {
   left: 0;
   font-size: 11px;
 }
-body .highlight {
-  background-color: #ffe;
-}
 body .iokit-page {
   min-height: 500px;
   width: 100%;
   position: relative;
+}
+body .iokit-page.highlight {
+  background-color: #ffe;
 }
 body .iokit-page .iokit-web-bit {
   height: 150px;
   outline: 2px dashed #eee;
   padding: 10px;
   position: relative;
+  z-index: 1;
+}
+body .iokit-page .iokit-web-bit.highlight-left {
+  outline: none;
+  border-left: 20px solid #8a0;
+}
+body .iokit-page .iokit-web-bit.highlight {
+  background-color: #fc6;
 }
 body .iokit-page .iokit-web-bit .box-controls {
   position: absolute;
@@ -324,6 +332,10 @@ body .iokit-page .iokit-web-bit .box-controls {
   height: 24px;
   background: #eee;
   border: 1px solid #ccc;
+  opacity: 0.3;
+}
+body .iokit-page .iokit-web-bit .box-controls:hover {
+  opacity: 1;
 }
 body .iokit-page .iokit-web-bit .box-controls a.box-control {
   margin: 0;
@@ -348,15 +360,31 @@ body .iokit-page .iokit-web-bit.hovered {
 }
 body .iokit-page .iokit-web-bit.active {
   outline-color: #ff4040;
+  z-index: 100 !important;
 }
 body .iokit-page .iokit-web-bit.active .box-controls {
   display: block;
 }
+body .iokit-page .iokit-web-bit h1.no-text {
+  font-size: 32px;
+  color: rgba(0,0,0,0.5);
+  font-weight: 100;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: auto;
+  text-align: center;
+  line-height: 150px;
+}
 body .iokit-page .iokit-web-bit.float-left {
   float: left;
+  z-index: 2;
 }
 body .iokit-page .iokit-web-bit.float-right {
   float: right;
+  z-index: 2;
 }
 body .iokit-page .iokit-web-bit.float-left-all-over {
   float: left;

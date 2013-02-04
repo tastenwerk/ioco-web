@@ -42,7 +42,8 @@ module.exports = exports = {
 
     translations: __dirname+'/locales',
 
-    pageDesignerJSPlugins: [ '/javascripts/widgets/io-page-designer/image-browser.js',
+    pageDesignerJSPlugins: [ '/javascripts/widgets/io-page-designer/plain-container.js',
+                             '/javascripts/widgets/io-page-designer/image-browser.js',
                              '/javascripts/widgets/io-page-designer/text-content.js' ]
 
   }

@@ -3,6 +3,9 @@ ul.top-tabs-action-nav
     a.btn.green(data-bind='click: submitSaveForm')
       =t('save')
   li.action-nav
+    a.btn.green(data-bind='click: previewWebPage')
+      =t('preview')
+  li.action-nav
     a.btn(data-bind='click: hideForm')
       =t('cancel')
 
@@ -10,4 +13,4 @@ form.wide.content-padding-w-overflow( data-bind="submit: saveForm" )
 
   #iokit-page-designer
 
-  .iokit-page(data-bind='html: content')
+  .iokit-page(data-bind='html: content, attr: {"data-id": (typeof(_id) === "undefined" ? "undefined" : _id)}')

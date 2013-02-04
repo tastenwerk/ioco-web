@@ -1,3 +1,5 @@
+var qs = require('querystring');
+
 var iokit = require('iokit')
   , WebPage = require( __dirname + '/../models/web_page' );
 
@@ -34,7 +36,7 @@ function getPublicWebPage( req, res, next ){
   else if( req.params.slug )
     q.slug = '/' + qs.escape( req.params.slug );
   var user = res.locals.currentUser || iomapper.mongoose.models.User.anybody;
-  WebPage.findOne( q ).execWithUser( user, function( err, webPage ){
+  WebPage.findOne( q ).populate('WebBit').execWithUser( user, function( err, webPage ){
     if( err ) req.flash('error', err);
     req.webPage = webPage;
     next();
@@ -104,7 +106,7 @@ module.exports = exports = function( app ){
   /**
    * get a web_page, lookup if there is a layout to render it with
    * and render it
-   */
+   *
   app.get('/web_pages/:id', iokit.plugins.auth.checkWithoutRedirect, getPublicWebPage, function( req, res ){
     if( req.query.fio )
       return res.render( iokit.view.lookup('/web_pages/index.jade'), {webPageId: req.params.id} );
@@ -113,6 +115,24 @@ module.exports = exports = function( app ){
           {webPage: req.webPage} );
     else
       res.send(404)
+  });
+  /*
+
+  /**
+   * find a web_page by it's slug
+   * name
+   */
+  app.get( '/pub/:slug*', iokit.plugins.auth.checkWithoutRedirect, getPublicWebPage, function( req, res ){
+    if( req.webPage )
+      WebPage.update({_id: req.webPage._id}, {$inc: {'stat.views': 1}}, {safe: true}, function( err ){
+        if( err ) console.log('error: ', err);
+        res.render( 
+          iokit.view.lookup( '/web_pages/show.jade' ), 
+          {webPage: req.webPage} 
+        );
+      });
+    else
+      res.send(404);
   });
 
   /**
@@ -135,5 +155,37 @@ module.exports = exports = function( app ){
       req.json({ success: false, flash: req.flash() });
     }
   });
+
+
+    app.delete('/web_pages/:id', iokit.plugins.auth.check, getWebPage, function( req, res ){
+
+      if( !req.webPage.canDelete() ){
+          req.flash('error', req.i18n.t('removeing.denied', {name: req.webPage.name}) );
+          res.json( {flash: req.flash() } );
+      } else {
+        if( req.query.permanent ){
+          req.webPage.remove( function( err ){
+            if( err )
+              req.flash('error', req.i18n.t('removing.permanent.failed', {name: req.webPage.name}));
+            else
+              req.flash('notice', req.i18n.t('removing.permanent.ok', {name: req.webPage.name}));
+            res.json( { flash: req.flash(), success: ( err === null ) } );
+          })
+        } else {
+          req.webPage.deletedAt = new Date();
+          req.webPage.save( function( err ){
+            if( err )
+              req.flash('error', req.i18n.t('removing.failed', {name: req.webPage.name}));
+            else
+              req.flash('notice', req.i18n.t('removing.ok', {name: req.webPage.name}) + ' ' + 
+                '<a href="/documents/'+req.webPage_id+'/undo" data-remote="true" class="undo" data-method="post">' +
+                req.i18n.t('removing.undo') + '</a>');
+            res.json( { flash: req.flash(), success: ( err === null ) } );
+          });
+        }
+      }
+
+    });
+
 
 }

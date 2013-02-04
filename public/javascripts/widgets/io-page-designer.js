@@ -10,9 +10,9 @@
  *
  * usage:
  *
- * $(<mySelector>).ioPageDesigner( options );
+ * $(<mySelector>).ioPageDesigner( _options );
  *
- * available options:
+ * available _options:
  *   created: function( plugin, box, done ) // invoked after box is created
  *            but before box is appended to the mySelector-dom.
  *
@@ -32,32 +32,62 @@ $(function(){
         if( this._plugins[i].name === name )
           return this._plugins[i];
     },
-    allowedProperties: new RegExp('^_id$|^name$|^content$|^webBits$|^properties$|^plugin$'),
+    allowedProperties: new RegExp('^_id$|^name$|^content$|^webBits$|^properties$|^plugin$|^category$'),
     models: {
       WebPage: function( attrs ){
+        this.content = '';
+        this.webBits = [];
+        this.properties = {};
         for( var i in attrs )
           if( i.match(iokit.pageDesigner.allowedProperties) )
             if( typeof(attrs[i]) === 'function' )
               this[i] = attrs[i]();
             else
               this[i] = attrs[i];
+        this.getClean = iokit.pageDesigner.getClean;
+        this.refresh = iokit.pageDesigner.refresh;
+        this.updateOrigContent = function( content ){
+          attrs.content( content );
+        }
       },
       WebBit: function( attrs ){
+        this.content = '';
+        this.webBits = [];
+        this.properties = {};
+        this.category = '';
         for( var i in attrs )
           if( i.match(iokit.pageDesigner.allowedProperties) )
             if( typeof(attrs[i]) === 'function' )
               this[i] = attrs[i]();
             else
               this[i] = attrs[i];
-      },
-      WebPropertiesCollection: function( attrs ){
-        for( var i in attrs )
-          this[i] = attrs[i];
+        this.getClean = iokit.pageDesigner.getClean;
+        this.refresh = iokit.pageDesigner.refresh;
       }
     },
+    /**
+     * cleans up a web bit or web page
+     * and returns the webBit with references in the html content
+     */
+    getClean: function(){
+      var clean = {};
+      for( var i in this )
+        if( typeof(this[i]) !== 'function' )
+        clean[i] = this[i];
+      clean.content = $('<div/>').append(this.content);
+      clean.content.find('.iokit-web-bit').each(function(){ 
+        $(this).attr('class', '').addClass('iokit-web-bit').attr('style','').html('');
+      });
+      clean.content = clean.content.html();
+      return clean;
+    },
+    /**
+     * cleans up this webBit
+     * from inner WebBits
+     */
     cleanup: function( webBit ){
       if( webBit.content && webBit.content.length > 0 ){
-        var tmpElem = $( webBit.content )
+        var tmpElem = $('<div/>').append( webBit.content )
           , tmpWebBits = [];
         if( webBit.webBits && webBit.webBits instanceof Array )
           for( var i=0, wB; wB=webBit.webBits[i]; i++ )
@@ -75,16 +105,26 @@ $(function(){
               found = true;
           if( !found )
             webBit.webBits.push( $(this).attr('data-id') );
-          $(this).html('').removeAttr('class').removeAttr('style');
+          $(this).html('').removeAttr('class').addClass('iokit-web-bit').removeAttr('style');
         });
         webBit.content = tmpElem.html();
       }
+    },
+    /**
+     * refresh this WebBit / WebPage's content
+     * from html wysiwyg
+     *
+     */
+    refresh: function(){
+      this.content = $('.iokit-page:visible').find('[data-id='+this._id+']').length ? 
+                        $('.iokit-page:visible').find('[data-id='+this._id+']:first .box-content').html() :
+                        $('.iokit-page:visible').html()
     }
   };
 
-  $.fn.ioPageDesigner = function ioPageDesigner( options ){
+  $.fn.ioPageDesigner = function ioPageDesigner( _options ){
 
-    options = options || {};
+    _options = _options || {};
 
     var pageDesigner = this
       , activeBox = null;
@@ -106,14 +146,14 @@ $(function(){
     function buildToolsContainer(){
       var toolsContainer = $('<div/>').addClass('page-designer-part').attr('id','page-designer-tools');
 
-      var sourceBtn = $('<div/>').addClass('source-btn')
+      var sourceBtn = $('<div/>').addClass('source-btn live-tipsy-l')
         .append($('<span/>').addClass('icn icn-source'))
+        .attr('original-title', (_options.i18n ? $.i18n.t('web.page_designer.edit_page_source') : 'Edit Source'))
         .on('click', function( e ){
           if( typeof(iokit.modal) === 'function' ){
-            updateWebPageContent();
             iokit.modal({ 
-              title: options.i18n ? $.i18n.t('web.page_designer.edit_page_source') : 'Edit WebPage Source',
-              html: renderPropertiesModal( pageDesigner._page, options.webPage, (options.plugins || {}) ),
+              title: _options.i18n ? $.i18n.t('web.page_designer.edit_page_source') : 'Edit WebPage Source',
+              html: renderPropertiesModal( pageDesigner._page, _options.webPage, (_options.plugins || {}) ),
               completed: function( html ){      
                 html.find('#cssEditor').css({ height: html.find('.sidebar-content').height() - 125});
                 html.find('#htmlEditor').css({ height: html.find('.sidebar-content').height() - 65, top: 60});
@@ -122,23 +162,32 @@ $(function(){
               windowControls: {
                 save: {
                   icn: 'icn-save',
-                  title: (options.i18n ? $.i18n.t('web.source.save') : 'save'),
+                  title: (_options.i18n ? $.i18n.t('web.source.save') : 'save'),
                   callback: function( modal ){
-                    options.webPage.properties = options.webPage.properties || {};
-                    options.webPage.properties.cssStyles = ace.edit(modal.find('#cssEditor').get(0)).getValue();
-                    options.webPage.properties.js = ace.edit(modal.find('#jsEditor').get(0)).getValue();
-                    options.webPage.content = ace.edit(modal.find('#htmlEditor').get(0)).getValue();
-                    options.webPage.properties.cssClasses = modal.find('#cssClasses').val();
-                    options.webPage.properties.metaDesc = modal.find('input[name=metaDesc]').val();
-                    options.webPage.properties.metaKeys = modal.find('input[name=metaKeys]').val();
-                    options.webPage.properties.noRobots = modal.find('input[name=noRobots]').val();
-                    $(pageDesigner._page).html( options.webPage.content );
-                    $.ajax({ url: (options.webPageUrl || '/web_pages')+'/'+options.webPage._id,
+                    _options.webPage.properties = _options.webPage.properties || {};
+                    _options.webPage.properties.cssStyles = ace.edit(modal.find('#cssEditor').get(0)).getValue();
+                    _options.webPage.properties.js = ace.edit(modal.find('#jsEditor').get(0)).getValue();
+                    _options.webPage.content = ace.edit(modal.find('#htmlEditor').get(0)).getValue();
+
+                    iokit.pageDesigner.cleanup( _options.webPage );
+
+                    _options.webPage.properties.cssClasses = modal.find('#cssClasses').val();
+                    _options.webPage.properties.metaDesc = modal.find('input[name=metaDesc]').val();
+                    _options.webPage.properties.metaKeys = modal.find('input[name=metaKeys]').val();
+                    _options.webPage.properties.noRobots = modal.find('input[name=noRobots]').val();
+                    //
+                    // TODO
+                    // update source code on _page.content as well here
+                    $.ajax({ url: (_options.webPageUrl || '/web_pages')+'/'+_options.webPage._id,
                              type: 'put',
-                             data: { _csrf: (options.csrf || null), webPage: options.webPage },
+                             data: { _csrf: (_options.csrf || null), webPage: _options.webPage },
                              success: function( json ){
-                              if( json.success )
-                                applyProperties( pageDesigner._page, options.webPage ) && iokit.modal('close');
+                              if( json.success ){
+                                _options.webPage.updateOrigContent( _options.webPage.content );
+                                setupPageContent();
+                                //applyProperties( pageDesigner._page, _options.webPage )
+                                iokit.modal('close');
+                              }
                               if( typeof(iokit.notify) === 'function' )
                                 iokit.notify( json.flash );
                              }
@@ -170,26 +219,26 @@ $(function(){
     function buildLibraryContainer(){
       var libContainer = $('<div/>').addClass('page-designer-part').attr('id','page-designer-library')
         .attr('data-expand-width', '150px')
-        .append($('<h1>').text( options.i18n ? $.i18n.t('web.page_designer.library') : 'Library' ))
-        .append($('<p class="desc">').text( options.i18n ? $.i18n.t('web.page_designer.library_desc') : 'Drag and Drop a WebBit into a container' ))
+        .append($('<h1>').text( _options.i18n ? $.i18n.t('web.page_designer.library') : 'Library' ))
+        .append($('<p class="desc">').text( _options.i18n ? $.i18n.t('web.page_designer.library_desc') : 'Drag and Drop a WebBit into a container' ))
         .append($('<div class="overflow-area"/>').data('subtract-from-height', 103));
 
-      $.getJSON( (options.webBitUrl || '/web_bits'), function(json){
+      $.getJSON( (_options.webBitUrl || '/web_bits'), function(json){
         if( json.success && json.data ){
 
           // sort the array by category
           json.data.sort( function(a,b){
-            if( typeof( b.category ) === 'undefined' || a.category < b.category )
+            if( typeof( b.category ) === 'undefined' || b.category === '' || a.category < b.category )
                return -1;
-            if( typeof( a.category ) === 'undefined' || a.category > b.category )
+            if( typeof( a.category ) === 'undefined' || a.category === '' || a.category > b.category )
               return 1;
             return 0;
           });
 
           var curCategory = null;
           for( var i=0,webBit; webBit=json.data[i]; i++ ){
-            if( curCategory === null || webBit.category !== curCategory ){
-              libContainer.find('.overflow-area').append($('<h2/>').text( webBit.category || (options.i18n ? $.i18n.t('web.page_designer.uncategorized') : 'uncategorized') ))
+            if( curCategory === null || (webBit.category !== curCategory )){
+              libContainer.find('.overflow-area').append($('<h2/>').text( webBit.category || (_options.i18n ? $.i18n.t('web.page_designer.uncategorized') : 'uncategorized') ))
                 .append('<ul/>');
               curCategory = webBit.category;
             }
@@ -225,13 +274,13 @@ $(function(){
         .append( renderDesignBtn('float-right-all-over', 'arrange') )
         .append( renderDesignBtn('position-absolute', 'arrange')
                   .on('click', function(e){
-                    activeBox.find('.move-btn').toggleClass('move-enabled')
-                    activeBox.draggable({ trigger: '.move-enabled' });
+                    //activeBox.find('.move-btn').toggleClass('move-enabled')
+                    //activeBox.draggable({ trigger: '.move-enabled' });
                   })
                 )
         .append($('<div/>').addClass('spacer small'));
 
-      for( var i=1; i<=(options.gridSize || 8); i++ )
+      for( var i=1; i<=(_options.gridSize || 8); i++ )
         container.append( renderDesignBtn('span'+i, 'grid-x') );
 
       return container;
@@ -260,7 +309,7 @@ $(function(){
       if( activeBox ){
         activeBox.removeClass('active');
         var plugin = activeBox.data('plugin');
-        if( typeof(plugin.onDeactivate) === 'function' )
+        if( plugin && typeof(plugin.onDeactivate) === 'function' )
           plugin.onDeactivate( activeBox );
       }
       activeBox = null;
@@ -272,6 +321,7 @@ $(function(){
      * one) and activates the clicked one
      */
     function activateBox( e ){
+      e.stopPropagation();
       if( $(e.target).closest('.box-controls').length )
         return;
       if( $(this).hasClass('active') )
@@ -290,8 +340,8 @@ $(function(){
      * and it's content
      */
     function removeBox( box ){
-      if( options && typeof(options.on) === 'object' && typeof(options.on.delete) === 'function' )
-        options.on.delete( box.data('plugin'), box.data('webBit'), box, function(){ box.remove(); activeBox = null; }  );
+      if( _options && typeof(_options.on) === 'object' && typeof(_options.on.delete) === 'function' )
+        _options.on.delete( box.data('plugin'), box.data('webBit'), box, function(){ box.remove(); activeBox = null; }  );
       else{
         box.remove();
         activeBox = null;
@@ -303,9 +353,10 @@ $(function(){
      * to the specified webBitURL
      */
     function saveWebBit( box, webBit ){
-      $.ajax({ url: (options.webBitUrl || '/web_bits')+'/'+webBit._id,
+      iokit.pageDesigner.cleanup( webBit );
+      $.ajax({ url: (_options.webBitUrl || '/web_bits')+'/'+webBit._id,
                type: 'put',
-               data: { _csrf: (options.csrf || null), webBit: webBit },
+               data: { _csrf: (_options.csrf || null), webBit: webBit },
                success: function( json ){
                 if( json.success )
                   $(pageDesigner._page).find('.iokit-web-bit[data-id='+webBit._id+']').each(function(){
@@ -325,7 +376,7 @@ $(function(){
     function openPropertiesDialog( box, webBit, plugin ){
       if( typeof(iokit.modal) === 'function' ){
         iokit.modal({ 
-          title: options.i18n ? $.i18n.t('web.page_designer.web_bit-properties') : 'WebBit properties',
+          title: _options.i18n ? $.i18n.t('web.page_designer.web_bit-properties') : 'WebBit properties',
           html: renderPropertiesModal( box, webBit, plugin ),
           completed: function( html ){
             html.find('#cssEditor').css({ height: html.find('.sidebar-content').height() - 125});
@@ -335,7 +386,7 @@ $(function(){
           windowControls: {
             save: {
               icn: 'icn-save',
-              title: (options.i18n ? $.i18n.t('web.source.save') : 'save'),
+              title: (_options.i18n ? $.i18n.t('web.source.save') : 'save'),
               callback: function( modal ){
                 webBit.properties = webBit.properties || {};
                 webBit.properties.cssStyles = ace.edit(modal.find('#cssEditor').get(0)).getValue();
@@ -373,58 +424,63 @@ $(function(){
         }
         if( webBit.content )
           box.find('.box-content').html( webBit.content );
+        box.attr('data-web-bit-name', webBit.name);
+
+        if( webBit instanceof iokit.pageDesigner.models.WebBit )
+          box.find('div[data-id]').each(function(){
+            setupWebBit( webBit, $(this) );
+          });
+
       }
       return true;
     }
 
     /**
-     * updates the given webPage's content
-     */
-    function updateWebPageContent(){
-      var content = $(pageDesigner._page).html();
-      $(content).find('.iokit-web-bit').each(function(){
-        $(this).html('');
-      });
-      options.webPage.content = content;
-    }
-
-    /**
      * generates an empty box with the plugin's title
      *
-     * @param {object} [plugin] - the plugin holder of this new box
+     * @param {object} [options] - options for creating this box
+     *
+     * required:
+     * - box: a boxDom element which is used as a base
+     * - plugin: the plugin for this box to be used
+     * - webBit: the WebBit object for this box
+     * 
+     * optional:
+     * - append: the parent this new box should be appended to
+     * - before: the element this box should be added before 
+     * - create: this element should be stored to the database after attached
      *
      */
-    function createBox( parent, box, webBit, plugin, createNew ){
-
+    function attachBox( options ){
       var content = $('<div/>').addClass('box-content');
       var closeBtn = $('<a/>').addClass('box-control live-tipsy').html('&times;')
-          .attr('original-title', (options.i18n ? $.i18n.t('web.page_designer.detach-web_bit') : 'Detach WebBit'))
+          .attr('original-title', (_options.i18n ? $.i18n.t('web.page_designer.detach-web_bit') : 'Detach WebBit'))
           .on('click', function(e){
             removeBox( $(e.target).closest('.iokit-web-bit') );
           });
       var saveBtn = $('<a/>').addClass('box-control save-btn live-tipsy')
         .append($('<span/>').addClass('icn icn-save'))
-        .attr('original-title', (options.i18n ? $.i18n.t('save') : 'save') )
+        .attr('original-title', (_options.i18n ? $.i18n.t('save') : 'save') )
         .on('click', function(e){
-          webBit.content = box.find('.box-content').html();
-          saveWebBit( box, webBit );
+          options.webBit.content = options.box.find('.box-content').html();
+          saveWebBit( options.box, options.webBit );
         });
       var propBtn = $('<a/>').addClass('box-control live-tipsy').append($('<span/>').addClass('icn icn-properties'))
-          .attr('original-title', (options.i18n ? $.i18n.t('web.page_designer.web_bit-properties') : 'WebBit properties'))
+          .attr('original-title', (_options.i18n ? $.i18n.t('web.page_designer.web_bit-properties') : 'WebBit properties'))
           .on('click', function(e){
-            openPropertiesDialog( box, webBit, plugin );
+            openPropertiesDialog( options.box, options.webBit, options.plugin );
           });
-      var moveBtn = $('<a/>').addClass('box-control move-btn live-tipsy')
+      var moveBtn = $('<a/>').addClass('box-control move-btn move-enabled live-tipsy')
         .append($('<span/>').addClass('icn icn-move'))
-        .attr('original-title', (options.i18n ? $.i18n.t('web.page_designer.move') : 'Move') )
+        .attr('original-title', (_options.i18n ? $.i18n.t('web.page_designer.move') : 'Move') )
         .on('click', function(e){
           console.log('storing a move is not implemented yet')
         });
       var controls = $('<div/>').addClass('box-controls')
             .append(moveBtn)
             .append(propBtn);
-      if( plugin.addControls && plugin.addControls instanceof Array )
-        plugin.addControls.forEach( function(controlDef){
+      if( options.plugin.addControls && options.plugin.addControls instanceof Array )
+        options.plugin.addControls.forEach( function(controlDef){
           var controlBtn = $('<a/>').addClass('box-control')
           if( controlDef.icon )
             controlBtn.append($('<span/>').addClass('icn '+controlDef.icon));
@@ -433,58 +489,91 @@ $(function(){
           if( controlDef.hoverTitle )
             controlBtn.addClass('live-tipsy').attr('original-title', controlDef.hoverTitle);
           if( typeof(controlDef.action) === 'function' )
-            controlBtn.on('click', function( e ){ controlDef.action( box, e ) });
+            controlBtn.on('click', function( e ){ controlDef.action( options.box, e ) });
           controls.append(controlBtn);
         });
       controls
         .append(saveBtn)
         .append(closeBtn);
 
-      var title = $('<span/>').addClass('no-text title').text( plugin.hoverTitle );
+      var title = $('<h1/>').addClass('no-text title').text( options.webBit.name );
       content.append(title);
-      box.append(content);
-      box.append(controls);
-      box.data('plugin', plugin);
-      box.data('webBit', webBit);
+      options.box.html('').append(content)
+                .append(controls)
+                .data('plugin', options.plugin)
+                .data('webBit', options.webBit)
+                .draggable({ 
+                  handle: '.move-enabled', 
+                  opacity: 0.3,
+                  revert: 'invalid',
+                  drag: function( e, ui ){
+                    var droppable = $(this).data('current-droppable');
+                    if( droppable ){
+                      var leftArea = Math.round(droppable.offset().left + droppable.width() / 3);
+                      $(pageDesigner._page).removeClass('highlight').removeClass('highlight-left');
+                      if( e.pageX <= leftArea )
+                        droppable.addClass('highlight-left');
+                      else
+                        droppable.addClass('highlight');
+                    }
+                  }
+                })
+                .droppable({
+                  accept: ".design-btn,.web-bit-from-library,.iokit-web-bit",
+                  greedy: true,
+                  over: function( e, ui ){
+                    console.log('over', this);
+                    ui.draggable.data("current-droppable", $(this));
+                  },
+                  out: function( e, ui ){
+                    $(this).removeClass('highlight').removeClass('highlight-left');
+                  },
+                  drop: droppedBox
+                });
 
       // setup actions
-      setupBoxActions( box, plugin );
+      setupBoxActions( options.box, options.plugin );
 
       function refreshParent(){
-        if( parent ){
-          parent.append( box );
-          updateWebPageContent();
+        if( options.append || options.before ){
+          options.box.attr('data-web-bit-name', options.webBit.name);
         }
-        applyProperties( box, webBit, plugin );
+        if( options.append )
+          $(options.append).append( options.box );
+        else if( options.before )
+          $(options.before).before( options.box );
+        applyProperties( options.box, options.webBit, options.plugin );
+        if( typeof(options.completed) === 'function' )
+          options.completed( options.box );
       }
 
       // if a parent is given, the webBit is new, otherwise
       // it has been loaded and exists already in the database
-      if( createNew ){
-
-        if( options && typeof(options.on) === 'object' && typeof(options.on.create) === 'function' )
-          options.on.create( plugin, webBit, box, refreshParent);
-        else
+      if( options.create ){
+        if( _options && typeof(_options.on) === 'object' && typeof(_options.on.create) === 'function' )
+          _options.on.create( options.plugin, options.webBit, options.box, refreshParent);
+        else{
           $.ajax({ url: '/web_bits',
                  type: 'post',
-                 data: { webBit: webBit,
-                         _csrf: ( options.csrf || null ) },
+                 data: { webBit: options.webBit.getClean(),
+                         _csrf: ( _options.csrf || null ) },
                  success: function( json ){
                    if( json.success ){
-                     webBit = json.webBit; // override webBit with server json data
-                     box.data('webBit', webBit);
-                     box.attr('data-id', webBit._id);
+                     options.webBit = new iokit.pageDesigner.models.WebBit( json.webBit ); // override webBit with server json data
+                     options.box.data('webBit', options.webBit);
+                     options.box.attr('data-id', options.webBit._id);
                    }
-                   if( typeof(options.after) === 'object' && typeof(options.after.create) === 'function' )
-                     options.after.create( plugin, webBit, box, json, refreshParent );
+                   if( typeof(_options.after) === 'object' && typeof(_options.after.create) === 'function' )
+                     _options.after.create( options.plugin, options.webBit, options.box, json, refreshParent );
                    else
                      refreshParent();
                  }
-        });
+          });
+        }
       } else {
 
-        if( options && typeof(options.after) === 'object' && typeof(options.after.load) === 'function' )
-          options.after.load( plugin, webBit, box, function(){
+        if( _options && typeof(_options.after) === 'object' && typeof(_options.after.load) === 'function' )
+          _options.after.load( options.plugin, options.webBit, options.box, function(){
             refreshParent();
           });
         else
@@ -507,29 +596,90 @@ $(function(){
         plugin.setupBoxActions( box );
     }
 
+    function droppedBox( e, ui ) {
+      var dropTarget = $(this);
+      $(pageDesigner._page).find('.highlight').removeClass('highlight').end().find('.highlight-left').removeClass('highlight-left');
+      if( ui.draggable.hasClass('web-bit-from-library') ){
+        $.getJSON( (_options.webBitUrl || '/web_bits')+'/'+ui.draggable.attr('data-id'), function( json ){
+          var webBit = new iokit.pageDesigner.models.WebBit( json.webBit );
+          attachBox({
+            append: $(dropTarget).hasClass('iokit-web-bit') ? $(dropTarget).find('>.box-content:first') : $(dropTarget), 
+            box: $('<div/>').addClass('iokit-web-bit').attr('data-id', webBit._id), 
+            webBit: webBit, 
+            plugin: iokit.pageDesigner.getPlugin( webBit.plugin ) 
+          });
+        })
+      } else if( ui.draggable.hasClass('iokit-web-bit') ){
+        var plugin = ui.draggable.data('plugin');
+        var webBit = ui.draggable.data('webBit');
+        var attachOptions = {
+          box: $('<div/>').addClass('iokit-web-bit').attr('data-id', $(ui.draggable).data('webBit')._id), 
+          webBit: webBit, 
+          plugin: plugin
+        };
+        if( $(this).hasClass('highlight-left') )
+          attachOptions.before = $(this);
+        else
+          attachOptions.append = $(this).hasClass('iokit-web-bit') ? $(this).find('>.box-content:first') : $(this);
+        attachBox(attachOptions)
+
+      } else {
+        // creation from toolbox
+        var plugin = ui.draggable.data('plugin');
+        var boxName = prompt((_options.i18n ? $.i18n.t('web_bit.name') : 'WebBit Name') );
+        if( !boxName || boxName.length < 1 )
+          return;
+        var webBit = new iokit.pageDesigner.models.WebBit({ name: boxName, 
+                                                            properties: { js: '{\n\n}', 
+                                                                          cssClasses: 'float-left span2',
+                                                                          cssStyles: '{\n}' },
+                                                            plugin: plugin.name,
+                                                            category: '',
+                                                            content: (plugin.defaultContent ? plugin.defaultContent : '') });
+        attachBox({
+          append: $(this).hasClass('iokit-web-bit') ? $(this).find('>.box-content:first') : $(this), 
+          box: $('<div/>').addClass('iokit-web-bit'), 
+          webBit: webBit, 
+          plugin: plugin, 
+          create: true
+        });
+      }
+    }
+
+    /**
+     * setup a webBit and
+     * initialize it's children
+     */
+    function setupWebBit( parent, domElem ){
+      if( domElem.attr('data-id').length < 1 )
+        return;
+      domElem.addClass('iokit-web-bit');
+      var webBitId = domElem.attr('data-id');
+      for( var i=0, wB; wB=parent.webBits[i]; i++ ){
+        if( webBitId === wB ){
+          $.getJSON( (_options.webBitUrl || '/web_bits/')+wB, function( json ){
+            if( json.success ){
+              var webBit = new iokit.pageDesigner.models.WebBit( json.webBit );
+              attachBox({
+                box: domElem, 
+                webBit: webBit, 
+                plugin: iokit.pageDesigner.getPlugin( webBit.plugin ),
+                completed: function( attachedBox ){
+                  setupWebBit( webBit, attachedBox );
+                }
+              });
+            } else
+              throw('unsuccessful json request at')
+          });
+        }
+      }
+    }
+
     /**
      * initialize the iokit-page element to
      * be droppable
      */
     function setupPageContent(){
-
-      function setupWebBit( domElem ){
-        if( domElem.attr('data-id').length < 1 )
-          return;
-        domElem.addClass('iokit-web-bit');
-        var webBitId = domElem.attr('data-id');
-        for( var i=0, wB; wB=options.webPage.webBits[i]; i++ ){
-          if( webBitId === wB ){
-            $.getJSON( (options.webBitUrl || '/web_bits/')+wB, function( json ){
-              if( json.success ){
-                var webBit = new iokit.pageDesigner.models.WebBit( json.webBit );
-                createBox( null, domElem, webBit, iokit.pageDesigner.getPlugin( webBit.plugin ) );
-              } else
-                throw('unsuccessful json request at')
-            });
-          }
-        }
-      }
 
       var page = $(pageDesigner).prev('.iokit-page');
       if( !page.length )
@@ -537,35 +687,12 @@ $(function(){
       if( page.length ){
         pageDesigner._page = page;
         page.droppable({
-          accept: ".design-btn,.web-bit-from-library",
-          activeClass: "highlight",
-          drop: function( event, ui ) {
-            if( ui.draggable.hasClass('web-bit-from-library') ){
-              var dropTarget = this;
-              $.getJSON( (options.webBitUrl || '/web_bits')+'/'+ui.draggable.attr('data-id'), function( json ){
-                var webBit = new iokit.pageDesigner.models.WebBit( json.webBit );
-                createBox( $(dropTarget), $('<div/>').addClass('iokit-web-bit').attr('data-id', webBit._id), 
-                  webBit, 
-                  iokit.pageDesigner.getPlugin( webBit.plugin ) );
-              })
-            } else {
-              // creation from toolbox
-              var plugin = ui.draggable.data('plugin');
-              var boxName = prompt((options.i18n ? $.i18n.t('web_bit.name') : 'WebBit Name') );
-              if( !boxName || boxName.length < 1 )
-                return alert('no name given. aborted');
-              var webBit = new iokit.pageDesigner.models.WebBit({ name: boxName, 
-                                                                  properties: { js: '{\n\n}', 
-                                                                                cssClasses: 'float-left span2',
-                                                                                cssStyles: '{\n}' },
-                                                                  plugin: plugin.name,
-                                                                  content: (plugin.defaultContent ? plugin.defaultContent : '') });
-              createBox( $(this), $('<div/>').addClass('iokit-web-bit'), webBit, plugin, true );
-            }
-          }
+          accept: ".design-btn,.web-bit-from-library,.iokit-web-bit",
+          hoverClass: "highlight",
+          drop: droppedBox
         });
         page.find('div[data-id]').each(function(){
-          setupWebBit( $(this) );
+          setupWebBit( _options.webPage, $(this) );
         });
       } else
         alert('.iokit-page element not found!');
@@ -580,7 +707,7 @@ $(function(){
      */
     function renderDesignBtn( name, type ){
       var div = $('<div/>').addClass('design-btn small live-tipsy-l')
-          .attr('original-title', ( options.i18n ? $.i18n.t('web.page_designer.'+name) : name ) );
+          .attr('original-title', ( _options.i18n ? $.i18n.t('web.page_designer.'+name) : name ) );
       if( type !== 'arrange' )
         div.addClass('text');
 
@@ -642,7 +769,6 @@ $(function(){
 
 
     function renderPropertiesModal( box, webBit, plugin ){
-
       if( typeof(ace) === 'object' ){
         ace.config.set("modePath", "/javascripts/3rdparty/ace");
         ace.config.set("workerPath", "/javascripts/3rdparty/ace");
@@ -680,21 +806,21 @@ $(function(){
                     );
 
       var metaDiv = $('<div class="web-bit-props"/>')
-                    .append($('<h1 class="title"/>').text(options.i18n ? $.i18n.t('web.page_designer.meta') : 'META'))
+                    .append($('<h1 class="title"/>').text(_options.i18n ? $.i18n.t('web.page_designer.meta') : 'META'))
                     .append($('<p/>')
-                      .append($('<label/>').text( options.i18n ? $.i18n.t('name') : 'Name' ))
+                      .append($('<label/>').text( _options.i18n ? $.i18n.t('name') : 'Name' ))
                       .append('<br />')
                       .append($('<input type="text" name="name" class="fill-width" />').val( webBit.name ))
                     );
       if( webBit instanceof iokit.pageDesigner.models.WebPage ){
         metaDiv.append($('<p/>')
-                      .append($('<label/>').text(options.i18n ? $.i18n.t('web.page_designer.meta_keys') : 'Meta Keywords' ))
+                      .append($('<label/>').text(_options.i18n ? $.i18n.t('web.page_designer.meta_keys') : 'Meta Keywords' ))
                       .append('<br />')
                       .append($('<input type="text" name="metaKeys" class="fill-width" />').val( webBit.properties.metaKeys ))
                     );
       } else {
         metaDiv.append($('<p/>')
-                      .append($('<label/>').text(options.i18n ? $.i18n.t('web.page_designer.category') : 'Category' ))
+                      .append($('<label/>').text(_options.i18n ? $.i18n.t('web.page_designer.category') : 'Category' ))
                       .append('<br />')
                       .append($('<input type="text" name="category" class="fill-width" />').val( webBit.category ))
                     );
@@ -706,8 +832,9 @@ $(function(){
         aceEditor.getSession().setMode("ace/mode/html");
         aceEditor.getSession().setUseWrapMode(true);
         aceEditor.getSession().setWrapLimitRange(80, 80);
+        webBit.refresh();
         if( webBit.content )
-          aceEditor.setValue( webBit.content );
+          aceEditor.setValue( webBit.getClean().content );
       }
 
       var jsDiv = $('<div class="web-bit-props"/>')
@@ -736,7 +863,7 @@ $(function(){
 
       var sidebar = $('<ul class="sidebar-nav"/>')
           .append($('<li/>').text( 'HTML' ))
-          .append($('<li/>').text(options.i18n ? $.i18n.t('web.page_designer.meta') : 'META'))
+          .append($('<li/>').text(_options.i18n ? $.i18n.t('web.page_designer.meta') : 'META'))
           .append($('<li/>').text( 'CSS' ))
           .append($('<li/>').text( 'JS' ));
 
