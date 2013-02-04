@@ -1,4 +1,7 @@
 var qs = require('querystring');
+var jsdom = require('jsdom');
+var fs = require('fs');
+var jquery = fs.readFileSync(__dirname+'/../../iokit/public/javascripts/3rdparty/jquery-1.8.2.min.js').toString();
 
 var iokit = require('iokit')
   , WebPage = require( __dirname + '/../models/web_page' );
@@ -126,10 +129,18 @@ module.exports = exports = function( app ){
     if( req.webPage )
       WebPage.update({_id: req.webPage._id}, {$inc: {'stat.views': 1}}, {safe: true}, function( err ){
         if( err ) console.log('error: ', err);
-        res.render( 
-          iokit.view.lookup( '/web_pages/show.jade' ), 
-          {webPage: req.webPage} 
-        );
+        jsdom.env({
+          html: req.webPage.content,
+          src: [jquery],
+          done: function (errors, window) {
+            var $ = window.$;
+            $('.iokit-web-bit').each( function(){ console.log($(this).attr('data-id')) });
+            res.render( 
+              iokit.view.lookup( '/web_pages/show.jade' ), 
+              {webPage: req.webPage} 
+            );
+          }
+        });
       });
     else
       res.send(404);

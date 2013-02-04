@@ -10,7 +10,7 @@
   "dependencies": {
     "iomapper": "git://github.com/tastenwerk/iomapper.git",
     "iokit": "git://github.com/tastenwerk/iokit.git",
-    "domjs": "0.2.2",
+    "jsdom": "0.3.4",
     "moment": "1.7.2",
     "easyimage": "0.1.3"
   },
