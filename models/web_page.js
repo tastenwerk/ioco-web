@@ -12,7 +12,8 @@ var WebPageSchema = iomapper.mongoose.Schema({
   _subtype: String,
   slug: String,
   content: String,
-  webBits: { type: [iomapper.mongoose.Schema.ObjectId], ref: 'WebBit' },
+  category: String,
+  rootWebBit: { type: iomapper.mongoose.Schema.ObjectId, ref: 'WebBit' },
   properties: { type: iomapper.mongoose.Schema.Types.Mixed, default: {frontpage: false} },
 })
 
