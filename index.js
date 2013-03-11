@@ -1,28 +1,24 @@
 module.exports = exports = {
 
-  /*
-   * WEBPAGES plugin
-   */
-  web_pages: {
+  webPages: {
+
+    /**
+     * depending
+     */
+    depends: [ 'ioco-pagedesigner' ],
 
     /**
      * routes for expressjs
      */
-    routes: __dirname+'/routes',
+    routes: __dirname+'/app/routes',
 
     /**
-     * iomapper (mongoosejs) models)
+     * ioco models
      */
     models: {
-      WebElement: require( __dirname+'/models/web_element' ),
-      WebPage: require( __dirname+'/models/web_page' ),
-      WebBit: require( __dirname+'/models/web_bit' )
+      WebPage: require( __dirname+'/app/models/web_page' ),
+      WebBit: require( __dirname+'/app/models/web_bit' )
     },
-
-    /**
-     * expressjs middleware
-     */
-    middleware: require(__dirname+'/middleware/register_paths'),
 
     /**
      * static paths to be added to expressjs globals
@@ -31,9 +27,9 @@ module.exports = exports = {
       public: __dirname + '/public'
     },
 
-    views: __dirname+'/views',
+    views: __dirname+'/app/views',
 
-    viewPaths: [ __dirname + '/views' ],
+    viewPaths: [ __dirname + '/app/views' ],
 
     sidebarWidget: {
       limitSearch: [ 'WebPage' ],

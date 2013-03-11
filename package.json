@@ -10,7 +10,6 @@
   "dependencies": {
     "ioco": "*",
     "ioco-pagedesigner": "*",
-    "jsdom": "0.3.4",
     "moment": "1.7.2",
     "easyimage": "0.1.3"
   },

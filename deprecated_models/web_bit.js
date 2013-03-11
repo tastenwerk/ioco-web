@@ -8,7 +8,7 @@
  *
  */
 
-var iomapper = require('iomapper');
+var ioco = require('ioco');
 
 var WebBitSchema = ioco.db.Schema({
   plugin: String,
@@ -18,8 +18,7 @@ var WebBitSchema = ioco.db.Schema({
   properties: { type: ioco.db.Schema.Types.Mixed },
 })
 
-WebBitSchema.plugin( iomapper.plugin );
+WebPageSchema.plugin( ioco.getSchemaPlugin('Default') );
+WebPageSchema.plugin( ioco.getSchemaPlugin('Versioning') );
 
-var WebBit = iomapper.mongoose.model( 'WebBit', WebBitSchema );
-
-module.exports = exports = WebBit;
+ioco.db.model( 'WebBit', WebBitSchema );
