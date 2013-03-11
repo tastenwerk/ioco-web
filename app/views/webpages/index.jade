@@ -1,5 +1,6 @@
 link( rel='stylesheet', href='/stylesheets/web.css' )
 link( rel='stylesheet', href='/stylesheets/ioco-page.css')
+link( rel='stylesheet', href='/stylesheets/ioco.page-designer.css' )
 #ioco-webpages
   .ioco-sidebar
     .ioco-tree
@@ -53,24 +54,21 @@ script(type='text/html', id='webItemForm')
 
         include snippets/designer
 
-//script(type='text/javascript', src='/javascripts/widgets/io-edit.js')
-script(type='text/javascript', src='/javascripts/3rdparty/ace.js')
-
-script(type='text/javascript', src='/javascripts/widgets/io-page-designer.js')
+script(type='text/javascript', src='/javascripts/ioco.page-designer.js')
 script(type='text/javascript', src='/javascripts/web_files_view_model.js')
+
 - for( i in ioco.plugins )
   - if( ioco.plugins[i].pageDesignerJSPlugins )
     - for( var j in ioco.plugins[i].pageDesignerJSPlugins )
       script(type='text/javascript', src='#{ioco.plugins[i].pageDesignerJSPlugins[j]}')
   
-
 script(type='text/javascript')
   
   $('#ioco-webpages .ioco-tree').iocoTree({
     url: '/webpages.json?roots=true',
     saveUrl: '/webpages/',
     saveKey: 'webPage',
-    saveAttrs: [ 'name', 'tags', 'content', '_subtype', 'slug', 'properties' ],
+    saveAttrs: [ 'name', 'tags', 'content', 'slug', 'properties' ],
     defaultValues: { name: '', properties: {}, content: '' },
     beforeSave: function( form, data, save ){
       data.webPage.content = form.find('.ioco-page').html();
@@ -90,10 +88,10 @@ script(type='text/javascript')
     },
     afterShowForm: function( item, form ){
       //$('.ioco-page').css('width', $('.ioco-page').width()-100);
-      $('#ioco-page-designer').ioPageDesigner({
+      $('#pd').iocoPageDesigner({
         i18n: true,
         csrf: $('#_csrf').val(),
-        webPage: new ioco.pageDesigner.models.WebPage( item ),
+        webPage: new ioco.pageDesigner.WebPage( item ),
         after: {
           create: function( plugin, webBit, boxDom, json, done ){
             ioco.notify( json.flash );

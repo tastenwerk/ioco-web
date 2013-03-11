@@ -16,8 +16,8 @@ module.exports = exports = {
      * ioco models
      */
     models: {
-      WebPage: require( __dirname+'/app/models/web_page' ),
-      WebBit: require( __dirname+'/app/models/web_bit' )
+      WebPage: require( __dirname+'/app/models/webpage' ),
+      WebBit: require( __dirname+'/app/models/webbit' )
     },
 
     /**
@@ -33,7 +33,7 @@ module.exports = exports = {
 
     sidebarWidget: {
       limitSearch: [ 'WebPage' ],
-      overrideName: 'web_pages'
+      overrideName: 'webpages'
     },
 
     allowedGroups: ['manager', 'editor'],

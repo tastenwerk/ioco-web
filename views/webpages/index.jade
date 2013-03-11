@@ -1,13 +1,13 @@
 link( rel='stylesheet', href='/stylesheets/web.css' )
 link( rel='stylesheet', href='/stylesheets/ioco-page.css')
-#ioco-web_pages
+#ioco-webpages
   .ioco-sidebar
     .ioco-tree
 
-      h1.title=t('web_pages.title')
+      h1.title=t('webpages.title')
 
       .tree-controls
-        a.btn.w-icn-only.live-tipsy( href='/webpages/new', original-title=t('web_pages.new'), data-bind='click: newItemForm' )
+        a.btn.w-icn-only.live-tipsy( href='/webpages/new', original-title=t('webpages.new'), data-bind='click: newItemForm' )
           span.icn-plus.icn
         a.btn.w-icn-only.live-tipsy( href='#', original-title=t('refresh'), data-bind='click: fetchData' )
           span.icn.icn-refresh
@@ -21,7 +21,7 @@ link( rel='stylesheet', href='/stylesheets/ioco-page.css')
   .ioco-content
 
     .click-for-details.no-item-form
-      h1.title=t('web_pages.title')
+      h1.title=t('webpages.title')
       span=t('document.click_for_details')
 
     #ioco-user-form.item-form( data-bind='template: {name: "webItemForm"}' )
@@ -72,9 +72,9 @@ script(type='text/javascript')
   var title = {};
   title[$('#_fallbackLocale').val()] = '';
 
-  $('#ioco-web_pages .ioco-tree').iocoTree({
-    url: '/web_pages.json?roots=true',
-    saveUrl: '/web_pages/',
+  $('#ioco-webpages .ioco-tree').iocoTree({
+    url: '/webpages.json?roots=true',
+    saveUrl: '/webpages/',
     saveKey: 'webPage',
     saveAttrs: [ 'name', 'tags', 'layout', '_subtype', 'slug', 'properties', 'content' ],
     defaultValues: { name: { '#{ioco.config.fallbackLocale}': '' }, properties: {} },
@@ -98,7 +98,7 @@ script(type='text/javascript')
       //$(form).find('.editable-main-content').ioEdit();
     }
   });
-  $('#ioco-web_pages .ioco-tree ul:first').nestedSortable({
+  $('#ioco-webpages .ioco-tree ul:first').nestedSortable({
       listType: 'ul',
       forcePlaceholderSize: true,
       handle: 'div',

@@ -178,7 +178,7 @@ $(function(){
                     //
                     // TODO
                     // update source code on _page.content as well here
-                    $.ajax({ url: (_options.webPageUrl || '/web_pages')+'/'+_options.webPage._id,
+                    $.ajax({ url: (_options.webPageUrl || '/webpages')+'/'+_options.webPage._id,
                              type: 'put',
                              data: { _csrf: (_options.csrf || null), webPage: _options.webPage },
                              success: function( json ){

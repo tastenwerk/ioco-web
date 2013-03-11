@@ -1,5 +1,13 @@
+/*
+ * ioco-web / WebPage routes
+ *
+ * (c) 2013 by TASTENWERK
+ *
+ * license: GPLv3
+ *
+ */
 var ioco = require('ioco')
-  , User = ioco.db.model('User');
+  , User = ioco.db.model('User')
   , WebPage = ioco.db.model('WebPage');
 
 module.exports = exports = function( app ){
@@ -38,7 +46,7 @@ module.exports = exports = function( app ){
     });
   });
 
-  app.get('/webpages/:id/edit:format?', ioco.plugins.auth.check, getWebPage, function( req, res ){
+  app.get('/webpages/:id/edit:format?', ioco.plugins.auth.check, getWebpage, function( req, res ){
     res.render( ioco.view.lookup( '/webpages/edit.jade' ), {flash: req.flash(), webpage: req.webPage });
   });
 

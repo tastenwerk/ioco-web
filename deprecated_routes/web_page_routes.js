@@ -61,16 +61,16 @@ function getWebPage( req, res, next ){
 module.exports = exports = function( app ){
   
   /**
-   * retreive all web_pages with
+   * retreive all webpages with
    * given query
    *
    */
-  app.get('/web_pages:format?', ioco.plugins.auth.check, getWebPages, function( req, res ){
+  app.get('/webpages:format?', ioco.plugins.auth.check, getWebPages, function( req, res ){
 
     res.format({
 
       html: function(){
-        res.render( ioco.view.lookup('/web_pages/index.jade'))
+        res.render( ioco.view.lookup('/webpages/index.jade'))
       },
       json: function(){
         if( req.webPages )
@@ -86,7 +86,7 @@ module.exports = exports = function( app ){
   /**
    * create a web_page
    */
-  app.post('/web_pages', ioco.plugins.auth.check, function( req, res ){
+  app.post('/webpages', ioco.plugins.auth.check, function( req, res ){
     if( !res.locals.currentUser || (res.locals.currentUser && res.locals.currentUser.groups.indexOf('editor') < 0 && res.locals.currentUser.groups.indexOf('manager') < 0 ))
       return res.json( {flash: {error: req.i18n.t('insufficient_rights')}} );
     var attrs = { holder: res.locals.currentUser };
@@ -110,9 +110,9 @@ module.exports = exports = function( app ){
    * get a web_page, lookup if there is a layout to render it with
    * and render it
    *
-  app.get('/web_pages/:id', ioco.plugins.auth.checkWithoutRedirect, getPublicWebPage, function( req, res ){
+  app.get('/webpages/:id', ioco.plugins.auth.checkWithoutRedirect, getPublicWebPage, function( req, res ){
     if( req.query.fio )
-      return res.render( ioco.view.lookup('/web_pages/index.jade'), {webPageId: req.params.id} );
+      return res.render( ioco.view.lookup('/webpages/index.jade'), {webPageId: req.params.id} );
     if( req.webPage )
       res.render( ioco.view.lookup( '/'+req.webPage._subtype.toLowerCase()+'s/layouts/'+( req.webPage.layout || 'default' )+'.jade' ), 
           {webPage: req.webPage} );
@@ -136,7 +136,7 @@ module.exports = exports = function( app ){
             var $ = window.$;
             $('.ioco-web-bit').each( function(){ console.log($(this).attr('data-id')) });
             res.render( 
-              ioco.view.lookup( '/web_pages/show.jade' ), 
+              ioco.view.lookup( '/webpages/show.jade' ), 
               {webPage: req.webPage} 
             );
           }
@@ -149,7 +149,7 @@ module.exports = exports = function( app ){
   /**
    * update a web_page
    */
-  app.put('/web_pages/:id', ioco.plugins.auth.check, getWebPage, function( req, res ){
+  app.put('/webpages/:id', ioco.plugins.auth.check, getWebPage, function( req, res ){
     if( req.webPage ){
       for( var i in req.body.webPage )
         if( !i.match(/_id|createdAt|_creator|_updater|updatedAt|deletedAt|acl/) )
@@ -168,7 +168,7 @@ module.exports = exports = function( app ){
   });
 
 
-    app.delete('/web_pages/:id', ioco.plugins.auth.check, getWebPage, function( req, res ){
+    app.delete('/webpages/:id', ioco.plugins.auth.check, getWebPage, function( req, res ){
 
       if( !req.webPage.canDelete() ){
           req.flash('error', req.i18n.t('removeing.denied', {name: req.webPage.name}) );
