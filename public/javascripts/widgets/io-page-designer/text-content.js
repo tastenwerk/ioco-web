@@ -1,7 +1,7 @@
 $(function(){
-  iokit.pageDesigner.plugin({
+  ioco.pageDesigner.plugin({
     name: 'text-content',
-    icon: 'icn-justifyFull', // use an icon from iokit-sprites
+    icon: 'icn-justifyFull', // use an icon from ioco-sprites
     iconImg: null, // a full image url to be used as 16x16 icon
     hoverTitle: $.i18n.t('web.page_designer.plugins.text-content.title'),
     addControls: [
@@ -16,7 +16,7 @@ $(function(){
 
           function initEditor(){
             CKEDITOR.disableAutoInline = true;
-            CKEDITOR.basePath = iokit.host.native+'/javascripts/3rdparty/ckeditor/';
+            CKEDITOR.basePath = ioco.host.native+'/javascripts/3rdparty/ckeditor/';
             box.find('.box-content').attr('contenteditable', true).attr('id', editorId );
             CKEDITOR.config.toolbar = [
               [ 'Cut','Copy','Paste','PasteText','PasteFromWord'],

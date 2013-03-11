@@ -8,10 +8,10 @@ $(function(){
 
   $.fn.ioEdit = function ioEdit( options ){
 
-    if( $(this).hasClass('iokit-edit-initialized') )
+    if( $(this).hasClass('ioco-edit-initialized') )
       return;
 
-    $(this).addClass('iokit-edit-initialized');
+    $(this).addClass('ioco-edit-initialized');
     
     var aceEditor;
 
@@ -54,7 +54,7 @@ $(function(){
                 $.getScript('/javascripts/3rdparty/ace/mode-html.js', function(){
                   var modalHtml = $('<div class="content-padding"/>');
                   modalHtml.append('<div id="source-editor" class="source-editor"/>');
-                  iokit.modal({
+                  ioco.modal({
                     title: $.i18n.t('web.source.title'),
                     data: modalHtml,
                     windowControls: {
@@ -62,22 +62,22 @@ $(function(){
                         icn: 'icn-save',
                         title: $.i18n.t('web.source.save'),
                         callback: function( modal ){
-                          $(editor).find('.iokit-editor-content').html( aceEditor.getValue() );
-                          iokit.modal('close');
+                          $(editor).find('.ioco-editor-content').html( aceEditor.getValue() );
+                          ioco.modal('close');
                         }
                       },
                       refresh: {
                         icn: 'icn-refresh',
                         title: $.i18n.t('web.source.refresh'),
                         callback: function( modal ){
-                          aceEditor.setValue( $(editor).find('.iokit-editor-content').html() )
+                          aceEditor.setValue( $(editor).find('.ioco-editor-content').html() )
                         }
                       }
                     },
                     completed: function( modal ){
                       aceEditor = ace.edit("source-editor");
                       $('#source-editor').css({ top: 10, left: 0, width: '100%', height:'100%'});
-                      aceEditor.setValue( $(editor).find('.iokit-editor-content').html() )
+                      aceEditor.setValue( $(editor).find('.ioco-editor-content').html() )
                       aceEditor.setTheme("ace/theme/tomorrow");
                       aceEditor.getSession().setMode("ace/mode/html");
                       aceEditor.getSession().setUseWrapMode(true);
@@ -149,12 +149,12 @@ $(function(){
 
     editor.origContent = $(editor).html();
 
-    var content = '<div class="iokit-editor-content">'+$(editor).html()+'</div>';
-    $(editor).addClass('iokit-editor')
+    var content = '<div class="ioco-editor-content">'+$(editor).html()+'</div>';
+    $(editor).addClass('ioco-editor')
       .html('');
 
     editor.createToolbar = function createToolbar(){
-      editor.controls = $('<div class="iokit-editor-controls"/>');
+      editor.controls = $('<div class="ioco-editor-controls"/>');
       $(editor).append( editor.controls );
       for( var i in options.toolbar )
         editor.createButton( i, options.toolbar[i] );
@@ -202,8 +202,8 @@ $(function(){
 
     $(editor)
       .append(content)
-      .find('.iokit-editor-content').attr('contenteditable', true).end()
-      .find('.iokit-editor-content').css({ maxHeight: options.maxHeight,
+      .find('.ioco-editor-content').attr('contenteditable', true).end()
+      .find('.ioco-editor-content').css({ maxHeight: options.maxHeight,
                                            height: ( options.height || 'auto' ),
                                            minHeight: options.minHeight })
       .on('keydown', function( e ){
@@ -225,20 +225,20 @@ $(function(){
       // NOT WORKING!
       /*
       .on('input paste', function( e ){
-        $(editor).append($('<textarea></textarea>').attr('id', 'iokit-editor-paste'));
-        $("#iokit-editor-paste").focus();
+        $(editor).append($('<textarea></textarea>').attr('id', 'ioco-editor-paste'));
+        $("#ioco-editor-paste").focus();
         console.log($(this).paste);
         var self = this;
         setTimeout(function(){
           $(self).paste;
-          $('#iokit-editor-paste').remove();
+          $('#ioco-editor-paste').remove();
         }, 250);
       });;
 */
 
       /*
     $(window).off('beforeunload').on('beforeunload', function(){
-      if( $(editor).length && $(editor).origContent !== $(editor).find('.iokit-editor-content').html() )
+      if( $(editor).length && $(editor).origContent !== $(editor).find('.ioco-editor-content').html() )
         return confirm($.i18n.t('web.editor.unsaved_content'));
       return true;
     });

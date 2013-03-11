@@ -11,8 +11,8 @@
       label.desc=t('webpages.layout')
       br
       select.span400(name='webElement[layout]', data-bind='value: layout')
-        -if( iokit.config.site.layouts )
-          -for( var i=0, layout; layout=iokit.config.site.layouts[i]; i++ )
+        -if( ioco.config.site.layouts )
+          -for( var i=0, layout; layout=ioco.config.site.layouts[i]; i++ )
             option(value=layout)=layout
 
     p(style='text-align:right')

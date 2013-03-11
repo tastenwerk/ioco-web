@@ -2,11 +2,11 @@
  * uploads files and deals with file
  * representation
  */
-iokit.uploader: function( modal, _id, webFilesViewModel ){
+ioco.uploader: function( modal, _id, webFilesViewModel ){
 
   var pathItem = ( $('#path-item:visible').length ? 
                     $('#path-item:visible') : 
-                    $('.iokit-webpages-tree .tree-li[data-id='+_id+']') )
+                    $('.ioco-webpages-tree .tree-li[data-id='+_id+']') )
     , path = pathItem.attr('data-id') + ':' + pathItem.attr('data-_type');
   modal.find('.path-info')
         .find('span.lbl').text( pathItem.find('a').first().text() ).end()
@@ -23,12 +23,12 @@ iokit.uploader: function( modal, _id, webFilesViewModel ){
     request: {
       endpoint: '/web_elements/'+_id+'/files',
       params: {
-        _csrf: iokit._csrf,
+        _csrf: ioco._csrf,
         parent: path
       }
     },
 
-    text: iokit.fineUploaderText()
+    text: ioco.fineUploaderText()
 
   }).on('upload', function(){
     modal.find('#uploader').slideUp(200);
@@ -40,7 +40,7 @@ iokit.uploader: function( modal, _id, webFilesViewModel ){
   }).on('complete', function( e, id, fileName, response ){
 
     if( response.flash.error && response.flash.error.length > 0 ){
-      $('#iokit-modal form').slideDown(200);
+      $('#ioco-modal form').slideDown(200);
       $('#upload-progress').hide();
       return;
     }
@@ -62,7 +62,7 @@ iokit.uploader: function( modal, _id, webFilesViewModel ){
     }, 4000 );
 
     modal.find('#upload-progress .bar').css('width', '100%');
-    iokit.notify(response.flash);
+    ioco.notify(response.flash);
 
     setTimeout( function(){ modal.find('#upload-progress').after('<p>'+$.i18n.t('finished')+'</p>'); }, 1500 );
   });
@@ -108,10 +108,10 @@ setupFileActions: function setupFileActions( modal, webFilesViewModel ){
     if( $(this).hasClass('selected') && (!e.ctrlKey && !e.metaKey) ){
       container.find('.selected').removeClass('selected');
       $(this).addClass('selected');
-      iokit.web.showFileDetails( this, ko.dataFor(this), container );
+      ioco.web.showFileDetails( this, ko.dataFor(this), container );
       container.find('.file-details').fadeIn(200);
     } else if( container.find('.selected').length === 1 ){
-      iokit.web.showFileDetails( container.find('.selected'), ko.dataFor(container.find('.selected').get(0)), container );
+      ioco.web.showFileDetails( container.find('.selected'), ko.dataFor(container.find('.selected').get(0)), container );
       container.find('.file-details').fadeIn(200);
     } else
       container.find('.no-file-selected').show();
@@ -142,7 +142,7 @@ setupFileActions: function setupFileActions( modal, webFilesViewModel ){
                 .find('.selected-counter').hide();
         }
       }
-      iokit.notify( data.flash );
+      ioco.notify( data.flash );
     }
 
     $(self).closest('.web-files-container').find('li.selected').each( function( index, fileElem ){

@@ -20,9 +20,9 @@
 
 $(function(){
 
-  iokit = typeof(iokit) !== 'undefined' && iokit || {};
+  ioco = typeof(ioco) !== 'undefined' && ioco || {};
 
-  iokit.pageDesigner = {
+  ioco.pageDesigner = {
     _plugins: [],
     plugin: function( plugin ){
       this._plugins.push( plugin );
@@ -39,13 +39,13 @@ $(function(){
         this.webBits = [];
         this.properties = {};
         for( var i in attrs )
-          if( i.match(iokit.pageDesigner.allowedProperties) )
+          if( i.match(ioco.pageDesigner.allowedProperties) )
             if( typeof(attrs[i]) === 'function' )
               this[i] = attrs[i]();
             else
               this[i] = attrs[i];
-        this.getClean = iokit.pageDesigner.getClean;
-        this.refresh = iokit.pageDesigner.refresh;
+        this.getClean = ioco.pageDesigner.getClean;
+        this.refresh = ioco.pageDesigner.refresh;
         this.updateOrigContent = function( content ){
           attrs.content( content );
         }
@@ -56,13 +56,13 @@ $(function(){
         this.properties = {};
         this.category = '';
         for( var i in attrs )
-          if( i.match(iokit.pageDesigner.allowedProperties) )
+          if( i.match(ioco.pageDesigner.allowedProperties) )
             if( typeof(attrs[i]) === 'function' )
               this[i] = attrs[i]();
             else
               this[i] = attrs[i];
-        this.getClean = iokit.pageDesigner.getClean;
-        this.refresh = iokit.pageDesigner.refresh;
+        this.getClean = ioco.pageDesigner.getClean;
+        this.refresh = ioco.pageDesigner.refresh;
       }
     },
     /**
@@ -75,8 +75,8 @@ $(function(){
         if( typeof(this[i]) !== 'function' )
         clean[i] = this[i];
       clean.content = $('<div/>').append(this.content);
-      clean.content.find('.iokit-web-bit').each(function(){ 
-        $(this).attr('class', '').addClass('iokit-web-bit').attr('style','').html('');
+      clean.content.find('.ioco-web-bit').each(function(){ 
+        $(this).attr('class', '').addClass('ioco-web-bit').attr('style','').html('');
       });
       clean.content = clean.content.html();
       return clean;
@@ -98,14 +98,14 @@ $(function(){
             else
               throw('not recognized WebBit', wB);
         webBit.webBits = tmpWebBits;
-        tmpElem.find('.iokit-web-bit').each( function(){
+        tmpElem.find('.ioco-web-bit').each( function(){
           var found = false;
           for( var i in webBit.webBits )
             if( webBit.webBits[i] === $(this).attr('data-id') )
               found = true;
           if( !found )
             webBit.webBits.push( $(this).attr('data-id') );
-          $(this).html('').removeAttr('class').addClass('iokit-web-bit').removeAttr('style');
+          $(this).html('').removeAttr('class').addClass('ioco-web-bit').removeAttr('style');
         });
         webBit.content = tmpElem.html();
       }
@@ -116,9 +116,9 @@ $(function(){
      *
      */
     refresh: function(){
-      this.content = $('.iokit-page:visible').find('[data-id='+this._id+']').length ? 
-                        $('.iokit-page:visible').find('[data-id='+this._id+']:first .box-content').html() :
-                        $('.iokit-page:visible').html()
+      this.content = $('.ioco-page:visible').find('[data-id='+this._id+']').length ? 
+                        $('.ioco-page:visible').find('[data-id='+this._id+']:first .box-content').html() :
+                        $('.ioco-page:visible').html()
     }
   };
 
@@ -129,15 +129,15 @@ $(function(){
     var pageDesigner = this
       , activeBox = null;
 
-    if( $(this).hasClass('iokit-page-designer-initialized') )
+    if( $(this).hasClass('ioco-page-designer-initialized') )
       return;
 
-    $(this).addClass('iokit-page-designer-initialized');
+    $(this).addClass('ioco-page-designer-initialized');
 
 
     /**
      * looks up for plugins which have been
-     * added to iokit.pageDesigner via
+     * added to ioco.pageDesigner via
      * the plugin() method
      * and appends them to a container
      * @returns jquery dom elem
@@ -150,8 +150,8 @@ $(function(){
         .append($('<span/>').addClass('icn icn-source'))
         .attr('original-title', (_options.i18n ? $.i18n.t('web.page_designer.edit_page_source') : 'Edit Source'))
         .on('click', function( e ){
-          if( typeof(iokit.modal) === 'function' ){
-            iokit.modal({ 
+          if( typeof(ioco.modal) === 'function' ){
+            ioco.modal({ 
               title: _options.i18n ? $.i18n.t('web.page_designer.edit_page_source') : 'Edit WebPage Source',
               html: renderPropertiesModal( pageDesigner._page, _options.webPage, (_options.plugins || {}) ),
               completed: function( html ){      
@@ -169,7 +169,7 @@ $(function(){
                     _options.webPage.properties.js = ace.edit(modal.find('#jsEditor').get(0)).getValue();
                     _options.webPage.content = ace.edit(modal.find('#htmlEditor').get(0)).getValue();
 
-                    iokit.pageDesigner.cleanup( _options.webPage );
+                    ioco.pageDesigner.cleanup( _options.webPage );
 
                     _options.webPage.properties.cssClasses = modal.find('#cssClasses').val();
                     _options.webPage.properties.metaDesc = modal.find('input[name=metaDesc]').val();
@@ -186,10 +186,10 @@ $(function(){
                                 _options.webPage.updateOrigContent( _options.webPage.content );
                                 setupPageContent();
                                 //applyProperties( pageDesigner._page, _options.webPage )
-                                iokit.modal('close');
+                                ioco.modal('close');
                               }
-                              if( typeof(iokit.notify) === 'function' )
-                                iokit.notify( json.flash );
+                              if( typeof(ioco.notify) === 'function' )
+                                ioco.notify( json.flash );
                              }
                     })
                   }
@@ -197,11 +197,11 @@ $(function(){
               }
             })
           } else
-            throw( 'only iokit.modal is suppoerted for modal views right now')
+            throw( 'only ioco.modal is suppoerted for modal views right now')
         });
       toolsContainer.append(sourceBtn).append('<div class="spacer"/>');
 
-      for( var i=0,plugin; plugin=iokit.pageDesigner._plugins[i]; i++ ){
+      for( var i=0,plugin; plugin=ioco.pageDesigner._plugins[i]; i++ ){
         var pluginBtn = $('<div/>').addClass('design-btn')
                           .append($('<span/>').addClass('icn').addClass(plugin.icon ? plugin.icon : plugin.iconImg));
         if( plugin.hoverTitle )
@@ -353,18 +353,18 @@ $(function(){
      * to the specified webBitURL
      */
     function saveWebBit( box, webBit ){
-      iokit.pageDesigner.cleanup( webBit );
+      ioco.pageDesigner.cleanup( webBit );
       $.ajax({ url: (_options.webBitUrl || '/web_bits')+'/'+webBit._id,
                type: 'put',
                data: { _csrf: (_options.csrf || null), webBit: webBit },
                success: function( json ){
                 if( json.success )
-                  $(pageDesigner._page).find('.iokit-web-bit[data-id='+webBit._id+']').each(function(){
+                  $(pageDesigner._page).find('.ioco-web-bit[data-id='+webBit._id+']').each(function(){
                     $(this).data('webBit', webBit);
-                    applyProperties( $(this), webBit, box.data('plugin') ) && iokit.modal('close');
+                    applyProperties( $(this), webBit, box.data('plugin') ) && ioco.modal('close');
                   });
-                if( typeof(iokit.notify) === 'function' )
-                  iokit.notify( json.flash );
+                if( typeof(ioco.notify) === 'function' )
+                  ioco.notify( json.flash );
                }
       })
     }
@@ -374,8 +374,8 @@ $(function(){
      *
      */
     function openPropertiesDialog( box, webBit, plugin ){
-      if( typeof(iokit.modal) === 'function' ){
-        iokit.modal({ 
+      if( typeof(ioco.modal) === 'function' ){
+        ioco.modal({ 
           title: _options.i18n ? $.i18n.t('web.page_designer.web_bit-properties') : 'WebBit properties',
           html: renderPropertiesModal( box, webBit, plugin ),
           completed: function( html ){
@@ -401,7 +401,7 @@ $(function(){
           }
         })
       } else
-        throw( 'only iokit.modal is suppoerted for modal views right now')
+        throw( 'only ioco.modal is suppoerted for modal views right now')
     }
 
     /**
@@ -412,7 +412,7 @@ $(function(){
     function applyProperties( box, webBit, plugin ){
       if( webBit.properties ){
         if( webBit.properties.cssClasses )
-          box.attr('class', 'iokit-web-bit '+webBit.properties.cssClasses);
+          box.attr('class', 'ioco-web-bit '+webBit.properties.cssClasses);
         if( webBit.properties.cssStyles ){
           box.css(JSON.parse(webBit.properties.cssStyles));
         }
@@ -426,7 +426,7 @@ $(function(){
           box.find('.box-content').html( webBit.content );
         box.attr('data-web-bit-name', webBit.name);
 
-        if( webBit instanceof iokit.pageDesigner.models.WebBit )
+        if( webBit instanceof ioco.pageDesigner.models.WebBit )
           box.find('div[data-id]').each(function(){
             setupWebBit( webBit, $(this) );
           });
@@ -456,7 +456,7 @@ $(function(){
       var closeBtn = $('<a/>').addClass('box-control live-tipsy').html('&times;')
           .attr('original-title', (_options.i18n ? $.i18n.t('web.page_designer.detach-web_bit') : 'Detach WebBit'))
           .on('click', function(e){
-            removeBox( $(e.target).closest('.iokit-web-bit') );
+            removeBox( $(e.target).closest('.ioco-web-bit') );
           });
       var saveBtn = $('<a/>').addClass('box-control save-btn live-tipsy')
         .append($('<span/>').addClass('icn icn-save'))
@@ -519,7 +519,7 @@ $(function(){
                   }
                 })
                 .droppable({
-                  accept: ".design-btn,.web-bit-from-library,.iokit-web-bit",
+                  accept: ".design-btn,.web-bit-from-library,.ioco-web-bit",
                   greedy: true,
                   over: function( e, ui ){
                     console.log('over', this);
@@ -559,7 +559,7 @@ $(function(){
                          _csrf: ( _options.csrf || null ) },
                  success: function( json ){
                    if( json.success ){
-                     options.webBit = new iokit.pageDesigner.models.WebBit( json.webBit ); // override webBit with server json data
+                     options.webBit = new ioco.pageDesigner.models.WebBit( json.webBit ); // override webBit with server json data
                      options.box.data('webBit', options.webBit);
                      options.box.attr('data-id', options.webBit._id);
                    }
@@ -601,26 +601,26 @@ $(function(){
       $(pageDesigner._page).find('.highlight').removeClass('highlight').end().find('.highlight-left').removeClass('highlight-left');
       if( ui.draggable.hasClass('web-bit-from-library') ){
         $.getJSON( (_options.webBitUrl || '/web_bits')+'/'+ui.draggable.attr('data-id'), function( json ){
-          var webBit = new iokit.pageDesigner.models.WebBit( json.webBit );
+          var webBit = new ioco.pageDesigner.models.WebBit( json.webBit );
           attachBox({
-            append: $(dropTarget).hasClass('iokit-web-bit') ? $(dropTarget).find('>.box-content:first') : $(dropTarget), 
-            box: $('<div/>').addClass('iokit-web-bit').attr('data-id', webBit._id), 
+            append: $(dropTarget).hasClass('ioco-web-bit') ? $(dropTarget).find('>.box-content:first') : $(dropTarget), 
+            box: $('<div/>').addClass('ioco-web-bit').attr('data-id', webBit._id), 
             webBit: webBit, 
-            plugin: iokit.pageDesigner.getPlugin( webBit.plugin ) 
+            plugin: ioco.pageDesigner.getPlugin( webBit.plugin ) 
           });
         })
-      } else if( ui.draggable.hasClass('iokit-web-bit') ){
+      } else if( ui.draggable.hasClass('ioco-web-bit') ){
         var plugin = ui.draggable.data('plugin');
         var webBit = ui.draggable.data('webBit');
         var attachOptions = {
-          box: $('<div/>').addClass('iokit-web-bit').attr('data-id', $(ui.draggable).data('webBit')._id), 
+          box: $('<div/>').addClass('ioco-web-bit').attr('data-id', $(ui.draggable).data('webBit')._id), 
           webBit: webBit, 
           plugin: plugin
         };
         if( $(this).hasClass('highlight-left') )
           attachOptions.before = $(this);
         else
-          attachOptions.append = $(this).hasClass('iokit-web-bit') ? $(this).find('>.box-content:first') : $(this);
+          attachOptions.append = $(this).hasClass('ioco-web-bit') ? $(this).find('>.box-content:first') : $(this);
         attachBox(attachOptions)
 
       } else {
@@ -629,7 +629,7 @@ $(function(){
         var boxName = prompt((_options.i18n ? $.i18n.t('web_bit.name') : 'WebBit Name') );
         if( !boxName || boxName.length < 1 )
           return;
-        var webBit = new iokit.pageDesigner.models.WebBit({ name: boxName, 
+        var webBit = new ioco.pageDesigner.models.WebBit({ name: boxName, 
                                                             properties: { js: '{\n\n}', 
                                                                           cssClasses: 'float-left span2',
                                                                           cssStyles: '{\n}' },
@@ -637,8 +637,8 @@ $(function(){
                                                             category: '',
                                                             content: (plugin.defaultContent ? plugin.defaultContent : '') });
         attachBox({
-          append: $(this).hasClass('iokit-web-bit') ? $(this).find('>.box-content:first') : $(this), 
-          box: $('<div/>').addClass('iokit-web-bit'), 
+          append: $(this).hasClass('ioco-web-bit') ? $(this).find('>.box-content:first') : $(this), 
+          box: $('<div/>').addClass('ioco-web-bit'), 
           webBit: webBit, 
           plugin: plugin, 
           create: true
@@ -653,17 +653,17 @@ $(function(){
     function setupWebBit( parent, domElem ){
       if( domElem.attr('data-id').length < 1 )
         return;
-      domElem.addClass('iokit-web-bit');
+      domElem.addClass('ioco-web-bit');
       var webBitId = domElem.attr('data-id');
       for( var i=0, wB; wB=parent.webBits[i]; i++ ){
         if( webBitId === wB ){
           $.getJSON( (_options.webBitUrl || '/web_bits/')+wB, function( json ){
             if( json.success ){
-              var webBit = new iokit.pageDesigner.models.WebBit( json.webBit );
+              var webBit = new ioco.pageDesigner.models.WebBit( json.webBit );
               attachBox({
                 box: domElem, 
                 webBit: webBit, 
-                plugin: iokit.pageDesigner.getPlugin( webBit.plugin ),
+                plugin: ioco.pageDesigner.getPlugin( webBit.plugin ),
                 completed: function( attachedBox ){
                   setupWebBit( webBit, attachedBox );
                 }
@@ -676,18 +676,18 @@ $(function(){
     }
 
     /**
-     * initialize the iokit-page element to
+     * initialize the ioco-page element to
      * be droppable
      */
     function setupPageContent(){
 
-      var page = $(pageDesigner).prev('.iokit-page');
+      var page = $(pageDesigner).prev('.ioco-page');
       if( !page.length )
-        page = $(pageDesigner).next('.iokit-page');
+        page = $(pageDesigner).next('.ioco-page');
       if( page.length ){
         pageDesigner._page = page;
         page.droppable({
-          accept: ".design-btn,.web-bit-from-library,.iokit-web-bit",
+          accept: ".design-btn,.web-bit-from-library,.ioco-web-bit",
           hoverClass: "highlight",
           drop: droppedBox
         });
@@ -695,7 +695,7 @@ $(function(){
           setupWebBit( _options.webPage, $(this) );
         });
       } else
-        alert('.iokit-page element not found!');
+        alert('.ioco-page element not found!');
     }
 
     var knownArrangementClasses = ['float-left', 'float-right', 'float-left-all-over', 'float-right-all-over', 'position-absolute'];
@@ -734,7 +734,7 @@ $(function(){
         });
     }
 
-    $(pageDesigner).addClass('iokit-page-designer')
+    $(pageDesigner).addClass('ioco-page-designer')
       .append(
         $('<div/>').addClass('switch-btns')
           .append($('<a/>').attr('href', '#page-designer-library').text('Bibliothek'))
@@ -812,7 +812,7 @@ $(function(){
                       .append('<br />')
                       .append($('<input type="text" name="name" class="fill-width" />').val( webBit.name ))
                     );
-      if( webBit instanceof iokit.pageDesigner.models.WebPage ){
+      if( webBit instanceof ioco.pageDesigner.models.WebPage ){
         metaDiv.append($('<p/>')
                       .append($('<label/>').text(_options.i18n ? $.i18n.t('web.page_designer.meta_keys') : 'Meta Keywords' ))
                       .append('<br />')

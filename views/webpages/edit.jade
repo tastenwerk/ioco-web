@@ -7,11 +7,11 @@ form.wide( data-bind="submit: saveWebpageContent", id="webpage-#{webpage._id}-fo
     p
       label=t('document.tags.title')
       br
-      input.iokit-tags.span-full( type='text', data-bind='value: stringifiedTags' )
+      input.ioco-tags.span-full( type='text', data-bind='value: stringifiedTags' )
 
   .form-content.preferences-form.hide
 
-    .iokit-form-controls
+    .ioco-form-controls
       a.btn.w-icn-only.pull-right( href="#", data-bind="click: saveWebpageContent" )
         span.icn.icn-save
       a.btn.w-icn-only.pull-right( href="#", onclick="$(this).closest('.form-content').hide().closest('form').find('.edit-form').fadeIn(200);")
@@ -56,14 +56,14 @@ script
         },
         image: function( btn ){
           $(btn).on('click', function(e){
-            iokit.modal({ 
+            ioco.modal({ 
               title: $.i18n.t('web.files.manage'),
               windowControls: {
                 moveLeft: {
                   icn: 'icn-win-arrange-left',
                   callback: function( modal ){
                     $(modal).toggleClass('arrange-left');
-                    $('#iokit-modal-overlay').toggle(200);
+                    $('#ioco-modal-overlay').toggle(200);
                   }
                 }
               },
@@ -72,10 +72,10 @@ script
                 var webFilesViewModel = new WebFilesViewModel( '/web_elements/#{webpage._id}/files.json' );
                 modal.data('webFilesViewModel', webFilesViewModel);
 
-                iokit.web.uploader( modal, '#{webpage._id}', webFilesViewModel );
+                ioco.web.uploader( modal, '#{webpage._id}', webFilesViewModel );
                 ko.applyBindings( webFilesViewModel, modal.find('#web-images-container .offset-details-view').get(0) );
                 ko.applyBindings( webFilesViewModel, modal.find('#web-files-container .offset-details-view').get(0) );
-                iokit.web.setupFileActions( modal, webFilesViewModel );
+                ioco.web.setupFileActions( modal, webFilesViewModel );
 
               }
             });
@@ -84,7 +84,7 @@ script
         },
         preview: function( btn ){
           $(btn).on('click', function( e ){
-            window.open( iokit.host.native + '/p#{webpage.slug}' );
+            window.open( ioco.host.native + '/p#{webpage.slug}' );
             e.preventDefault();
           });
         }

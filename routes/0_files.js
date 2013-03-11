@@ -11,32 +11,32 @@ var fs = require('fs')
   , exec = require('child_process').exec;
 
 var iomapper = require('iomapper')
-  , iokit = require( 'iokit' )
+  , ioco = require( 'ioco' )
   , WebElement = require( __dirname + '/../models/web_element' )
   , common = require( __dirname + '/../lib/web_elements_common' )
-  , iokitFileUtils = require( 'iokit/lib/file_utils' )
-  , streambuffer = require( 'iokit/lib/streambuffer' );
+  , iocoFileUtils = require( 'ioco/lib/file_utils' )
+  , streambuffer = require( 'ioco/lib/streambuffer' );
 
 module.exports = exports = function( app ){
   
   /**
    * displays a files modal
    */
-  app.get('/webelements/files:format?', iokit.plugins.auth.check, function(req, res ){
-    res.render( iokit.view.lookup( 'web_elements/files/index.jade' ) );
+  app.get('/webelements/files:format?', ioco.plugins.auth.check, function(req, res ){
+    res.render( ioco.view.lookup( 'web_elements/files/index.jade' ) );
   });
   
   /**
    * load the upload form into a modal
    *
    */
-  app.get('/webelements/:id/files:format?', iokit.plugins.auth.check, common.getWebElement, function( req, res ){
+  app.get('/webelements/:id/files:format?', ioco.plugins.auth.check, common.getWebElement, function( req, res ){
 
     res.format({
 
       json: function(){
         if( !req.webElement ) return res.json({ error: 'not found'});
-        iomapper.mongoose.models.File.find({ paths: req.webElement._id.toString()+':WebElement' }).execWithUser( res.locals.currentUser, function( err, files ){
+        ioco.db.model('File').find({ paths: req.webElement._id.toString()+':WebElement' }).execWithUser( res.locals.currentUser, function( err, files ){
           res.json( files );
         });
       }
@@ -47,7 +47,7 @@ module.exports = exports = function( app ){
   /**
    * Upload a file to the server
    */
-  app.post('/web_elements/:id/files', streambuffer, iokit.plugins.auth.check, common.getWebElement, function( req, res ){
+  app.post('/web_elements/:id/files', streambuffer, ioco.plugins.auth.check, common.getWebElement, function( req, res ){
 
     var PAUSE_TIME = 5000
       , bytesUploaded = 0;
@@ -64,18 +64,18 @@ module.exports = exports = function( app ){
         _subtype: req.query._subtype,
         parent: req.query.parent };
 
-      var file = new iomapper.mongoose.models.File( fileOpts );
+      var file = new ioco.db.model('File')( fileOpts );
       file.save( function( err ){
         if( err )
           req.flash('error', req.i18n.t('files.failed') );
         else{
           var absPath = path.join( 'files', file._id.toString().substr(11,2), file._id.toString() );
-          iokitFileUtils.ensureRecursiveDir( absPath, function( err ){
-            var origName = path.join( iokit.config.datastore.absolutePath, absPath, 'orig' );
+          iocoFileUtils.ensureRecursiveDir( absPath, function( err ){
+            var origName = path.join( ioco.config.datastore.absolutePath, absPath, 'orig' );
             var fileStream = fs.createWriteStream( origName );
 
             req.streambuffer.ondata( function( chunk ) {
-                if( bytesUploaded+chunk.length > (iokit.config.max_upload_size_mb || 5)*1024*1024 ) {
+                if( bytesUploaded+chunk.length > (ioco.config.max_upload_size_mb || 5)*1024*1024 ) {
                   fileStream.end();
                   return res.send(JSON.stringify({error: "Too big."}));
                 }
@@ -117,7 +117,7 @@ module.exports = exports = function( app ){
 
 function resizeAndCopyImage( req, origName, callback ){
 
-  var def = iokit.config.datastore.resizeDefaultPX;
+  var def = ioco.config.datastore.resizeDefaultPX;
 
   //var dest = path.dirname(origName) + '/' + path.basename(origName, path.extname(origName)) + '_' + def + path.extname(origName);
   var dest = origName;

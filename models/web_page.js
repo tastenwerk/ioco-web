@@ -8,13 +8,13 @@ var qs = require('querystring');
 
 var iomapper = require('iomapper');
 
-var WebPageSchema = iomapper.mongoose.Schema({
+var WebPageSchema = ioco.db.Schema({
   _subtype: String,
   slug: String,
   content: String,
   category: String,
-  rootWebBit: { type: iomapper.mongoose.Schema.ObjectId, ref: 'WebBit' },
-  properties: { type: iomapper.mongoose.Schema.Types.Mixed, default: {frontpage: false} },
+  rootWebBit: { type: ioco.db.Schema.ObjectId, ref: 'WebBit' },
+  properties: { type: ioco.db.Schema.Types.Mixed, default: {frontpage: false} },
 })
 
 WebPageSchema.plugin( iomapper.plugin );

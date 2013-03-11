@@ -7,9 +7,9 @@ form( action='/webpages/new' )
     label=t('web.select_type')
     br
     select#web-type
-      -if( iokit.config.availableTypes )
-        -for( var i in iokit.config.availableTypes )
-          option=t('web.types.'+iokit.config.availableTypes[i])
+      -if( ioco.config.availableTypes )
+        -for( var i in ioco.config.availableTypes )
+          option=t('web.types.'+ioco.config.availableTypes[i])
   p
     label=t('web.name')
     br
@@ -22,5 +22,5 @@ form( action='/webpages/new' )
   input.parent( type='hidden', name='folder[parent]', id='file_parent' )
 
   p.control
-    button.btn( type='button', onclick="iokit.modal('close');")=t('cancel')
+    button.btn( type='button', onclick="ioco.modal('close');")=t('cancel')
     button.btn( type='submit' )=t('save')

@@ -1,4 +1,4 @@
-var iokit = require('iokit')
+var ioco = require('ioco')
   , WebElement = require( __dirname + '/../models/web_element' )
   , common = require( __dirname + '/../lib/web_elements_common' );
   
@@ -9,7 +9,7 @@ module.exports = exports = function( app ){
    * given query
    *
    */
-  app.get('/webelements:format?', iokit.plugins.auth.check, common.getWebElements, function( req, res ){
+  app.get('/webelements:format?', ioco.plugins.auth.check, common.getWebElements, function( req, res ){
 
     if( req.webElements )
       res.json( { data: req.webElements, success: true } );
@@ -21,8 +21,8 @@ module.exports = exports = function( app ){
   /**
    * create a web_element
    */
-  app.post('/webelements', iokit.plugins.auth.check, function( req, res ){
-    if( !res.locals.currentUser || (res.locals.currentUser && res.locals.currentUser.roles.indexOf('editor') < 0 && res.locals.currentUser.roles.indexOf('manager') < 0 ))
+  app.post('/webelements', ioco.plugins.auth.check, function( req, res ){
+    if( !res.locals.currentUser || (res.locals.currentUser && res.locals.currentUser.groups.indexOf('editor') < 0 && res.locals.currentUser.groups.indexOf('manager') < 0 ))
       return res.json( {flash: {error: req.i18n.t('insufficient_rights')}} );
     var attrs = { holder: res.locals.currentUser };
     for( var i in req.body.webElement )
@@ -45,11 +45,11 @@ module.exports = exports = function( app ){
    * get a web_element, lookup if there is a layout to render it with
    * and render it
    */
-  app.get('/webelements/:id', iokit.plugins.auth.checkWithoutRedirect, common.getPublicWebElement, function( req, res ){
+  app.get('/webelements/:id', ioco.plugins.auth.checkWithoutRedirect, common.getPublicWebElement, function( req, res ){
     if( req.query.fio )
-      return res.render( iokit.view.lookup('/webpages/index.jade'), {webElementId: req.params.id} );
+      return res.render( ioco.view.lookup('/webpages/index.jade'), {webElementId: req.params.id} );
     if( req.webElement )
-      res.render( iokit.view.lookup( '/'+req.webElement._subtype.toLowerCase()+'s/layouts/'+( req.webElement.layout || 'default' )+'.jade' ), 
+      res.render( ioco.view.lookup( '/'+req.webElement._subtype.toLowerCase()+'s/layouts/'+( req.webElement.layout || 'default' )+'.jade' ), 
           {webElement: req.webElement} );
     else
       res.send(404)
@@ -58,7 +58,7 @@ module.exports = exports = function( app ){
   /**
    * update a web_element
    */
-  app.put('/webelements/:id', iokit.plugins.auth.check, common.getWebElement, function( req, res ){
+  app.put('/webelements/:id', ioco.plugins.auth.check, common.getWebElement, function( req, res ){
     if( req.webElement ){
       for( var i in req.body.webElement )
         if( !i.match(/_id|createdAt|_creator|_updater|updatedAt|deletedAt|acl/) )

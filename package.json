@@ -1,16 +1,15 @@
 {
   "private": true,
-  "name": "ioweb",
-  "version": "0.2.0",
+  "name": "ioco-web",
+  "version": "0.1.0",
   "preferGlobal": "true",
   "author": "thorsten zerha <thorsten.zerha@tastenwerk.com>",
-  "description": "webpages plugin for iokit",
-  "keywords": [ "iokit", "iokit plugin", "TASTENWERK", "cms" ],
+  "description": "webpages plugin for ioco",
+  "keywords": [ "ioco", "ioco plugin", "TASTENWERK", "cms" ],
   "main": "index",
   "dependencies": {
-    "iomapper": "git://github.com/tastenwerk/iomapper.git",
-    "iokit": "git://github.com/tastenwerk/iokit.git",
-    "iopagedesigner": "git://github.com/tastenwerk/iopagedesigner.git",
+    "ioco": "*",
+    "ioco-pagedesigner": "*",
     "jsdom": "0.3.4",
     "moment": "1.7.2",
     "easyimage": "0.1.3"

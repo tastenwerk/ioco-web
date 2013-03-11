@@ -1,4 +1,4 @@
-.iokit-main-content-inner
+.ioco-main-content-inner
 
   form.wide( action=(article ? '/web_elements/'+article._id : '/web_elements'), method=(article ? 'put' : 'post'), data-remote='true' )
 
@@ -31,7 +31,7 @@
       br
       input.span600(type='text', name='web_element[tags]', value=(article ? article.tags.join(',') : ''))
 
-      -if( currentUser.roles.indexOf('manager') >= 0 )
+      -if( currentUser.groups.indexOf('manager') >= 0 )
         input(type='checkbox', checked=(article ? article.published : null), name='publish', value='true')
         =t('articles.published')
 
@@ -42,11 +42,11 @@
         
       input.parent( type='hidden', name='web_element[parent]', id='file_parent' )
       input( type='hidden', name='web_element[_subtype]', id='article_subtype', value='Article')
-      -if( currentUser.roles.indexOf('manager') < 0)
+      -if( currentUser.groups.indexOf('manager') < 0)
         input( type='hidden', name='web_element[_waiting]', value=(article ? article.waiting : 'true'))
       input( type='hidden', name='web_element[navElem]', value='true')
 
 style
-  .change-subtype{ position: absolute; top: 68px; right: 60px; opacity: 0.2; cursor: poiokit }
+  .change-subtype{ position: absolute; top: 68px; right: 60px; opacity: 0.2; cursor: poioco }
   .change-subtype:hover{ opacity: 1 }
   .change-subtype .caret{ margin: 6px 0 0 5px; }

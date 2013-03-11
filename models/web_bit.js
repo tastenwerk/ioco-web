@@ -10,12 +10,12 @@
 
 var iomapper = require('iomapper');
 
-var WebBitSchema = iomapper.mongoose.Schema({
+var WebBitSchema = ioco.db.Schema({
   plugin: String,
   content: String,
   category: String,
-  webBits: { type: [iomapper.mongoose.Schema.ObjectId], ref: 'WebBit' },
-  properties: { type: iomapper.mongoose.Schema.Types.Mixed },
+  webBits: { type: [ioco.db.Schema.ObjectId], ref: 'WebBit' },
+  properties: { type: ioco.db.Schema.Types.Mixed },
 })
 
 WebBitSchema.plugin( iomapper.plugin );

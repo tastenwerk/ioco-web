@@ -1,7 +1,7 @@
 include ../web_elements/tmpl
 
 span.icn.icn-gear.icn-no-border.pale(style="position:absolute;top:5px;right:5px")
-#tabstrip.iokit-tabs
+#tabstrip.ioco-tabs
   ul
     li.k-state-active
       span=t('articles.mine')
@@ -15,13 +15,13 @@ span.icn.icn-gear.icn-no-border.pale(style="position:absolute;top:5px;right:5px"
       a.icnbtn( href='/articles/new', data-remote='true' )
         i.icn.icn-plus
 
-    #articles-mine-view.articles-view.iokit-list(style='margin-top: 35px')
+    #articles-mine-view.articles-view.ioco-list(style='margin-top: 35px')
 
     script
       var myArticlesSrc = new kendo.data.DataSource({
           transport: {
             read: {
-              url: iokit.host.native+'/web_elements',
+              url: ioco.host.native+'/web_elements',
               type: "get",
               dataType: "json",
               data: {
@@ -43,13 +43,13 @@ span.icn.icn-gear.icn-no-border.pale(style="position:absolute;top:5px;right:5px"
       a.icnbtn( href='/articles/new', data-remote='true' )
         i.icn.icn-plus
 
-    #articles-all-view.articles-view.iokit-list
+    #articles-all-view.articles-view.ioco-list
 
     script
       var allArticlesSrc = new kendo.data.DataSource({
           transport: {
             read: {
-              url: iokit.host.native+'/web_elements',
+              url: ioco.host.native+'/web_elements',
               type: "get",
               dataType: "json",
               data: {
@@ -71,7 +71,7 @@ span.icn.icn-gear.icn-no-border.pale(style="position:absolute;top:5px;right:5px"
       a.icnbtn( href='/articles/new', data-remote='true' )
         i.icn.icn-plus
 
-    #articles-waiting-view.articles-view.iokit-list
+    #articles-waiting-view.articles-view.ioco-list
 
     include ../web_elements/tmpl
 
@@ -79,7 +79,7 @@ span.icn.icn-gear.icn-no-border.pale(style="position:absolute;top:5px;right:5px"
       var waitingArticlesSrc = new kendo.data.DataSource({
           transport: {
             read: {
-              url: iokit.host.native+'/web_elements',
+              url: ioco.host.native+'/web_elements',
               type: "get",
               dataType: "json",
               data: {
@@ -106,7 +106,7 @@ script
   });
   $('.articles-view .delete').live('click', function( e ){
     e.preventDefault();
-    var treeView = $('#iokit-folders').data('kendoTreeView');
+    var treeView = $('#ioco-folders').data('kendoTreeView');
     var uid = $(this).closest('li').attr('data-uid');
     var item = treeView.dataSource.getByUid( uid );
 
@@ -117,7 +117,7 @@ script
       success: function( data ){
         if( data.flash && data.flash.notice && data.flash.notice.length > 0 )
           treeView.detach( treeView.findByUid( uid ) );
-        iokit.notify( data.flash );
+        ioco.notify( data.flash );
       }
     })
   });

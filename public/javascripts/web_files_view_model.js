@@ -20,7 +20,7 @@ function WebFileModel( data ){
              },
              type: 'put',
              success: function( data ){
-               iokit.notify( data.flash ); 
+               ioco.notify( data.flash ); 
              }
     });
   };

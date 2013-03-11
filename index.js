@@ -33,18 +33,16 @@ module.exports = exports = {
 
     views: __dirname+'/views',
 
+    viewPaths: [ __dirname + '/views' ],
+
     sidebarWidget: {
       limitSearch: [ 'WebPage' ],
       overrideName: 'web_pages'
     },
 
-    allowedRoles: ['manager', 'editor'],
+    allowedGroups: ['manager', 'editor'],
 
-    translations: __dirname+'/locales',
-
-    pageDesignerJSPlugins: [ '/javascripts/widgets/io-page-designer/plain-container.js',
-                             '/javascripts/widgets/io-page-designer/image-browser.js',
-                             '/javascripts/widgets/io-page-designer/text-content.js' ]
+    translations: __dirname+'/locales'
 
   }
 

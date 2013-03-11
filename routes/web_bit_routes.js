@@ -1,4 +1,4 @@
-var iokit = require('iokit')
+var ioco = require('ioco')
   , WebBit = require( __dirname + '/../models/web_bit' );
 
 function getWebBits( req, res, next ){
@@ -30,10 +30,10 @@ function getWebBits( req, res, next ){
 function getPublicWebBit( req, res, next ){
   var q = {};
   if( req.params.id )
-    q._id = iomapper.mongoose.Types.ObjectId( req.params.id );
+    q._id = ioco.db.Schema.Types.ObjectId( req.params.id );
   else if( req.params.slug )
     q.slug = '/' + qs.escape( req.params.slug );
-  var user = res.locals.currentUser || iomapper.mongoose.models.User.anybody;
+  var user = res.locals.currentUser || ioco.db.model('User').anybody;
   WebBit.findOne( q ).execWithUser( user, function( err, webBit ){
     if( err ) req.flash('error', err);
     req.webBit = webBit;
@@ -60,7 +60,7 @@ module.exports = exports = function( app ){
    * given query
    *
    */
-  app.get('/web_bits:format?', iokit.plugins.auth.check, getWebBits, function( req, res ){
+  app.get('/web_bits:format?', ioco.plugins.auth.check, getWebBits, function( req, res ){
 
     if( req.webBits )
       res.json( { data: req.webBits, success: true } );
@@ -72,8 +72,8 @@ module.exports = exports = function( app ){
   /**
    * create a web_bit
    */
-  app.post('/web_bits', iokit.plugins.auth.check, function( req, res ){
-    if( !res.locals.currentUser || (res.locals.currentUser && res.locals.currentUser.roles.indexOf('editor') < 0 && res.locals.currentUser.roles.indexOf('manager') < 0 ))
+  app.post('/web_bits', ioco.plugins.auth.check, function( req, res ){
+    if( !res.locals.currentUser || (res.locals.currentUser && res.locals.currentUser.groups.indexOf('editor') < 0 && res.locals.currentUser.groups.indexOf('manager') < 0 ))
       return res.json( {flash: {error: req.i18n.t('insufficient_rights')}} );
     var attrs = { holder: res.locals.currentUser };
     for( var i in req.body.webBit )
@@ -95,14 +95,14 @@ module.exports = exports = function( app ){
   /**
    * get a web_bit
    */
-  app.get('/web_bits/:id', iokit.plugins.auth.checkWithoutRedirect, getPublicWebBit, function( req, res ){
+  app.get('/web_bits/:id', ioco.plugins.auth.checkWithoutRedirect, getPublicWebBit, function( req, res ){
     res.json({ success: (typeof(req.webBit) === 'object'), webBit: req.webBit });
   });
 
   /**
    * update a web_bit
    */
-  app.put('/web_bits/:id', iokit.plugins.auth.check, getWebBit, function( req, res ){
+  app.put('/web_bits/:id', ioco.plugins.auth.check, getWebBit, function( req, res ){
     if( req.webBit ){
       for( var i in req.body.webBit )
         if( !i.match(/_id|createdAt|_creator|_updater|updatedAt|deletedAt|acl/) )

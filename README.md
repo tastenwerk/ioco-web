@@ -1,6 +1,6 @@
 # IOweb
 
-plugin for IOkit enabling webpages, articles, blogs and other web elements.
+plugin for ioco enabling webpages, articles, blogs and other web elements.
 
 ## INSTALLATION
 
@@ -8,17 +8,17 @@ plugin for IOkit enabling webpages, articles, blogs and other web elements.
 
 ## CONFIGURATION
 
-If you have created your application folder with the iokit
+If you have created your application folder with the ioco
 command, you simply drop the following lines into your app.js
 file
 
     var ioweb = require('ioweb');
     for( var i=0, plugin; plugin=ioweb[i]; i++ )
-      iokit.plugin( app, plugin );
+      ioco.plugin( app, plugin );
 
 ## USAGE
 
-If you login to your IOkit now, you will see the web-elements tab on the
+If you login to your ioco now, you will see the web-elements tab on the
 sidebar and new dashboard widgets you can use.
 
 ### Adapting your website's layout
@@ -26,7 +26,7 @@ sidebar and new dashboard widgets you can use.
 1. Creating a default root route in app/routes/main.js
   
   app.get( '/', function( req, res ){
-    res.render( iokit.view.lookup('index.jade') )
+    res.render( ioco.view.lookup('index.jade') )
   })
 
 2. Creating a index.jade (you can also use ejs, if you like)
@@ -34,9 +34,9 @@ sidebar and new dashboard widgets you can use.
     !!! 5
     html
       head
-        title=(iokit.config.site.title + ' - ' + Hello)
+        title=(ioco.config.site.title + ' - ' + Hello)
       body
-        h1 Hello IOkit!
+        h1 Hello ioco!
 
 ### [ioPageDesigner](http://github.com/tastenwerk/ioweb/wiki/iopagedesigner)
 

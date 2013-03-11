@@ -3,7 +3,7 @@
     i.icn.icn-plus
   p.desc-header=t('web.navigation')
 
-  #webpages-view.iokit-list
+  #webpages-view.ioco-list
 
   include ../web_elements/tmpl
 
@@ -11,7 +11,7 @@
     var dataSource = new kendo.data.DataSource({
         transport: {
           read: {
-            url: iokit.host.native+'/web_elements',
+            url: ioco.host.native+'/web_elements',
             type: "get",
             dataType: "json",
             data: {
@@ -30,7 +30,7 @@
 
     $('#webpages-view .delete').live('click', function( e ){
       e.preventDefault();
-      var treeView = $('#iokit-folders').data('kendoTreeView');
+      var treeView = $('#ioco-folders').data('kendoTreeView');
       var uid = $(this).closest('li').attr('data-uid');
       var item = treeView.dataSource.getByUid( uid );
 
@@ -41,7 +41,7 @@
         success: function( data ){
           if( data.flash && data.flash.notice && data.flash.notice.length > 0 )
             treeView.detach( treeView.findByUid( uid ) );
-          iokit.notify( data.flash );
+          ioco.notify( data.flash );
         }
       })
     });

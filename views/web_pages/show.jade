@@ -1,14 +1,14 @@
 !!! 5
 html
   head
-    title=(iokit.config.site.title + '|' + webPage.name)
+    title=(ioco.config.site.title + '|' + webPage.name)
     script(type='text/javascript', src='/javascripts/3rdparty/jquery-1.8.2.min.js')
-    script(type='text/javascript', src='/javascripts/iokit.js')
+    script(type='text/javascript', src='/javascripts/ioco.js')
     link(rel='stylesheet', href='/stylesheets/web-editor.css')
 
   body
     input( type='hidden', id='_csrf', value=_csrf )
-    input( type='hidden', id='_host_master', value='http://'+iokit.config.site.domain+':'+iokit.config.port )
+    input( type='hidden', id='_host_master', value='http://'+ioco.config.site.domain+':'+ioco.config.port )
 
     .content
     != webPage.content

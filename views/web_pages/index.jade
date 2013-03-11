@@ -1,8 +1,8 @@
 link( rel='stylesheet', href='/stylesheets/web.css' )
-link( rel='stylesheet', href='/stylesheets/iokit-page.css')
-#iokit-web_pages
-  .iokit-sidebar
-    .iokit-tree
+link( rel='stylesheet', href='/stylesheets/ioco-page.css')
+#ioco-web_pages
+  .ioco-sidebar
+    .ioco-tree
 
       h1.title=t('web_pages.title')
 
@@ -18,13 +18,13 @@ link( rel='stylesheet', href='/stylesheets/iokit-page.css')
 
       ul.tree-content( data-bind='template: {name: "webItemTemplate", foreach: items}' )
 
-  .iokit-content
+  .ioco-content
 
     .click-for-details.no-item-form
       h1.title=t('web_pages.title')
       span=t('document.click_for_details')
 
-    #iokit-user-form.item-form( data-bind='template: {name: "webItemForm"}' )
+    #ioco-user-form.item-form( data-bind='template: {name: "webItemForm"}' )
 
 script(type='text/html', id='webItemTemplate')
   li.tree-li( data-bind='attr: { "data-id": _id }, click: markSelected')
@@ -63,28 +63,28 @@ script(type='text/javascript', src='/javascripts/3rdparty/ace.js')
 
 script(type='text/javascript', src='/javascripts/widgets/io-page-designer.js')
 script(type='text/javascript', src='/javascripts/web_files_view_model.js')
-- for( i in iokit.plugins )
-  - if( iokit.plugins[i].pageDesignerJSPlugins )
-    - for( var j in iokit.plugins[i].pageDesignerJSPlugins )
-      script(type='text/javascript', src='#{iokit.plugins[i].pageDesignerJSPlugins[j]}')
+- for( i in ioco.plugins )
+  - if( ioco.plugins[i].pageDesignerJSPlugins )
+    - for( var j in ioco.plugins[i].pageDesignerJSPlugins )
+      script(type='text/javascript', src='#{ioco.plugins[i].pageDesignerJSPlugins[j]}')
   
 
 script(type='text/javascript')
   
-  $('#iokit-web_pages .iokit-tree').iokitTree({
+  $('#ioco-web_pages .ioco-tree').iocoTree({
     url: '/web_pages.json?roots=true',
     saveUrl: '/web_pages/',
     saveKey: 'webPage',
     saveAttrs: [ 'name', 'tags', 'content', '_subtype', 'slug', 'properties' ],
     defaultValues: { name: '', properties: {}, content: '' },
     beforeSave: function( form, data, save ){
-      data.webPage.content = form.find('.iokit-page').html();
-      iokit.pageDesigner.cleanup( data.webPage );
+      data.webPage.content = form.find('.ioco-page').html();
+      ioco.pageDesigner.cleanup( data.webPage );
       if( typeof(data.webPage.name) === 'undefined' || data.webPage.name.length < 1 )
         data.webPage.name = prompt('Name', '');
-      data.webPage.content = form.find('.iokit-page').html();
+      data.webPage.content = form.find('.ioco-page').html();
       this.content( data.webPage.content );
-      iokit.pageDesigner.cleanup( data.webPage );
+      ioco.pageDesigner.cleanup( data.webPage );
       save( data );
     },
     before: function( tree ){
@@ -94,14 +94,14 @@ script(type='text/javascript')
 
     },
     afterShowForm: function( item, form ){
-      //$('.iokit-page').css('width', $('.iokit-page').width()-100);
-      $('#iokit-page-designer').ioPageDesigner({
+      //$('.ioco-page').css('width', $('.ioco-page').width()-100);
+      $('#ioco-page-designer').ioPageDesigner({
         i18n: true,
         csrf: $('#_csrf').val(),
-        webPage: new iokit.pageDesigner.models.WebPage( item ),
+        webPage: new ioco.pageDesigner.models.WebPage( item ),
         after: {
           create: function( plugin, webBit, boxDom, json, done ){
-            iokit.notify( json.flash );
+            ioco.notify( json.flash );
             done();
           }
         }
@@ -109,7 +109,7 @@ script(type='text/javascript')
       //$(form).find('.editable-main-content').ioEdit();
     }
   });
-  $('#iokit-web_pages .iokit-tree ul:first').nestedSortable({
+  $('#ioco-web_pages .ioco-tree ul:first').nestedSortable({
       listType: 'ul',
       forcePlaceholderSize: true,
       handle: 'div',
@@ -119,7 +119,7 @@ script(type='text/javascript')
       placeholder: 'placeholder',
       revert: 250,
       delay: 250,
-      tolerance: 'poiokit',
+      tolerance: 'poioco',
       toleranceElement: '> div',
       maxLevels: 5,
       isTree: true,
@@ -143,9 +143,9 @@ script(type='text/javascript')
           formData.path = $(parent).attr('data-id') + ':' + $(parent).attr('data-_type');
         $.post( '/documents/sort', formData, function( data ){
           if( data.success )
-            iokit.notify( data.flash );
+            ioco.notify( data.flash );
           else
-            iokit.notify( { error: $.i18n.t('document.order.saving.failed')})
+            ioco.notify( { error: $.i18n.t('document.order.saving.failed')})
         })
       }
   });

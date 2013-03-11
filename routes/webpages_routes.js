@@ -1,4 +1,4 @@
-var iokit = require('iokit')
+var ioco = require('ioco')
   , WebElement = require( __dirname + '/../models/web_element' )
   , common = require( __dirname + '/../lib/web_elements_common' );
 
@@ -12,28 +12,28 @@ module.exports = exports = function( app ){
    *  $.getScript('/webpages/tree', function(){ ko.applyBindings( WebpagesTreeViewModel, '#mytreecontainer-id') }
    * will invoke the tree on mytreecontainer-id
    */
-  app.get('/webpages/tree', iokit.plugins.auth.check, function( req, res ){
-    res.render( iokit.view.lookup( 'webpages/tree.ejs' ) );
+  app.get('/webpages/tree', ioco.plugins.auth.check, function( req, res ){
+    res.render( ioco.view.lookup( 'webpages/tree.ejs' ) );
   });
 
   /**
    * new webpage
    */
-  app.get('/webpages/new', iokit.plugins.auth.check, function( req, res ){
+  app.get('/webpages/new', ioco.plugins.auth.check, function( req, res ){
     var webElement = new WebElement( { _subtype: 'Webpage', holder: res.locals.currentUser, name: '' })
-    res.render( iokit.view.lookup( 'webpages/new.ejs'), { webElement: webElement } );
+    res.render( ioco.view.lookup( 'webpages/new.ejs'), { webElement: webElement } );
   });
 
-  app.get('/webelements/:id', iokit.plugins.auth.check, function( req,res ){
-    res.render( iokit.view.lookup('/webpages/index.jade'), {webElementId: req.params.id} );
+  app.get('/webelements/:id', ioco.plugins.auth.check, function( req,res ){
+    res.render( ioco.view.lookup('/webpages/index.jade'), {webElementId: req.params.id} );
   });
 
-  app.get('/webpages:format?', iokit.plugins.auth.check, function( req, res ){
+  app.get('/webpages:format?', ioco.plugins.auth.check, function( req, res ){
 
     res.format({
 
       html: function(){
-        res.render( iokit.view.lookup('/webpages/index.jade'))
+        res.render( ioco.view.lookup('/webpages/index.jade'))
       },
 
       json: function(){
@@ -50,16 +50,16 @@ module.exports = exports = function( app ){
     });
   });
 
-  app.get('/webpages/:id/edit:format?', iokit.plugins.auth.check, common.getWebElement, function( req, res ){
-    res.render( iokit.view.lookup( '/webpages/edit.jade' ), {flash: req.flash(), webpage: req.webElement });
+  app.get('/webpages/:id/edit:format?', ioco.plugins.auth.check, common.getWebElement, function( req, res ){
+    res.render( ioco.view.lookup( '/webpages/edit.jade' ), {flash: req.flash(), webpage: req.webElement });
   });
 
-  app.get( '/p/:slug*', iokit.plugins.auth.checkWithoutRedirect, common.getPublicWebElement, function( req, res ){
+  app.get( '/p/:slug*', ioco.plugins.auth.checkWithoutRedirect, common.getPublicWebElement, function( req, res ){
     if( req.webElement )
       WebElement.update({_id: req.webElement._id}, {$inc: {'stat.views': 1}}, {safe: true}, function( err ){
         if( err ) console.log('error: ', err);
         res.render( 
-          iokit.view.lookup( '/webpages/layouts/'+( req.webElement.layout || 'default' )+'.jade' ), 
+          ioco.view.lookup( '/webpages/layouts/'+( req.webElement.layout || 'default' )+'.jade' ), 
           {webElement: req.webElement} 
         );
       });
