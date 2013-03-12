@@ -1,3 +1,11 @@
 {
-  
+  "webpage": {
+    "new_name": "Neue Webseite",
+    "Slug": "Slug",
+    "Layout": "Layout",
+    "Properties": "Eigenschaften",
+    "No robots": "Keine Suchmaschinen",
+    "Frontpage": "Startseite",
+    "Hidden": "Versteckt"
+  }
 }
