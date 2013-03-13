@@ -32,6 +32,17 @@ module.exports = exports = function( app ){
   });
 
   /**
+   * create a new webbit
+   */
+  app.post('/webbits', ioco.plugins.auth.check, function( req, res ){
+    if( req.body.webbit && req.body.webbit.name.length > 1 ){
+      WebBit.create( req.body.webbit, function( err, webbit ){
+        res.json({ success: err === null, error: err, data: webbit });
+      });
+    }
+  });
+
+  /**
    * load all webbits
    * which are marked with
    * library

@@ -7,7 +7,8 @@
  *
  */
 
-var ioco = require('ioco');
+var ioco = require('ioco')
+  , qs = require('querystring');
 
 var WebPageSchema = ioco.db.Schema({
   _type: { type: String, default: 'WebPage' },
@@ -16,7 +17,8 @@ var WebPageSchema = ioco.db.Schema({
   plugin: String,
   content: String,
   category: String,
-  properties: { type: ioco.db.Schema.Types.Mixed },
+  rootWebBitId: { type: ioco.db.Schema.Types.ObjectId, ref: 'WebBit' },
+  properties: { type: ioco.db.Schema.Types.Mixed, default: { frontpage: false } },
 })
 
 WebPageSchema.plugin( ioco.getSchemaPlugin('Default') );
@@ -38,6 +40,17 @@ WebPageSchema.pre( 'validate', function createSlug( next ){
   if( self.slug && self.slug.length > 0 )
     return next();
   
+  function checkUniquenessOfSlug(){
+    ioco.db.model('WebPage').findOne({slug: self.slug}, function( err, item ){
+      var num = parseInt(self.name.substr( self.name.length-1, 1 ));
+      if( item ){
+        self.name = isNaN(num) ? self.name + ' 1' : self.name.substr(0, self.name.length-1) + (num+1).toString();
+        self.slug = isNaN(num) ? self.slug + '1' : self.slug.substr(0, self.slug.length-1) + (num+1).toString();
+        checkUniquenessOfSlug();
+      } else
+        next();
+    });
+  }
   this.ancestors( function( err, ancestors ){
     self.slug = '';
     if( ancestors ){
@@ -46,7 +59,7 @@ WebPageSchema.pre( 'validate', function createSlug( next ){
       });
     }
     self.slug += ('/' + qs.escape(self.name));
-    next();
+    checkUniquenessOfSlug()
   });
 
 });

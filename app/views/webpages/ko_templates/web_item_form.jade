@@ -2,10 +2,14 @@ script(type='text/html', id='webItemForm')
 
   .top-tabs
 
-    ul.top-tabs-nav
-      li.translate(data-ns='webpage') Layout
+    .top-tabs-nav
 
-      li.translate(data-ns='webpage') Properties
+      span.top-tabs-nav-title.page-name=t('unnamed')
+
+      ul
+        li.translate(data-ns='webpage') Layout
+
+        li.translate(data-ns='webpage') Properties
 
     .top-tabs-content
 

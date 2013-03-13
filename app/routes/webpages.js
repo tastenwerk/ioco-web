@@ -35,19 +35,36 @@ module.exports = exports = function( app ){
       json: function(){
         var q = {};
         if( req.query.parentId )
-          q = {paths: new RegExp('^'+req.query.parentId+':[a-zA-Z0-9]*$')};
+          q = {_labelIds: new RegExp('^'+req.query.parentId+':[a-zA-Z0-9]*$')};
         if( req.query.roots )
-          q = {paths: []};
+          q = {_labelIds: []};
         getWebpages( res.locals.currentUser, q, function( err, webpages ){
-          res.json( webpages );
+          res.json({ success: err === null, data: webpages });
         });
       }
 
     });
   });
 
+  app.post('/webpages', ioco.plugins.auth.check, function( req, res ){
+    if( req.body.webpage && req.body.webpage.name.length > 1 ){
+      WebPage.create( { name: req.body.webpage.name, holder: res.locals.currentUser }, function( err, webpage ){
+        res.json({ success: err === null, error: err, webpage: webpage });
+      });
+    }
+  });
+
+  app.put('/webpages/:id', ioco.plugins.auth.check, getWebpage, function( req, res ){
+    if( req.webpage )
+      req.webpage.update( req.body.webpage, function( err ){
+        res.json({ success: err === null, error: err, webpage: req.webpage });
+      });
+    else
+      res.json({ success: false });
+  });
+
   app.get('/webpages/:id/edit:format?', ioco.plugins.auth.check, getWebpage, function( req, res ){
-    res.render( ioco.view.lookup( '/webpages/edit.jade' ), {flash: req.flash(), webpage: req.webPage });
+    res.render( ioco.view.lookup( '/webpages/edit.jade' ), {flash: req.flash(), webpage: req.webpage });
   });
 
 }
@@ -57,8 +74,8 @@ function getWebpages( user, q, callback ){
 }
 
 function getWebpage( req, res, next ){
-  WebPage.findById(req.param.id).execWithUser( res.locals.currentUser || User.anybody, function( err, webPage ){
-    req.webPage = webPage;
+  WebPage.findById(req.params.id).execWithUser( res.locals.currentUser || User.anybody, function( err, webpage ){
+    req.webpage = webpage;
     next();
   });
 }

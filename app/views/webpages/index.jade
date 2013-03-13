@@ -45,7 +45,7 @@ script(type='text/javascript')
     saveUrl: '/webpages/',
     saveKey: 'webPage',
     saveAttrs: [ 'name', 'tags', 'content', 'slug', 'properties' ],
-    defaultValues: { name: $.i18n.t('webpage.new_name'), properties: {}, content: '', _type: 'WebPage' },
+    defaultValues: { properties: {}, content: '', _type: 'WebPage' },
     beforeSave: function( form, data, save ){
       data.webPage.content = form.find('.ioco-page').html();
       ioco.pageDesigner.cleanup( data.webPage );
@@ -62,21 +62,48 @@ script(type='text/javascript')
       }
 
     },
-    afterShowForm: function( item, form ){
-      //$('.ioco-page').css('width', $('.ioco-page').width()-100);
-      $('#pd').iocoPageDesigner({
-        i18n: true,
-        csrf: $('#_csrf').val(),
-        webPage: new ioco.pageDesigner.WebPage( item ),
-        after: {
-          create: function( plugin, webBit, boxDom, json, done ){
-            ioco.notify( json.flash );
-            done();
+    afterShowForm: function( itemData, form, $tree ){
+      function renderForm( item ){
+        $('#pd').iocoPageDesigner({
+          i18n: true,
+          csrf: $('#_csrf').val(),
+          webPage: new ioco.pageDesigner.WebPage( item ),
+          after: {
+            create: function( plugin, webBit, boxDom, json, done ){
+              ioco.notify( json.flash );
+              done();
+            }
+          },
+          on: function( action, item, callback ){
+            if( action === 'createRootWebBit' ){
+              itemData.rootWebBitId = item.rootWebBitId;
+              callback( null );
+            }
           }
-        }
-      });
-      ioco.parseTranslations();
-      //$(form).find('.editable-main-content').ioEdit();
+        });
+        $('.top-tabs-nav-title.page-name').text( item.name() );
+        ioco.parseTranslations();
+      }
+
+      if( itemData.name ){
+        renderForm( itemData ); 
+      } else {
+
+        // creating a new webpage
+
+        var name = prompt( $.i18n.t('webpage.Enter name') );
+        if( !name || name.length < 1 )
+          return;
+        $.ajax({ url: '/webpages', type: 'post', data: { _csrf: ioco._csrf, webpage: { name: name } },
+                 success: function( response ){
+                    if( !response.success )
+                      return ioco.notify( $.i18n.t('creation.failed', {name: name}) + ' ' + $.i18n.t('reason') + ':' + response.error );
+                    var item = new $tree.TreeItemModel( response.webpage );
+                    $tree.treeViewModel.items.push( item );
+                    $tree.find('[data-id='+item._id+'] a.link-trigger:first').click();
+                  }
+        });
+      }
     }
   });
   $('#ioco-webpages .ioco-tree ul:first').nestedSortable({
