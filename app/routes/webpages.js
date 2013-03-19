@@ -63,6 +63,16 @@ module.exports = exports = function( app ){
       res.json({ success: false });
   });
 
+
+  app.delete('/webpages/:id', ioco.plugins.auth.check, getWebpage, function( req, res ){
+    if( req.webpage )
+      req.webpage.remove( function( err ){
+        res.json({ success: err === null, error: err, webpage: req.webpage });
+      });
+    else
+      res.json({ success: false, error: 'not found' });
+  });
+
   app.get('/webpages/:id/edit:format?', ioco.plugins.auth.check, getWebpage, function( req, res ){
     res.render( ioco.view.lookup( '/webpages/edit.jade' ), {flash: req.flash(), webpage: req.webpage });
   });

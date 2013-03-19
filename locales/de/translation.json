@@ -1,6 +1,7 @@
 {
   "webpage": {
     "new_name": "Neue Webseite",
+    "create": "Neue Webseite erstellen",
     "Slug": "Slug",
     "Layout": "Layout",
     "Properties": "Eigenschaften",

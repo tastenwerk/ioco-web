@@ -30,8 +30,14 @@ link( rel='stylesheet', href='/stylesheets/ioco.page-designer.css' )
 include ko_templates/web_item
 include ko_templates/web_item_form
 
+include new_modal_form
+
 script(type='text/javascript', src='/javascripts/ioco.page-designer.js')
 script(type='text/javascript', src='/javascripts/web_files_view_model.js')
+
+script(type='text/javascript')
+  if( typeof(ace) === 'undefined' )
+    $.getScript( '/javascripts/3rdparty/ace.js' );
 
 - for( i in ioco.plugins )
   - if( ioco.plugins[i].pageDesignerJSPlugins )
@@ -47,14 +53,9 @@ script(type='text/javascript')
     saveAttrs: [ 'name', 'tags', 'content', 'slug', 'properties' ],
     defaultValues: { properties: {}, content: '', _type: 'WebPage' },
     beforeSave: function( form, data, save ){
-      data.webPage.content = form.find('.ioco-page').html();
-      ioco.pageDesigner.cleanup( data.webPage );
-      if( typeof(data.webPage.name) === 'undefined' || data.webPage.name.length < 1 )
-        data.webPage.name = prompt('Name', '');
-      data.webPage.content = form.find('.ioco-page').html();
-      this.content( data.webPage.content );
-      ioco.pageDesigner.cleanup( data.webPage );
-      save( data );
+      $('.ioco-page-content:visible .ioco-web-bit.root:first').data('webBit').save( function(){
+        save( data );
+      });
     },
     before: function( tree ){
       tree.TreeItemModel.prototype.previewWebPage = function(){
@@ -85,11 +86,39 @@ script(type='text/javascript')
         ioco.parseTranslations();
       }
 
+      function renderNewModal(){
+
+        // creating a new webpage
+
+        ioco.modal({ 
+          title: $.i18n.t('webpage.Create'),
+          html: ,
+          completed: function( html ){
+            html.find('#cssEditor').css({ height: html.find('.sidebar-content').height() - 125});
+            html.find('#htmlEditor').css({ height: html.find('.sidebar-content').height() - 65, top: 60});
+            html.find('#jsEditor').css({ height: html.find('.sidebar-content').height() - 65, top: 60});
+          },
+          on: function modalOn( action, $modal ){
+            if( action === 'close' ){
+            }
+          },
+          windowControls: {
+            save: {
+              icn: 'icn-save',
+              title: pageDesigner.translate('ioco.page_designer.save'),
+              callback: function( $modal ){
+                // TODO: webBit.save();
+              }
+            }
+          }*/
+        });
+
+      }
+
       if( itemData.name ){
         renderForm( itemData ); 
       } else {
-
-        // creating a new webpage
+        renderNewModal();
 
         var name = prompt( $.i18n.t('webpage.Enter name') );
         if( !name || name.length < 1 )

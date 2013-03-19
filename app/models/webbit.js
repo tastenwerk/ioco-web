@@ -13,6 +13,8 @@ var WebBitSchema = ioco.db.Schema({
   pluginName: String,
   content: String,
   category: String,
+  library: { type: Boolean, default: false },
+  template: { type: Boolean, default: false },
   root: { type: Boolean, default: false },
   webBits: { type: [ioco.db.Schema.ObjectId], ref: 'WebBit' },
   properties: { type: ioco.db.Schema.Types.Mixed },

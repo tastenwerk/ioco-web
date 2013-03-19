@@ -10,6 +10,8 @@ var ioco = require('ioco')
   , User = ioco.db.model('User')
   , WebBit = ioco.db.model('WebBit');
 
+var sanitize = require('validator').sanitize;
+
 module.exports = exports = function( app ){
 
   /**
@@ -36,8 +38,36 @@ module.exports = exports = function( app ){
    */
   app.post('/webbits', ioco.plugins.auth.check, function( req, res ){
     if( req.body.webbit && req.body.webbit.name.length > 1 ){
-      WebBit.create( req.body.webbit, function( err, webbit ){
+      var attrs = {
+        name: req.body.webbit.name,
+        content: req.body.webbit.content,
+        pluginName: req.body.webbit.pluginName,
+        properties: req.body.webbit.properties,
+        root: sanitize( req.body.webbit.root ).toBoolean(),
+        library: sanitize( req.body.webbit.library ).toBoolean(),
+        category: req.body.webbit.category
+      };
+      WebBit.create( attrs, function( err, webbit ){
         res.json({ success: err === null, error: err, data: webbit });
+      });
+    }
+  });
+
+  /**
+   * update a webbit
+   */
+  app.put('/webbits/:id', ioco.plugins.auth.check, getWebbit, function( req, res ){
+    if( req.body.webbit ){
+      var attrs = {
+        name: req.body.webbit.name,
+        content: req.body.webbit.content,
+        properties: req.body.webbit.properties,
+        library: sanitize( req.body.webbit.library ).toBoolean(),
+        category: req.body.webbit.category,
+        template: sanitize( req.body.webbit.template ).toBoolean()
+      };
+      req.webbit.update( attrs, function( err ){
+        res.json({ success: err === null, error: err, data: req.webbit });
       });
     }
   });
@@ -49,14 +79,35 @@ module.exports = exports = function( app ){
    */
   app.get( '/webbits/library.json', ioco.plugins.auth.check, function( req, res ){
 
-    WebBit.find().sort({name: 1}).execWithUser( res.locals.currentUser, function( err, webBits ){
+    WebBit.find({ library: true }).sort({name: 1}).exec( function( err, webBits ){
       res.json( webBits );
     });
     
   });
 
+  /**
+   * load all webbits
+   * which are marked with
+   * library
+   */
+  app.get( '/webbits/templates.json', ioco.plugins.auth.check, function( req, res ){
+
+    WebBit.find({ template: true }).sort({name: 1}).exec( function( err, webBits ){
+      res.json( webBits );
+    });
+    
+  });
+
+  /**
+   * get a specific webbit
+   *
+   */
+  app.get('/webbits/:id.json', ioco.plugins.auth.check, getWebbit, function( req, res ){
+    res.json( req.webbit );
+  });
+
   app.get('/webbits/:id/edit:format?', ioco.plugins.auth.check, getWebbit, function( req, res ){
-    res.render( ioco.view.lookup( '/webbits/edit.jade' ), {flash: req.flash(), webbit: req.webPage });
+    res.render( ioco.view.lookup( '/webbits/edit.jade' ), {flash: req.flash(), webbit: req.webbit });
   });
 
 }
@@ -66,8 +117,8 @@ function getWebbits( user, q, callback ){
 }
 
 function getWebbit( req, res, next ){
-  WebBit.findById(req.param.id).execWithUser( res.locals.currentUser || User.anybody, function( err, webPage ){
-    req.webPage = webPage;
+  WebBit.findById(req.params.id, function( err, webbit ){
+    req.webbit = webbit;
     next();
   });
 }
