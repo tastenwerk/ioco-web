@@ -30,8 +30,6 @@ link( rel='stylesheet', href='/stylesheets/ioco.page-designer.css' )
 include ko_templates/web_item
 include ko_templates/web_item_form
 
-include new_modal_form
-
 script(type='text/javascript', src='/javascripts/ioco.page-designer.js')
 script(type='text/javascript', src='/javascripts/web_files_view_model.js')
 
@@ -46,6 +44,82 @@ script(type='text/javascript')
   
 script(type='text/javascript')
   
+  function renderForm( item ){
+    $('#pd').iocoPageDesigner({
+      i18n: true,
+      csrf: $('#_csrf').val(),
+      webPage: new ioco.pageDesigner.WebPage( item ),
+      after: {
+        create: function( plugin, webBit, boxDom, json, done ){
+          ioco.notify( json.flash );
+          done();
+        }
+      },
+      on: function( action, item, callback ){
+        if( action === 'createRootWebBit' ){
+          itemData.rootWebBitId = item.rootWebBitId;
+          callback( null );
+        }
+      }
+    });
+    $('.top-tabs-nav-title.page-name').text( item.name() );
+    ioco.parseTranslations();
+  }
+
+  function renderNewModal( $tree ){
+
+    var $formContent = $('<form class="webpage-form" />')
+      .append( $('<p/>').append( $('<label/>').addClass('desc').text( $.i18n.t('webpage.name') ) )
+                     .append( $('<input/>').attr('type','text').attr('name', 'name') )
+      )
+      .append( $('<p/>').append( $('<label/>').addClass('desc').text( $.i18n.t('webpage.template') ) )
+                        .append( $('<br/>') )
+                        .append( $('<select/>').attr('name', 'template').append( $('<option/>').attr('value','').text('') ) )
+      )
+      .append( $('<p/>').css('text-align', 'right').append( $('<input/>').attr('type','submit').addClass('btn').attr('value', $.i18n.t('webpage.create')) ) );
+
+    $.getJSON( '/webbits/templates.json', function( json ){
+      if( json )
+        for( var i in json )
+          $formContent.find('select').append( $('<option/>').attr('value',json[i]._id).text( json[i].name ) );
+    });
+
+    ioco.modal({ 
+      title: $.i18n.t('webpage.create_title'),
+      $content: $formContent,
+      height: 300,
+      completed: function( $modal ){
+
+        $modal.find('input[type=text]').focus();
+
+        $modal.find('form').on('submit', function(e){
+
+          e.preventDefault();
+
+          var name = $(this).find('input[name=name]').val()
+            , templateId = $(this).find('select[name=template]').val();
+
+          if( name.length < 1 )
+            return ioco.notify('error', $.i18n.t('webpage.name_required') );
+
+          $.ajax({ url: '/webpages', type: 'post', data: { _csrf: ioco._csrf, webpage: { name: name }, templateId: templateId },
+                   success: function( response ){
+                      if( !response.success )
+                        return ioco.notify( $.i18n.t('creation.failed', {name: name}) + ' ' + $.i18n.t('reason') + ':' + response.error );
+                      var item = new $tree.TreeItemModel( response.webpage );
+                      $tree.treeViewModel.items.push( item );
+                      $tree.find('[data-id='+item._id+'] a.link-trigger:first').click();
+                      ioco.modal('close');
+                    }
+          });
+
+        });
+
+      }
+    });
+
+  }
+
   $('#ioco-webpages .ioco-tree').iocoTree({
     url: '/webpages.json?roots=true',
     saveUrl: '/webpages/',
@@ -63,78 +137,14 @@ script(type='text/javascript')
       }
 
     },
+    replaceNewItemForm: function( itemData, form, $tree ){
+      renderNewModal( $tree );
+    },
     afterShowForm: function( itemData, form, $tree ){
-      function renderForm( item ){
-        $('#pd').iocoPageDesigner({
-          i18n: true,
-          csrf: $('#_csrf').val(),
-          webPage: new ioco.pageDesigner.WebPage( item ),
-          after: {
-            create: function( plugin, webBit, boxDom, json, done ){
-              ioco.notify( json.flash );
-              done();
-            }
-          },
-          on: function( action, item, callback ){
-            if( action === 'createRootWebBit' ){
-              itemData.rootWebBitId = item.rootWebBitId;
-              callback( null );
-            }
-          }
-        });
-        $('.top-tabs-nav-title.page-name').text( item.name() );
-        ioco.parseTranslations();
-      }
-
-      function renderNewModal(){
-
-        // creating a new webpage
-
-        ioco.modal({ 
-          title: $.i18n.t('webpage.Create'),
-          html: ,
-          completed: function( html ){
-            html.find('#cssEditor').css({ height: html.find('.sidebar-content').height() - 125});
-            html.find('#htmlEditor').css({ height: html.find('.sidebar-content').height() - 65, top: 60});
-            html.find('#jsEditor').css({ height: html.find('.sidebar-content').height() - 65, top: 60});
-          },
-          on: function modalOn( action, $modal ){
-            if( action === 'close' ){
-            }
-          },
-          windowControls: {
-            save: {
-              icn: 'icn-save',
-              title: pageDesigner.translate('ioco.page_designer.save'),
-              callback: function( $modal ){
-                // TODO: webBit.save();
-              }
-            }
-          }*/
-        });
-
-      }
-
-      if( itemData.name ){
-        renderForm( itemData ); 
-      } else {
-        renderNewModal();
-
-        var name = prompt( $.i18n.t('webpage.Enter name') );
-        if( !name || name.length < 1 )
-          return;
-        $.ajax({ url: '/webpages', type: 'post', data: { _csrf: ioco._csrf, webpage: { name: name } },
-                 success: function( response ){
-                    if( !response.success )
-                      return ioco.notify( $.i18n.t('creation.failed', {name: name}) + ' ' + $.i18n.t('reason') + ':' + response.error );
-                    var item = new $tree.TreeItemModel( response.webpage );
-                    $tree.treeViewModel.items.push( item );
-                    $tree.find('[data-id='+item._id+'] a.link-trigger:first').click();
-                  }
-        });
-      }
+      renderForm( itemData ); 
     }
   });
+
   $('#ioco-webpages .ioco-tree ul:first').nestedSortable({
       listType: 'ul',
       forcePlaceholderSize: true,
@@ -145,7 +155,7 @@ script(type='text/javascript')
       placeholder: 'placeholder',
       revert: 250,
       delay: 250,
-      tolerance: 'poioco',
+      tolerance: 'pointer',
       toleranceElement: '> div',
       maxLevels: 5,
       isTree: true,

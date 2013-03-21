@@ -6,9 +6,14 @@
  * license: GPLv3
  *
  */
+
+
+var cheerio = require('cheerio');
+
 var ioco = require('ioco')
   , User = ioco.db.model('User')
-  , WebPage = ioco.db.model('WebPage');
+  , WebPage = ioco.db.model('WebPage')
+  , WebBit = ioco.db.model('WebBit');
 
 module.exports = exports = function( app ){
 
@@ -47,10 +52,23 @@ module.exports = exports = function( app ){
   });
 
   app.post('/webpages', ioco.plugins.auth.check, function( req, res ){
-    if( req.body.webpage && req.body.webpage.name.length > 1 ){
-      WebPage.create( { name: req.body.webpage.name, holder: res.locals.currentUser }, function( err, webpage ){
+    function createWebpage( newWebbitId ){
+      WebPage.create( { name: req.body.webpage.name, holder: res.locals.currentUser, rootWebBitId: newWebbitId }, function( err, webpage ){
         res.json({ success: err === null, error: err, webpage: webpage });
       });
+    }
+
+    if( req.body.webpage && req.body.webpage.name.length > 1 ){
+      if( req.body.templateId )
+        WebBit.deepCopy( req.body.templateId, function( err, webbit ){
+          if( err )
+            res.json({ success: false, error: err });
+          console.log('[webpage] got: ', webbit);
+          if( webbit )
+            createWebpage( webbit._id );
+        });
+      else
+        createWebpage();
     }
   });
 

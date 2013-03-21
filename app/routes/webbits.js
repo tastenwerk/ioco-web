@@ -44,9 +44,10 @@ module.exports = exports = function( app ){
         pluginName: req.body.webbit.pluginName,
         properties: req.body.webbit.properties,
         root: sanitize( req.body.webbit.root ).toBoolean(),
-        library: sanitize( req.body.webbit.library ).toBoolean(),
-        category: req.body.webbit.category
+        library: sanitize( req.body.webbit.library ).toBoolean()
       };
+      if( req.body.webbit.category )
+        attrs.category = req.body.webbit.category;
       WebBit.create( attrs, function( err, webbit ){
         res.json({ success: err === null, error: err, data: webbit });
       });
@@ -63,9 +64,11 @@ module.exports = exports = function( app ){
         content: req.body.webbit.content,
         properties: req.body.webbit.properties,
         library: sanitize( req.body.webbit.library ).toBoolean(),
-        category: req.body.webbit.category,
         template: sanitize( req.body.webbit.template ).toBoolean()
       };
+      if( req.body.webbit.category )
+        attrs.category = req.body.webbit.category;
+      
       req.webbit.update( attrs, function( err ){
         res.json({ success: err === null, error: err, data: req.webbit });
       });

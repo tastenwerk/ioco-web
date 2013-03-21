@@ -126,6 +126,15 @@ ul.web-files li .loader .circle:after {
 .web-files-control .selected-counter {
   display: none;
 }
+.webpage-form {
+  padding: 20px;
+}
+.webpage-form p {
+  margin: 10px 0;
+}
+.webpage-form input[type=text] {
+  width: 100%;
+}
 .ioco-modal .source-editor {
   position: absolute;
   top: 10px;

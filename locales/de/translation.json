@@ -1,7 +1,11 @@
 {
   "webpage": {
+    "name": "Name",
+    "template": "von Vorlage",
     "new_name": "Neue Webseite",
-    "create": "Neue Webseite erstellen",
+    "name_required": "Name erforderlich",
+    "create_title": "Neue Webseite erstellen",
+    "create": "Seite erstellen",
     "Slug": "Slug",
     "Layout": "Layout",
     "Properties": "Eigenschaften",
