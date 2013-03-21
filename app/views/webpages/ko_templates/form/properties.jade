@@ -23,6 +23,11 @@ form.wide( data-bind="submit: saveForm" )
       input.span400( type='text', data-bind='value: slug', placeholder=t('autogenerate') )
 
     p
+      label.pull-left.translate(data-ns='webpage') Template
+      input( type='checkbox', data-bind='value: true, checked: template' )
+      span.desc.translate(data-ns='webpage') Template desc
+
+    p
       label.pull-left.translate(data-ns='webpage') Hidden
       input( type='checkbox', data-bind='value: true, checked: properties().hidden' )
       span.desc=t('web_page.hidden_desc')

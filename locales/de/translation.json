@@ -2,6 +2,8 @@
   "webpage": {
     "name": "Name",
     "template": "von Vorlage",
+    "Template": "Vorlage",
+    "Template desc": "Diese Seite als Vorlage für andere Seiten speichern",
     "new_name": "Neue Webseite",
     "name_required": "Name erforderlich",
     "create_title": "Neue Webseite erstellen",

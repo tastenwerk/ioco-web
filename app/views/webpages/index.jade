@@ -25,7 +25,7 @@ link( rel='stylesheet', href='/stylesheets/ioco.page-designer.css' )
       h1.title=t('webpages.title')
       span=t('document.click_for_details')
 
-    #ioco-user-form.item-form( data-bind='template: {name: "webItemForm"}' )
+    #ioco-webpage-form.item-form( data-bind='template: {name: "webItemForm"}' )
 
 include ko_templates/web_item
 include ko_templates/web_item_form
@@ -123,11 +123,12 @@ script(type='text/javascript')
   $('#ioco-webpages .ioco-tree').iocoTree({
     url: '/webpages.json?roots=true',
     saveUrl: '/webpages/',
-    saveKey: 'webPage',
-    saveAttrs: [ 'name', 'tags', 'content', 'slug', 'properties' ],
+    saveKey: 'webpage',
+    saveAttrs: [ 'name', 'tags', 'content', 'slug', 'properties', 'frontpage', 'template' ],
     defaultValues: { properties: {}, content: '', _type: 'WebPage' },
     beforeSave: function( form, data, save ){
-      $('.ioco-page-content:visible .ioco-web-bit.root:first').data('webBit').save( function(){
+      console.log(data);
+      $('#ioco-webpage-form:visible .ioco-web-bit.root:first').data('webBit').save( function(){
         save( data );
       });
     },

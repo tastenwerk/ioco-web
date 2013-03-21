@@ -1,45 +1,50 @@
 module.exports = exports = {
 
-  webPages: {
+  ioco: {
 
-    /**
-     * depending
-     */
-    depends: [ 'ioco-pagedesigner' ],
+    plugins: {
+      webPages: {
 
-    /**
-     * routes for expressjs
-     */
-    routes: __dirname+'/app/routes',
+        /**
+         * depending
+         */
+        depends: [ 'ioco-pagedesigner' ],
 
-    /**
-     * ioco models
-     */
-    models: {
-      WebPage: require( __dirname+'/app/models/webpage' ),
-      WebBit: require( __dirname+'/app/models/webbit' )
-    },
+        /**
+         * routes for expressjs
+         */
+        routes: __dirname+'/app/routes',
 
-    /**
-     * static paths to be added to expressjs globals
-     */
-    statics: {
-      public: __dirname + '/public'
-    },
+        /**
+         * ioco models
+         */
+        models: {
+          WebPage: require( __dirname+'/app/models/webpage' ),
+          WebBit: require( __dirname+'/app/models/webbit' )
+        },
 
-    views: __dirname+'/app/views',
+        /**
+         * static paths to be added to expressjs globals
+         */
+        statics: {
+          public: __dirname + '/public'
+        },
 
-    viewPaths: [ __dirname + '/app/views' ],
+        views: __dirname+'/app/views',
 
-    sidebarWidget: {
-      limitSearch: [ 'WebPage' ],
-      overrideName: 'webpages'
-    },
+        viewPaths: [ __dirname + '/app/views' ],
 
-    allowedGroups: ['manager', 'editor'],
+        sidebarWidget: {
+          limitSearch: [ 'WebPage' ],
+          overrideName: 'webpages'
+        },
 
-    translations: __dirname+'/locales'
+        allowedGroups: ['manager', 'editor'],
 
+        translations: __dirname+'/locales'
+
+      }
+    }
   }
 
 };

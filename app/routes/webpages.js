@@ -9,6 +9,8 @@
 
 
 var cheerio = require('cheerio');
+var sanitize = require('validator').sanitize;
+var qs = require('querystring');
 
 var ioco = require('ioco')
   , User = ioco.db.model('User')
@@ -51,6 +53,31 @@ module.exports = exports = function( app ){
     });
   });
 
+
+  /**
+   * find a web_page by it's slug
+   * name
+   */
+  app.get( '/pub/:slug*', ioco.plugins.auth.checkWithoutRedirect, getPublicWebPage, function( req, res ){
+
+
+    if( req.webpage )
+      WebPage.update({_id: req.webpage._id}, {$inc: {'stat.views': 1}}, {safe: true}, function( err ){
+        if( err ) console.log('error: ', err);
+
+        var webBits = [];
+        var counter = 0;
+
+        var webpage = new pageDesigner.WebPage( req.webpage );
+        webpage.initialize( function( err, webpage ){
+          res.send( webpage.render() );
+        });
+
+      });
+    else
+      res.send(404);
+  });
+
   app.post('/webpages', ioco.plugins.auth.check, function( req, res ){
     function createWebpage( newWebbitId ){
       WebPage.create( { name: req.body.webpage.name, holder: res.locals.currentUser, rootWebBitId: newWebbitId }, function( err, webpage ){
@@ -73,12 +100,31 @@ module.exports = exports = function( app ){
   });
 
   app.put('/webpages/:id', ioco.plugins.auth.check, getWebpage, function( req, res ){
-    if( req.webpage )
-      req.webpage.update( req.body.webpage, function( err ){
-        res.json({ success: err === null, error: err, webpage: req.webpage });
+    if( req.webpage ){
+      req.webpage.name = req.body.webpage.name || req.webpage.name;
+      req.webpage.properties = req.body.webpage.properties || req.webpage.properties;
+      req.webpage.slug = req.body.webpage.slug || req.webpage.slug;
+      req.webpage.template = sanitize(req.body.webpage.template || req.webpage.template).toBoolean();
+      req.webpage.markModified( 'properties' );
+      req.webpage.save( function( err ){
+        if( err )
+          req.flash('error', err);
+        else
+          req.flash('notice', req.i18n.t('saving.ok', {name: req.webpage.name}));
+        if( req.webpage.rootWebBitId ){
+          WebBit.findById( req.webpage.rootWebBitId, function( err, webbit ){
+            if( err ) return res.json({ success: false, error: err });
+            if( webbit )
+              webbit.update({ template: req.webpage.template, name: req.webpage.name }, function( err ){
+                res.json({ success: err === null, error: err, webpage: req.webpage, flash: req.flash() });        
+              });
+          });
+          res.json({ success: err === null, error: err, webpage: req.webpage, flash: req.flash() });
+        } else
+          res.json({ success: err === null, error: err, webpage: req.webpage, flash: req.flash() });
       });
-    else
-      res.json({ success: false });
+    } else
+      res.json({ success: false, error: 'could not find webpage' });
   });
 
 
@@ -105,5 +151,33 @@ function getWebpage( req, res, next ){
   WebPage.findById(req.params.id).execWithUser( res.locals.currentUser || User.anybody, function( err, webpage ){
     req.webpage = webpage;
     next();
+  });
+}
+
+function getPublicWebPage( req, res, next ){
+  var q = {};
+  if( req.params.id )
+    q._id = ioco.db.Schema.Types.ObjectId( req.params.id );
+  else if( req.params.slug )
+    q.slug = '/' + qs.escape( req.params.slug );
+  var user = res.locals.currentUser || ioco.db.model('User').anybody;
+  WebPage.findOne( q ).execWithUser( user, function( err, webpage ){
+    if( err ) req.flash('error', err);
+    req.webpage = webpage;
+    next();
+  });
+}
+
+    
+var pageDesigner = require('ioco-pagedesigner').lib;
+
+/**
+ * overrides jquery method
+ */
+pageDesigner.WebBit.loadById = function loadWebBitById( id, callback ){
+  WebBit.findById( id, function( err, webbit ){
+    if( err ) return callback( err );
+    if( !webbit ) return callback( 'webbit not found' );
+    callback( null, new pageDesigner.WebBit( webbit ) );
   });
 }

@@ -37,6 +37,7 @@ module.exports = exports = function( app ){
    * create a new webbit
    */
   app.post('/webbits', ioco.plugins.auth.check, function( req, res ){
+    console.log('webbit entering', req.body.webbit );
     if( req.body.webbit && req.body.webbit.name.length > 1 ){
       var attrs = {
         name: req.body.webbit.name,

@@ -46,6 +46,18 @@ WebBitSchema.static( 'deepCopy', function( id, callback ){
 });
 
 /**
+ * check if webbit is root webbit.
+ *
+ * disable library if is root webbit (does not make sense)
+ *
+ */
+WebBitSchema.pre('save', function( next ){
+  if( this.root )
+    this.library = false;
+  next();
+});
+
+/**
  * copies the given webbit and parses the new copied webbit's
  * content for data-web-bit-id attributes via cheerio
  *
