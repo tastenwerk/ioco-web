@@ -1,0 +1,15 @@
+!!! 5
+html
+  head
+
+    title=webpage.name
+
+    each css in includeCSS
+      link( rel='stylesheet', href=css )
+
+    each js in includeJS
+      script(type='text/javascript', src=js)
+
+  body
+    input( type='hidden', id='_csrf', value=_csrf )
+    !=renderedContent

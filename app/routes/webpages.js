@@ -57,9 +57,9 @@ module.exports = exports = function( app ){
   /**
    * find a web_page by it's slug
    * name
+   *
    */
-  app.get( '/pub/:slug*', ioco.plugins.auth.checkWithoutRedirect, getPublicWebPage, function( req, res ){
-
+  app.get( '/p/:slug*', ioco.plugins.auth.checkWithoutRedirect, getPublicWebPage, function( req, res ){
 
     if( req.webpage )
       WebPage.update({_id: req.webpage._id}, {$inc: {'stat.views': 1}}, {safe: true}, function( err ){
@@ -70,7 +70,11 @@ module.exports = exports = function( app ){
 
         var webpage = new pageDesigner.WebPage( req.webpage );
         webpage.initialize( function( err, webpage ){
-          res.send( webpage.render() );
+          var rwb = webpage.rootWebBit;
+          res.render( __dirname + '/../views/webpages/show.jade', { includeCSS: rwb.properties.includeCSS && rwb.properties.includeCSS.replace(/ /g,'').split(','),
+                                                                    includeJS: rwb.properties.includeJS && rwb.properties.includeJS.replace(/ /g,'').split(','),
+                                                                    webpage: webpage,
+                                                                    renderedContent: webpage.render() } );
         });
 
       });

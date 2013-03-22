@@ -134,7 +134,7 @@ script(type='text/javascript')
     },
     before: function( tree ){
       tree.TreeItemModel.prototype.previewWebPage = function(){
-        window.open( '/pub'+this.slug() );
+        window.open( '/p'+this.slug() );
       }
 
     },

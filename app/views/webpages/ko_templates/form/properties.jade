@@ -36,8 +36,3 @@ form.wide( data-bind="submit: saveForm" )
       label.pull-left.translate(data-ns='webpage') Frontpage
       input( type='checkbox', data-bind='value: true, checked: properties().frontpage' )
       span.desc=t('web_page.frontpage_desc')
-
-    p
-      label.pull-left.translate(data-ns='webpage') No robots
-      input( type='checkbox', data-bind='value: true, checked: properties().noRobots' )
-      span.desc=t('web_page.no_robots_desc')
