@@ -37,7 +37,6 @@ module.exports = exports = function( app ){
    * create a new webbit
    */
   app.post('/webbits', ioco.plugins.auth.check, function( req, res ){
-    console.log('webbit entering', req.body.webbit );
     if( req.body.webbit && req.body.webbit.name.length > 1 ){
       var attrs = {
         name: req.body.webbit.name,
@@ -55,6 +54,31 @@ module.exports = exports = function( app ){
     }
   });
 
+  app.get('/webbits/:id/edit:format?', ioco.plugins.auth.check, getWebbit, function( req, res ){
+    res.render( ioco.view.lookup( '/webbits/edit.jade' ), {flash: req.flash(), webbit: req.webbit });
+  });
+  
+  /**
+   * get a webbit freshly rendered
+   * with api settings
+   *
+   * but don't save the webbit
+   * to the database
+   */
+  app.put('/webbits/:id/preview.json', ioco.plugins.auth.check, function( req, res ){
+
+    pageDesigner.WebBit.loadById( req.params.id, { api: req.body.api }, function( err, webbit ){
+
+      var webbitJSON = webbit.toObject();
+      if( webbit.serverProcContent )
+        webbitJSON.serverProcContent = webbit.serverProcContent;
+
+      res.json( webbitJSON );
+
+    })
+
+  });
+
   /**
    * update a webbit
    */
@@ -65,7 +89,9 @@ module.exports = exports = function( app ){
         content: req.body.webbit.content,
         properties: req.body.webbit.properties,
         library: sanitize( req.body.webbit.library ).toBoolean(),
-        template: sanitize( req.body.webbit.template ).toBoolean()
+        template: sanitize( req.body.webbit.template ).toBoolean(),
+        api: req.body.webbit.api
+
       };
       if( req.body.webbit.category )
         attrs.category = req.body.webbit.category;
@@ -110,10 +136,6 @@ module.exports = exports = function( app ){
     res.json( req.webbit );
   });
 
-  app.get('/webbits/:id/edit:format?', ioco.plugins.auth.check, getWebbit, function( req, res ){
-    res.render( ioco.view.lookup( '/webbits/edit.jade' ), {flash: req.flash(), webbit: req.webbit });
-  });
-
 }
 
 function getWebbits( user, q, callback ){
@@ -126,3 +148,5 @@ function getWebbit( req, res, next ){
     next();
   });
 }
+
+var pageDesigner = require( __dirname + '/../helper/page_designer_ext' );

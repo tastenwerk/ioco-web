@@ -44,11 +44,11 @@ script(type='text/javascript')
   
 script(type='text/javascript')
   
-  function renderForm( item ){
+  function renderForm( itemData ){
     $('#pd').iocoPageDesigner({
       i18n: true,
       csrf: $('#_csrf').val(),
-      webPage: new ioco.pageDesigner.WebPage( item ),
+      webPage: new ioco.pageDesigner.WebPage( itemData ),
       after: {
         create: function( plugin, webBit, boxDom, json, done ){
           ioco.notify( json.flash );
@@ -62,7 +62,7 @@ script(type='text/javascript')
         }
       }
     });
-    $('.top-tabs-nav-title.page-name').text( item.name() );
+    $('.top-tabs-nav-title.page-name').text( itemData.name() );
     ioco.parseTranslations();
   }
 

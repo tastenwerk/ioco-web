@@ -12,11 +12,16 @@ var ioco = require('ioco');
 var WebBitSchema = ioco.db.Schema({
   pluginName: String,
   content: String,
+  api: {
+    url: { type: String, default: '' },
+    data: { type: ioco.db.Schema.Types.Mixed, default: {} },
+    postProcTemplate: { type: String, default: '' }
+  },
   category: String,
   library: { type: Boolean, default: false },
   template: { type: Boolean, default: false },
   root: { type: Boolean, default: false },
-  webBits: { type: [ioco.db.Schema.ObjectId], ref: 'WebBit' },
+  //webBits: { type: [ioco.db.Schema.ObjectId], ref: 'WebBit' },
   properties: { type: ioco.db.Schema.Types.Mixed },
 })
 
@@ -44,6 +49,18 @@ WebBitSchema.static( 'deepCopy', function( id, callback ){
   });
 
 });
+
+/**
+ * gets and renders the webbit
+ *
+ */
+WebBitSchema.static( 'getAndRender', function( id, callback ){
+  this.findById( id, function( err, webbit ){
+    if( err ) return callback( err );
+    if( !webbit ) return callback( 'webbit not found' );
+    callback( null, new pageDesigner.WebBit( webbit ) );
+  });
+} );
 
 /**
  * check if webbit is root webbit.
@@ -79,7 +96,7 @@ function copyWebBitAndSave( webbit, callback ){
 
   var attrs = {};
   for( var i in webbit )
-    if( i.match(/pluginName|name|content|root|properties/) )
+    if( i.match(/pluginName|name|content|root|properties|api/) )
       attrs[i] = webbit[i];
 
   self.create( attrs, function( err, copiedWebBit ){

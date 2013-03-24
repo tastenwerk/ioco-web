@@ -7,8 +7,6 @@
  *
  */
 
-
-var cheerio = require('cheerio');
 var sanitize = require('validator').sanitize;
 var qs = require('querystring');
 
@@ -105,6 +103,9 @@ module.exports = exports = function( app ){
 
   app.put('/webpages/:id', ioco.plugins.auth.check, getWebpage, function( req, res ){
     if( req.webpage ){
+      req.webpage.rootWebBitId = req.body.webpage.rootWebBitId || req.webpage.rootWebBitId;
+      console.log( 'webbit', req.webpage.rootWebBitId );
+      console.log( 'webbit from req', req.body.webpage.rootWebBitId );
       req.webpage.name = req.body.webpage.name || req.webpage.name;
       req.webpage.properties = req.body.webpage.properties || req.webpage.properties;
       req.webpage.slug = req.body.webpage.slug || req.webpage.slug;
@@ -172,16 +173,4 @@ function getPublicWebPage( req, res, next ){
   });
 }
 
-    
-var pageDesigner = require('ioco-pagedesigner').lib;
-
-/**
- * overrides jquery method
- */
-pageDesigner.WebBit.loadById = function loadWebBitById( id, callback ){
-  WebBit.findById( id, function( err, webbit ){
-    if( err ) return callback( err );
-    if( !webbit ) return callback( 'webbit not found' );
-    callback( null, new pageDesigner.WebBit( webbit ) );
-  });
-}
+var pageDesigner = require( __dirname + '/../helper/page_designer_ext' );

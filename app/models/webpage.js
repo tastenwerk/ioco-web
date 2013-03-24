@@ -63,3 +63,4 @@ WebPageSchema.pre( 'validate', function createSlug( next ){
 });
 
 ioco.db.model( 'WebPage', WebPageSchema );
+
