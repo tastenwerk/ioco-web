@@ -15,6 +15,8 @@ var WebPageSchema = ioco.db.Schema({
   slug: { type: String, required: true, index: { unique: true }, lowercase: true },
   stat: {type: ioco.db.Schema.Types.Mixed, default: {}},
   template: {type: Boolean, default: false },
+  frontpage: {type: Boolean, default: false },
+  hidden: {type: Boolean, default: false },
   rootWebBitId: { type: ioco.db.Schema.Types.ObjectId, ref: 'WebBit' },
   properties: { type: ioco.db.Schema.Types.Mixed, default: { frontpage: false } },
 })

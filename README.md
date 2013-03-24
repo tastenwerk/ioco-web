@@ -38,7 +38,7 @@ sidebar and new dashboard widgets you can use.
       body
         h1 Hello ioco!
 
-### [ioPageDesigner](http://github.com/tastenwerk/ioweb/wiki/iopagedesigner)
+### [iocoPageDesigner](http://github.com/tastenwerk/ioweb/wiki/iopagedesigner)
 
 Please refer to the wiki for this entirely new concept of building, 
 templating and editing webpages.

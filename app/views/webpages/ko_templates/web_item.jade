@@ -5,9 +5,13 @@ script(type='text/html', id='webItemTemplate')
       a.pull-right.show-details-arr( data-bind='click: showForm')
         span.icn.icn-arr-right
         | &nbsp;
-      // ko if: properties().frontpage
+      // ko if: frontpage
       a.pull-right(style='opacity:0.5')
         .span.icn.icn-home
+      // /ko
+      // ko if: template
+      a.pull-left(style='opacity:0.5')
+        .span.icn.icn-book
       // /ko
       a.link-trigger( href='#', data-bind='text: name, click: showForm' )
     ul(data-bind='template: { name: \'webItemTemplate\', foreach: children }')

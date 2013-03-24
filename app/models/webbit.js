@@ -12,14 +12,11 @@ var ioco = require('ioco');
 var WebBitSchema = ioco.db.Schema({
   pluginName: String,
   content: String,
-  api: {
-    url: { type: String, default: '' },
-    data: { type: ioco.db.Schema.Types.Mixed, default: {} },
-    postProcTemplate: { type: String, default: '' }
-  },
+  api: { type: ioco.db.Schema.Types.Mixed, default: { url: '', data: {}, postProcTemplate: ''} },
   category: String,
   library: { type: Boolean, default: false },
   template: { type: Boolean, default: false },
+  locked: { type: Boolean, default: false },
   root: { type: Boolean, default: false },
   //webBits: { type: [ioco.db.Schema.ObjectId], ref: 'WebBit' },
   properties: { type: ioco.db.Schema.Types.Mixed },
@@ -87,6 +84,8 @@ function copyWebBitAndSave( webbit, callback ){
 
   var self = this;
 
+  if( webbit.library )
+    console.log('YES WE ARE DOING A LIBRARY')
   // don't copy if the webbit is marked as library
   // we assume that in that case, we want a link to this
   // webbit
@@ -96,7 +95,7 @@ function copyWebBitAndSave( webbit, callback ){
 
   var attrs = {};
   for( var i in webbit )
-    if( i.match(/pluginName|name|content|root|properties|api/) )
+    if( i.match(/pluginName|name|content|root|properties|locked|api/) )
       attrs[i] = webbit[i];
 
   self.create( attrs, function( err, copiedWebBit ){
@@ -124,20 +123,18 @@ function parseWebBit( webbit, callback ){
     webBitIds.push( $(this).attr('data-web-bit-id') );
   });
 
-  console.log('[cpy] we are going to copy', webBitIds.length, 'webbits');
-
   function parseForWebBits(){
 
     if( webBitIds.length > counter ){
-      console.log('[cpy] parsing webbit ', webBitIds[counter])
+      //console.log('[cpy] parsing webbit ', webBitIds[counter])
       self.findById( webBitIds[counter++], function( err, origWebBit ){
         if( err ) return callback( err );
         if( origWebBit )
           copyWebBitAndSave.call( self, origWebBit, function( err, deepCopiedWebBit ){
             if( err ) return callback( err );
             if( deepCopiedWebBit ){
-              console.log('[cpy] copied webbit:', deepCopiedWebBit);
-              console.log('[cpy] going to replace ', webBitIds[counter-1], deepCopiedWebBit._id.toString());
+              //console.log('[cpy] copied webbit:', deepCopiedWebBit);
+              //console.log('[cpy] going to replace ', webBitIds[counter-1], deepCopiedWebBit._id.toString());
               webbit.content = webbit.content.replace(new RegExp(webBitIds[counter-1],'g'), deepCopiedWebBit._id.toString());
               webbit.save( function( err ){
                 if( err ) return callback( err );

@@ -14,6 +14,9 @@
     "No robots": "Keine Suchmaschinen",
     "Frontpage": "Startseite",
     "Hidden": "Versteckt",
-    "Enter name": "Name der Webseite"
+    "Enter name": "Name der Webseite",
+    "Designer Context": "Designer Context Einstellungen",
+    "open designer context": "Einstellungen bearbeiten",
+    "Common": "Allgemein"
   }
 }

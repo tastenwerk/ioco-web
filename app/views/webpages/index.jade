@@ -47,6 +47,8 @@ script(type='text/javascript')
   function renderForm( itemData ){
     $('#pd').iocoPageDesigner({
       i18n: true,
+      disableRootWebBitControls: true,
+      roles: { designer: !{currentUser.groups.indexOf('designer') >= 0} },
       csrf: $('#_csrf').val(),
       webPage: new ioco.pageDesigner.WebPage( itemData ),
       after: {
@@ -127,8 +129,9 @@ script(type='text/javascript')
     saveAttrs: [ 'name', 'tags', 'content', 'slug', 'properties', 'frontpage', 'template' ],
     defaultValues: { properties: {}, content: '', _type: 'WebPage' },
     beforeSave: function( form, data, save ){
-      console.log(data);
-      $('#ioco-webpage-form:visible .ioco-web-bit.root:first').data('webBit').save( function(){
+      var webBit = $('#ioco-webpage-form:visible .ioco-web-bit.root:first').data('webBit');
+      webBit.name = data.webpage.name;
+      webBit.save( function(){
         save( data );
       });
     },
@@ -136,7 +139,6 @@ script(type='text/javascript')
       tree.TreeItemModel.prototype.previewWebPage = function(){
         window.open( '/p'+this.slug() );
       }
-
     },
     replaceNewItemForm: function( itemData, form, $tree ){
       renderNewModal( $tree );

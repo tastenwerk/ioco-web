@@ -9,30 +9,39 @@ ul.top-tabs-action-nav
 form.wide( data-bind="submit: saveForm" )
 
   .form-content.edit-form
-  
-    p
-      label.pull-left.translate name
-      input.span400( type='text', data-bind='value: name' )
 
-    p
-      label.pull-left.translate type
-      input.span400( type='text', data-bind='value: _type' )
+    fieldset
+      legend.tranlsate(data-ns='webpage') Common
 
-    p
-      label.pull-left.translate(data-ns='webpage') Slug
-      input.span400( type='text', data-bind='value: slug', placeholder=t('autogenerate') )
+      p
+        label.pull-left.translate name
+        input.span400( type='text', data-bind='value: name' )
 
-    p
-      label.pull-left.translate(data-ns='webpage') Template
-      input( type='checkbox', data-bind='value: true, checked: template' )
-      span.desc.translate(data-ns='webpage') Template desc
+      p
+        label.pull-left.translate type
+        input.span400( type='text', data-bind='value: _type' )
 
-    p
-      label.pull-left.translate(data-ns='webpage') Hidden
-      input( type='checkbox', data-bind='value: true, checked: properties().hidden' )
-      span.desc=t('web_page.hidden_desc')
+      p
+        label.pull-left.translate(data-ns='webpage') Slug
+        input.span400( type='text', data-bind='value: slug', placeholder=t('autogenerate') )
 
-    p
-      label.pull-left.translate(data-ns='webpage') Frontpage
-      input( type='checkbox', data-bind='value: true, checked: properties().frontpage' )
-      span.desc=t('web_page.frontpage_desc')
+      p
+        label.pull-left.translate(data-ns='webpage') Template
+        input( type='checkbox', data-bind='value: true, checked: template' )
+        span.desc.translate(data-ns='webpage') Template desc
+
+      p
+        label.pull-left.translate(data-ns='webpage') Hidden
+        input( type='checkbox', data-bind='checked: hidden' )
+        span.desc=t('web_page.hidden_desc')
+
+      p
+        label.pull-left.translate(data-ns='webpage') Frontpage
+        input( type='checkbox', data-bind='checked: frontpage' )
+        span.desc=t('web_page.frontpage_desc')
+
+    if currentUser.groups.indexOf('designer') >= 0
+      fieldset
+        legend.tranlsate(data-ns='webpage') Designer Context
+        p
+          span.translate.btn(data-ns='webpage', onclick='$(this).closest(\'.ioco-content\').find(\'.ioco-web-bit.root:first > .box-controls > .prop-btn\').click()') open designer context
