@@ -93,13 +93,24 @@ module.exports = exports = function( app ){
         api: req.body.webbit.api
 
       };
+
       if( req.body.webbit.category )
         attrs.category = req.body.webbit.category;
-      
-      req.webbit.update( attrs, function( err ){
+
+      req.webbit._holder = res.locals.currentUser;      
+      req.webbit.createVersion();
+
+      for( var i in attrs )
+        req.webbit[i] = attrs[i];
+
+      req.webbit.save( function( err ){
         res.json({ success: err === null, error: err, data: req.webbit });
       });
     }
+  });
+
+  app.get( '/webbits/:id/revisions.json', ioco.plugins.auth.check, getWebbit, function( req, res ){
+    res.json( req.webbit && req.webbit.versions || [] );
   });
 
   /**

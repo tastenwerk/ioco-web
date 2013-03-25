@@ -84,8 +84,6 @@ function copyWebBitAndSave( webbit, callback ){
 
   var self = this;
 
-  if( webbit.library )
-    console.log('YES WE ARE DOING A LIBRARY')
   // don't copy if the webbit is marked as library
   // we assume that in that case, we want a link to this
   // webbit
@@ -156,3 +154,4 @@ function parseWebBit( webbit, callback ){
 }
 
 ioco.db.model( 'WebBit', WebBitSchema );
+ioco.db.model( 'WebBit' ).setVersionAttrs([ 'name', 'properties', 'api', 'template', 'library', 'locked', 'root', 'content', 'category' ]);

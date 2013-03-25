@@ -34,7 +34,6 @@ pageDesigner.WebBit.loadById = function loadWebBitById( id, tmpAttrs, callback )
       controller[action]( webbit, function( locals ){
         locals.webbit = webbit;
         webbit.serverProcContent = compiledJade( locals );
-        console.log('serverProcContent', webbit);
         callback( err, webbit );
       });
     } else

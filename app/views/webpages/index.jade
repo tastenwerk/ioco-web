@@ -44,12 +44,17 @@ script(type='text/javascript')
   
 script(type='text/javascript')
   
+  // init users cache (in case it has not been initialized yet)
+  ioco.initUsersCache();
+
   function renderForm( itemData ){
     $('#pd').iocoPageDesigner({
       i18n: true,
       disableRootWebBitControls: true,
+      revisions: true,
       roles: { designer: !{currentUser.groups.indexOf('designer') >= 0} },
       csrf: $('#_csrf').val(),
+      usersCache: ioco.usersCache,
       webPage: new ioco.pageDesigner.WebPage( itemData ),
       after: {
         create: function( plugin, webBit, boxDom, json, done ){
