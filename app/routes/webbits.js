@@ -109,8 +109,57 @@ module.exports = exports = function( app ){
     }
   });
 
+  app.put( '/webbits/:id/revisions/:revision/comment', ioco.plugins.auth.check, getWebbit, function( req, res ){
+    if( req.webbit && req.body.comment && req.params.revision ){
+      var success = false;
+      for( var i=0, rev; rev=req.webbit.versions[i]; i++ )
+        if( rev.revision === parseInt(req.params.revision) ){
+          rev.comment = req.body.comment;
+          req.webbit.save( function( err ){
+            return res.json({ success: err === null });
+          });
+          success = true;
+        }
+      if( ! success )
+        res.json({ error: 'could not find revision ' + req.body.revision });
+    } else
+      res.json({ error: 'could not find webbit' })
+  });
+
+  app.put( '/webbits/:id/revisions/:revision/switch', ioco.plugins.auth.check, getWebbit, function( req, res ){
+    if( req.webbit && req.params.revision ){
+      var success = false;
+      var revision = req.webbit.switchVersion( parseInt( req.params.revision ) );
+      req.webbit.save( function( err ){
+        return res.json({ success: err === null, revision: revision });
+      });
+    } else
+      res.json({ error: 'could not find webbit' })
+  });
+
+  app.delete( '/webbits/:id/revisions/:revision', ioco.plugins.auth.check, getWebbit, function( req, res ){
+    if( req.webbit && req.params.revision ){
+      var success = false;
+      var version = req.webbit.deleteVersion( parseInt( req.params.revision ) );
+      req.webbit.save( function( err ){
+        return res.json({ success: err === null, revision: version });
+      });
+    } else
+      res.json({ error: 'could not find webbit' })
+  });
+
+
   app.get( '/webbits/:id/revisions.json', ioco.plugins.auth.check, getWebbit, function( req, res ){
-    res.json( req.webbit && req.webbit.versions || [] );
+    var revisions = req.webbit && req.webbit.versions || [];
+    if( revisions.length > 0 )
+      revisions = revisions.sort(function(a,b){
+        if( a.revision < b.revision )
+          return -1;
+        if( a.revision > b.revision )
+          return 1;
+        return 0;
+      });
+    res.json( revisions );
   });
 
   /**
