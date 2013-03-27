@@ -103,6 +103,14 @@ script(type='text/javascript')
   function renderNewWebpageModal( $tree ){
 
     var $formContent = $('<form class="webpage-form" />')
+
+    if( $tree.treeViewModel.selectedItems().length === 1 ){
+      var item = $tree.treeViewModel.selectedItems()[0];
+      $formContent.append( $('<p/>').append( $('<label/>').addClass('desc').text( $.i18n.t('labels') ) )
+                     .append( $('<span/>').addClass('lbl parent').text( item.name() ).attr('data-parent', item._type+':'+item._id) )
+      );
+    }
+    $formContent
       .append( $('<p/>').append( $('<label/>').addClass('desc').text( $.i18n.t('webpage.name') ) )
                      .append( $('<input/>').attr('type','text').attr('name', 'name') )
       )
@@ -136,13 +144,11 @@ script(type='text/javascript')
           if( name.length < 1 )
             return ioco.notify('error', $.i18n.t('webpage.name_required') );
 
-          var labelIds = [];
-          if( $('.tree-item:visible.selected').length )
-            labelIds.push( ko.dataFor($('.tree-item:visible.selected').closest('li').get(0)).labelPath() );
+          var path = $modal.find('form .parent').attr('data-parent');
 
           $.ajax({ url: '/webpages', 
                    type: 'post', 
-                   data: { _csrf: ioco._csrf, webpage: { name: name, _labelIds: labelIds }, templateId: templateId },
+                   data: { _csrf: ioco._csrf, webpage: { name: name, _labelIds: (path ? [path] : []) }, templateId: templateId },
                    success: function( response ){
                       if( !response.success )
                         return ioco.notify( $.i18n.t('creation.failed', {name: name}) + ' ' + $.i18n.t('reason') + ':' + response.error );
@@ -268,10 +274,12 @@ script(type='text/javascript')
         if( parent.length )
           children = collectChildren( parent );
         else
-          children = collectChildren( self );
+          children = collectChildren( $('#ioco-webpages .ioco-tree') );
         var formData = { _csrf: $('#_csrf').val(), ids: children.join(',') };
-        if( parent.length )
-          formData.path = $(parent).attr('data-id') + ':' + $(parent).attr('data-_type');
+        if( parent.length ){
+          var par = ko.dataFor($(parent).get(0));
+          formData.path = par._type+':'+par._id;
+        }
         $.post( '/documents/sort', formData, function( data ){
           if( data.success )
             ioco.notify( data.flash );

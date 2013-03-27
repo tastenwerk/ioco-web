@@ -86,7 +86,8 @@ module.exports = exports = function( app ){
 
   app.post('/webpages', ioco.plugins.auth.check, function( req, res ){
     function createWebpage( newWebbitId ){
-      WebPage.create( { name: req.body.webpage.name, holder: res.locals.currentUser, rootWebBitId: newWebbitId }, function( err, webpage ){
+      console.log( req.body.webpage._labelIds );
+      WebPage.create( { name: req.body.webpage.name, _labelIds: req.body.webpage._labelIds, holder: res.locals.currentUser, rootWebBitId: newWebbitId }, function( err, webpage ){
         res.json({ success: err === null, error: err, webpage: webpage });
       });
     }

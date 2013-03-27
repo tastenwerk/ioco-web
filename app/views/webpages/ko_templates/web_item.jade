@@ -17,5 +17,5 @@ script(type='text/html', id='webItemTemplate')
       a.pull-left(style='opacity:0.5', data-bind='attr: {title: typeof(type)}')
         .span.icn.icn-lbl.type-icn
       // /ko
-      a.link-trigger( href='#', data-bind='text: name, click: (isLabel() ? showProperties : showForm)' )
+      a.link-trigger.item-name( href='#', data-bind='text: name, click: (isLabel() ? showProperties : showForm)' )
     ul(data-bind='template: { name: \'webItemTemplate\', foreach: children }')
