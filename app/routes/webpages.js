@@ -13,21 +13,11 @@ var qs = require('querystring');
 var ioco = require('ioco')
   , User = ioco.db.model('User')
   , WebPage = ioco.db.model('WebPage')
-  , WebBit = ioco.db.model('WebBit');
+  , WebBit = ioco.db.model('WebBit')
+  , Label = ioco.db.model('Label');
 
 module.exports = exports = function( app ){
 
-  /**
-   * the webpages tree can be used in any location
-   * inside and outside the backend to maintain and CRUD webpages.
-   *
-   * calling 
-   *  $.getScript('/webpages/tree', function(){ ko.applyBindings( WebpagesTreeViewModel, '#mytreecontainer-id') }
-   * will invoke the tree on mytreecontainer-id
-   */
-  app.get( '/webpages/tree', ioco.plugins.auth.check, function( req, res ){
-    res.render( ioco.view.lookup( 'webpages/tree.ejs' ) );
-  });
 
   app.get( '/webpages:format?', ioco.plugins.auth.check, function( req, res ){
 
@@ -40,11 +30,25 @@ module.exports = exports = function( app ){
       json: function(){
         var q = {};
         if( req.query.parentId )
-          q = {_labelIds: new RegExp('^'+req.query.parentId+':[a-zA-Z0-9]*$')};
+          q = {_labelIds: new RegExp('^[a-zA-Z0-9]*:'+req.query.parentId+'$')};
         if( req.query.roots )
           q = {_labelIds: []};
         getWebpages( res.locals.currentUser, q, function( err, webpages ){
-          res.json({ success: err === null, data: webpages });
+          getWebpageLabels( res.locals.currentUser, q, function( err, folders ){
+            var all = webpages.concat( folders );
+            all = all.sort( function( a, b ){
+              if( a.pos < b.pos )
+                return -1;
+              if( a.pos > b.pos )
+                return 1;
+              if( a.name < b.name )
+                return -1;
+              if( a.name > b.name )
+                return 1;
+              return 0;
+            })
+            res.json({ success: err === null, data: all });
+          });
         });
       }
 
@@ -101,6 +105,12 @@ module.exports = exports = function( app ){
     }
   });
 
+  app.post('/webpage_labels', ioco.plugins.auth.check, function( req, res ){
+    Label.create( { type: 'WebLabel', name: req.body.label.name, holder: res.locals.currentUser }, function( err, label ){
+      res.json({ success: err === null, error: err, label: label });
+    });
+  });
+
   app.put('/webpages/:id', ioco.plugins.auth.check, getWebpage, function( req, res ){
     if( req.webpage ){
       req.webpage.rootWebBitId = req.body.webpage.rootWebBitId || req.webpage.rootWebBitId;
@@ -150,6 +160,10 @@ module.exports = exports = function( app ){
 
 function getWebpages( user, q, callback ){
   WebPage.find(q).sort({position: 1, name: 1}).execWithUser( user, callback );
+}
+
+function getWebpageLabels( user, q, callback ){
+  Label.find(q).where('type', 'WebLabel').sort({position: 1, name: 1}).execWithUser( user, callback );
 }
 
 function getWebpage( req, res, next ){

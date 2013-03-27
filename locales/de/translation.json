@@ -8,6 +8,8 @@
     "name_required": "Name erforderlich",
     "create_title": "Neue Webseite erstellen",
     "create": "Seite erstellen",
+    "create_label_title": "Neues Label erstellen",
+    "create_label": "Label erstellen",
     "Slug": "Slug",
     "Layout": "Layout",
     "Properties": "Eigenschaften",
@@ -17,6 +19,8 @@
     "Enter name": "Name der Webseite",
     "Designer Context": "Designer Context Einstellungen",
     "open designer context": "Einstellungen bearbeiten",
-    "Common": "Allgemein"
+    "Common": "Allgemein",
+    "new_label": "Neues Label",
+    "new_webpage": "Neue Webseite"
   }
 }

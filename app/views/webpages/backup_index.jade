@@ -47,33 +47,6 @@ script(type='text/javascript')
   // init users cache (in case it has not been initialized yet)
   ioco.initUsersCache();
 
-  function askWebpageOrLabel( $tree, e ){
-
-    if( $('#ask-webpage-or-label').length )
-      return $('#ask-webpage-or-label').remove();
-
-    var $a = $(e.target).hasClass('btn') ? $(e.target) : $(e.target).closest('a.btn');
-    var askDiv = $('<div id="ask-webpage-or-label"/>')
-        .append( $('<ul/>')
-          .append($('<li/>').text( $.i18n.t('webpage.new_webpage') ).on('click', function(e){
-              $('#ask-webpage-or-label').remove();
-              renderNewWebpageModal( $tree );
-            })
-          )
-          .append($('<li/>').text( $.i18n.t('webpage.new_label') ).on('click', function(e){
-              $('#ask-webpage-or-label').remove();
-              renderNewLabelModal( $tree );
-            })
-          )
-        )
-        .addClass('ask-div')
-        .css({ top: $a.offset().top + $a.height(), left: $a.offset().left });
-
-    setTimeout(function(){ askDiv.addClass('js-remove-on-click') }, 100);
-    $('body').append( askDiv );
-
-  }
-
   function renderForm( itemData ){
     $('#pd').iocoPageDesigner({
       i18n: true,
@@ -100,7 +73,7 @@ script(type='text/javascript')
     ioco.parseTranslations();
   }
 
-  function renderNewWebpageModal( $tree ){
+  function renderNewModal( $tree ){
 
     var $formContent = $('<form class="webpage-form" />')
       .append( $('<p/>').append( $('<label/>').addClass('desc').text( $.i18n.t('webpage.name') ) )
@@ -136,13 +109,7 @@ script(type='text/javascript')
           if( name.length < 1 )
             return ioco.notify('error', $.i18n.t('webpage.name_required') );
 
-          var labelIds = [];
-          if( $('.tree-item:visible.selected').length )
-            labelIds.push( ko.dataFor($('.tree-item:visible.selected').closest('li').get(0)).labelPath() );
-
-          $.ajax({ url: '/webpages', 
-                   type: 'post', 
-                   data: { _csrf: ioco._csrf, webpage: { name: name, _labelIds: labelIds }, templateId: templateId },
+          $.ajax({ url: '/webpages', type: 'post', data: { _csrf: ioco._csrf, webpage: { name: name }, templateId: templateId },
                    success: function( response ){
                       if( !response.success )
                         return ioco.notify( $.i18n.t('creation.failed', {name: name}) + ' ' + $.i18n.t('reason') + ':' + response.error );
@@ -160,57 +127,6 @@ script(type='text/javascript')
 
   }
 
-  /**
-   * render a modal dialog
-   * for a new webpage label
-   *
-   */
-  function renderNewLabelModal( $tree ){
-
-    var $formContent = $('<form class="webpage-form" />')
-      .append( $('<p/>').append( $('<label/>').addClass('desc').text( $.i18n.t('webpage.name') ) )
-                     .append( $('<input/>').attr('type','text').attr('name', 'name') )
-      )
-      .append( $('<p/>').css('text-align', 'right').append( $('<input/>').attr('type','submit').addClass('btn').attr('value', $.i18n.t('webpage.create_label')) ) );
-
-
-    ioco.modal({ 
-      title: $.i18n.t('webpage.create_label_title'),
-      $content: $formContent,
-      height: 200,
-      completed: function( $modal ){
-
-        $modal.find('input[type=text]').focus();
-
-        $modal.find('form').on('submit', function(e){
-
-          e.preventDefault();
-
-          var name = $(this).find('input[name=name]').val();
-
-          if( name.length < 1 )
-            return ioco.notify('error', $.i18n.t('webpage.name_required') );
-
-          var labelIds = [];
-          if( $('.tree-item:visible.selected').length )
-            labelIds.push( ko.dataFor($('.tree-item:visible.selected').closest('li').get(0)).labelPath() );
-
-          $.ajax({ url: '/webpage_labels', type: 'post', data: { _csrf: ioco._csrf, label: { name: name, _labelIds: labelIds } },
-                   success: function( response ){
-                      if( !response.success )
-                        return ioco.notify( $.i18n.t('creation.failed', {name: name}) + ' ' + $.i18n.t('reason') + ':' + response.error );
-                      var item = new $tree.TreeItemModel( response.label );
-                      $tree.treeViewModel.items.unshift( item );
-                      ioco.modal('close');
-                    }
-          });
-
-        });
-
-      }
-    });
-
-  }
   $('#ioco-webpages .ioco-tree').iocoTree({
     url: '/webpages.json?roots=true',
     saveUrl: '/webpages/',
@@ -227,13 +143,10 @@ script(type='text/javascript')
     before: function( tree ){
       tree.TreeItemModel.prototype.previewWebPage = function(){
         window.open( '/p'+this.slug() );
-      };
-      tree.TreeItemModel.prototype.isLabel = function(){
-        return (typeof(this.type) === 'function' && this.type() === 'WebLabel');
-      };
+      }
     },
-    replaceNewItemForm: function( itemData, form, $tree, e ){
-      askWebpageOrLabel( $tree, e );
+    replaceNewItemForm: function( itemData, form, $tree ){
+      renderNewModal( $tree );
     },
     afterShowForm: function( itemData, form, $tree ){
       renderForm( itemData ); 
