@@ -87,7 +87,11 @@ module.exports = exports = function( app ){
   app.post('/webpages', ioco.plugins.auth.check, function( req, res ){
     function createWebpage( newWebbitId ){
       console.log( req.body.webpage._labelIds );
-      WebPage.create( { name: req.body.webpage.name, _labelIds: req.body.webpage._labelIds, holder: res.locals.currentUser, rootWebBitId: newWebbitId }, function( err, webpage ){
+      var webpage = new WebPage( { name: req.body.webpage.name, holder: res.locals.currentUser, rootWebBitId: newWebbitId } );
+      if( req.body.webpage._labelIds.length > 0 )
+        webpage.addLabel( req.body.webpage._labelIds[0] );
+      console.log( webpage._labelIds );
+      webpage.save( function( err, webpage ){
         res.json({ success: err === null, error: err, webpage: webpage });
       });
     }
