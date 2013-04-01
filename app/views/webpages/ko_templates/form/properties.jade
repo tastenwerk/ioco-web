@@ -3,6 +3,9 @@ ul.top-tabs-action-nav
     a.btn(data-bind='click: hideForm')
       span &times;
   li.action-nav
+    a.btn.w-icn-only(onclick='$(this).closest(\'.ioco-content\').find(\'.ioco-web-bit.root:first > .box-controls > .prop-btn\').click()')
+      span.icn.icn-properties
+  li.action-nav
     a.btn.green(data-bind='click: submitSaveForm')
       =t('save')
 

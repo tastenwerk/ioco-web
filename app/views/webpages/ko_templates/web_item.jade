@@ -1,21 +1,25 @@
 script(type='text/html', id='webItemTemplate')
   li.tree-li( data-bind='attr: { "data-id": _id }, click: markSelected')
-    .tree-item
+    .tree-item( data-bind='style: { background: properties() && properties().selectedColor ? properties().selectedColor : "" } ')
       span(class='children-caret tree-trigger', data-bind='click: toggleChildren')
       a.pull-right.show-details-arr( data-bind='click: showProperties')
         span.icn.icn-arr-right
         | &nbsp;
+      // ko if: !published()
+      a.pull-right(style='opacity:0.5')
+        span.icn.icn-locked
+      // /ko
       // ko if: frontpage
       a.pull-right(style='opacity:0.5')
-        .span.icn.icn-home
+        span.icn.icn-home
       // /ko
       // ko if: template
       a.pull-left(style='opacity:0.5')
-        .span.icn.icn-book.type-icn
+        span.icn.icn-book.type-icn
       // /ko
       // ko if: typeof( type ) !== 'undefined' && type() === 'WebLabel'
       a.pull-left(style='opacity:0.5', data-bind='attr: {title: typeof(type)}')
-        .span.icn.icn-lbl.type-icn
+        span.icn.icn-lbl.type-icn
       // /ko
       a.link-trigger.item-name( href='#', data-bind='text: name, click: (isLabel() ? showProperties : showForm)' )
     ul(data-bind='template: { name: \'webItemTemplate\', foreach: children }')

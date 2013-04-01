@@ -17,8 +17,7 @@ var WebPageSchema = ioco.db.Schema({
   template: {type: Boolean, default: false },
   frontpage: {type: Boolean, default: false },
   hidden: {type: Boolean, default: false },
-  rootWebBitId: { type: ioco.db.Schema.Types.ObjectId, ref: 'WebBit' },
-  properties: { type: ioco.db.Schema.Types.Mixed, default: { frontpage: false } },
+  rootWebBitId: { type: ioco.db.Schema.Types.ObjectId, ref: 'WebBit' }
 })
 
 WebPageSchema.plugin( ioco.getSchemaPlugin('Default') );
@@ -66,3 +65,4 @@ WebPageSchema.pre( 'validate', function createSlug( next ){
 
 ioco.db.model( 'WebPage', WebPageSchema );
 
+ioco.db.model( 'WebPage' ).setVersionAttrs([ 'name', 'properties' ]);

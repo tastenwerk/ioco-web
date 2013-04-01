@@ -100,16 +100,25 @@ script(type='text/javascript')
     ioco.parseTranslations();
   }
 
+  function appendLabelToForm( $formContent, $tree ){
+
+    if( $tree.treeViewModel.selectedItems().length === 1 ){
+      var item = $tree.treeViewModel.selectedItems()[0];
+      $formContent.append( $('<p/>').append( $('<label/>').addClass('desc').text( $.i18n.t('document.labels') ) ).append('&nbsp;')
+                     .append( $('<span/>').addClass('lbl parent').text( item.name() ).attr('data-parent', item._type+':'+item._id) )
+      );
+    }
+
+    return $formContent;
+
+  }
+
   function renderNewWebpageModal( $tree ){
 
     var $formContent = $('<form class="webpage-form" />')
 
-    if( $tree.treeViewModel.selectedItems().length === 1 ){
-      var item = $tree.treeViewModel.selectedItems()[0];
-      $formContent.append( $('<p/>').append( $('<label/>').addClass('desc').text( $.i18n.t('labels') ) )
-                     .append( $('<span/>').addClass('lbl parent').text( item.name() ).attr('data-parent', item._type+':'+item._id) )
-      );
-    }
+    $formContent = appendLabelToForm( $formContent, $tree );
+
     $formContent
       .append( $('<p/>').append( $('<label/>').addClass('desc').text( $.i18n.t('webpage.name') ) )
                      .append( $('<input/>').attr('type','text').attr('name', 'name') )
@@ -173,8 +182,12 @@ script(type='text/javascript')
    */
   function renderNewLabelModal( $tree ){
 
-    var $formContent = $('<form class="webpage-form" />')
-      .append( $('<p/>').append( $('<label/>').addClass('desc').text( $.i18n.t('webpage.name') ) )
+    var $formContent = $('<form class="webpage-form" />');
+
+    $formContent = appendLabelToForm( $formContent, $tree );
+
+    $formContent
+      .append( $('<p/>').append( $('<label/>').addClass('desc').text( $.i18n.t('name') ) )
                      .append( $('<input/>').attr('type','text').attr('name', 'name') )
       )
       .append( $('<p/>').css('text-align', 'right').append( $('<input/>').attr('type','submit').addClass('btn').attr('value', $.i18n.t('webpage.create_label')) ) );
@@ -183,7 +196,7 @@ script(type='text/javascript')
     ioco.modal({ 
       title: $.i18n.t('webpage.create_label_title'),
       $content: $formContent,
-      height: 200,
+      height: 250,
       completed: function( $modal ){
 
         $modal.find('input[type=text]').focus();

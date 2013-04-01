@@ -3,14 +3,19 @@ ul.top-tabs-action-nav
     a.btn(data-bind='click: hideForm')
       span &times;
   li.action-nav
-    a.btn.green(data-bind='click: submitSaveForm')
-      =t('save')
+    a.btn.w-icn-only(onclick='$(this).closest(\'.ioco-content\').find(\'.ioco-web-bit.root:first > .box-controls > .prop-btn\').click()')
+      span.icn.icn-properties
   li.action-nav
     a.btn.green(data-bind='click: previewWebPage')
       =t('preview')
+  li.action-nav
+    a.btn.green(data-bind='click: submitSaveForm')
+      =t('save')
 
 form.wide.content-padding-w-overflow( data-bind="submit: saveForm" )
 
   #pd
+
+  h1 published btn top right, mark parent webbit as changed on css class change
 
   .ioco-page(data-bind='html: content, attr: {"data-id": (typeof(_id) === "undefined" ? "undefined" : _id)}')

@@ -69,6 +69,9 @@ module.exports = exports = function( app ){
 
     pageDesigner.WebBit.loadById( req.params.id, { api: req.body.api }, function( err, webbit ){
 
+      if( err )
+        return res.json({ error: [ err.toString() ] });
+
       var webbitJSON = webbit.toObject();
       if( webbit.serverProcContent )
         webbitJSON.serverProcContent = webbit.serverProcContent;
