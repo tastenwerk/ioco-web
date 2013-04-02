@@ -29,7 +29,7 @@ pageDesigner.WebBit.loadById = function loadWebBitById( id, tmpAttrs, callback )
       var compiledJade = jade.compile( webbit.api.postProcTemplate );
 
       try{
-        var controller = require(process.cwd()+webbit.api.url.split(':')[0]);
+        var controller = require(process.cwd()+'/app/controller/'+webbit.api.url.split(':')[0]);
         var action = webbit.api.url.split(':')[1];
       } catch( err ){
         return callback( err );
