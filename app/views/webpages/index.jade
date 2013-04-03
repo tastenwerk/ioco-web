@@ -105,7 +105,15 @@ script(type='text/javascript')
     if( $tree.treeViewModel.selectedItems().length === 1 ){
       var item = $tree.treeViewModel.selectedItems()[0];
       $formContent.append( $('<p/>').append( $('<label/>').addClass('desc').text( $.i18n.t('document.labels') ) ).append('&nbsp;')
-                     .append( $('<span/>').addClass('lbl parent').text( item.name() ).attr('data-parent', item._type+':'+item._id) )
+                     .append( 
+                        $('<span/>').addClass('lbl parent').append( $('<span/>').text( item.name() ) )
+                          .append( $('<span/>').html('&nbsp; &times;')
+                                    .css('cursor', 'pointer')
+                                    .on('click', function(e){
+                                      $(this).parent().remove();
+                                    })
+                           ).attr('data-parent', item._type+':'+item._id)
+                      )
       );
     }
 

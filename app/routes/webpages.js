@@ -71,7 +71,7 @@ module.exports = exports = function( app ){
         var counter = 0;
 
         var webpage = new pageDesigner.WebPage( req.webpage );
-        webpage.initialize( function( err, webpage ){
+        webpage.initialize( req, res, function( err, webpage ){
           var rwb = webpage.rootWebBit;
           res.render( __dirname + '/../views/webpages/show.jade', { includeCSS: rwb.properties.includeCSS && rwb.properties.includeCSS.replace(/ /g,'').split(','),
                                                                     includeJS: rwb.properties.includeJS && rwb.properties.includeJS.replace(/ /g,'').split(','),
@@ -119,10 +119,10 @@ module.exports = exports = function( app ){
       req.webpage.rootWebBitId = req.body.webpage.rootWebBitId || req.webpage.rootWebBitId;
       req.webpage.name = req.body.webpage.name || req.webpage.name;
       req.webpage.properties = req.body.webpage.properties || req.webpage.properties;
-      req.webpage.frontpage = req.body.webpage.frontpage || req.webpage.frontpage;
-      req.webpage.hidden = req.body.webpage.hidden || req.webpage.hidden;
+      req.webpage.frontpage = sanitize(req.body.webpage.frontpage).toBoolean();
+      req.webpage.hidden = sanitize(req.body.webpage.hidden).toBoolean();
       req.webpage.slug = req.body.webpage.slug || req.webpage.slug;
-      req.webpage.template = sanitize(req.body.webpage.template || req.webpage.template).toBoolean();
+      req.webpage.template = sanitize(req.body.webpage.template).toBoolean();
       req.webpage.markModified( 'properties' );
       req.webpage.createVersion();
       req.webpage.save( function( err ){

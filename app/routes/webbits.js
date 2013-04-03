@@ -43,6 +43,7 @@ module.exports = exports = function( app ){
         content: req.body.webbit.content,
         pluginName: req.body.webbit.pluginName,
         properties: req.body.webbit.properties,
+        api: req.body.webbit.api,
         root: sanitize( req.body.webbit.root ).toBoolean(),
         library: sanitize( req.body.webbit.library ).toBoolean()
       };
@@ -67,7 +68,7 @@ module.exports = exports = function( app ){
    */
   app.put('/webbits/:id/preview.json', ioco.plugins.auth.check, function( req, res ){
 
-    pageDesigner.WebBit.loadById( req.params.id, { api: req.body.api }, function( err, webbit ){
+    pageDesigner.WebBit.loadById( req.params.id, { api: req.body.api }, req, res, function( err, webbit ){
 
       if( err )
         return res.json({ error: [ err.toString() ] });
