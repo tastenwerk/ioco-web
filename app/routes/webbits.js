@@ -6,11 +6,22 @@
  * license: GPLv3
  *
  */
-var ioco = require('ioco')
-  , User = ioco.db.model('User')
-  , WebBit = ioco.db.model('WebBit');
+
+// for file uploading
+var fs = require('fs')
+  , path = require('path')
+  , util = require('util')
+  , easyimg = require('easyimage')
+  , exec = require('child_process').exec;
 
 var sanitize = require('validator').sanitize;
+
+// internals
+var ioco = require('ioco')
+  , User = ioco.db.model('User')
+  , WebBit = ioco.db.model('WebBit')
+  , iocoFileUtils = require( 'ioco/lib/file_utils' )
+  , streambuffer = require( 'ioco/lib/streambuffer' );
 
 module.exports = exports = function( app ){
 
@@ -200,6 +211,103 @@ module.exports = exports = function( app ){
     res.json( req.webbit );
   });
 
+  /**
+   * show files of a webbit
+   */
+  app.get( '/webbits/:id/files', ioco.plugins.auth.check, getWebbit, function( req, res ){
+
+    res.format({
+
+      html: function(){
+        res.render( ioco.view.lookup('/webbits/files.jade') );  
+      },
+
+      json: function(){
+
+        if( !req.webbit ) return res.json({ error: 'not found'});
+        ioco.db.model('File').find({ _labelIds: 'WebBit:'+req.webbit._id.toString() }).execWithUser( res.locals.currentUser, function( err, files ){
+          res.json( files );
+        });
+      }
+
+    })
+
+  });
+
+  /**
+   * post a new file and attach it to the webbit
+   * upload it to the server
+   *
+   */
+  app.post('/webbits/:id/files', streambuffer, ioco.plugins.auth.check, getWebbit, function( req, res ){
+
+    var PAUSE_TIME = 5000
+      , bytesUploaded = 0;
+
+    if(req.xhr) {
+      var fileName = req.header('x-file-name');
+      var fileSize = req.header('content-length');
+      var fileType = req.header('x-mime-type');
+
+      console.log( fileName, fileSize, fileType, req.query );
+
+      var fileOpts = { holder: res.locals.currentUser, 
+        name: fileName, 
+        fileSize: fileSize, 
+        contentType: fileType,
+        _subtype: req.query._subtype,
+        _labelIds: [ req.query.labelId ] };
+
+      var file = new ioco.db.model('File')( fileOpts );
+      file.publish( true );         // by default publish files attached to webbits and make them public
+      file.save( function( err ){
+        if( err )
+          req.flash('error', req.i18n.t('files.failed') );
+        else{
+          var absPath = path.join( 'files', file._id.toString().substr(11,2), file._id.toString() );
+          iocoFileUtils.ensureRecursiveDir( absPath, function( err ){
+            var origName = path.join( ioco.config.datastore.absolutePath, absPath, 'orig' );
+            var fileStream = fs.createWriteStream( origName );
+
+            req.streambuffer.ondata( function( chunk ) {
+                if( bytesUploaded+chunk.length > (ioco.config.max_upload_size_mb || 5)*1024*1024 ) {
+                  fileStream.end();
+                  return res.send(JSON.stringify({error: "Too big."}));
+                }
+                fileStream.write(chunk);
+                bytesUploaded += chunk.length;
+                req.pause();
+                setTimeout(function() { req.resume(); }, PAUSE_TIME);
+            });
+
+            req.streambuffer.onend( function() {
+              fileStream.end();
+              if( file.contentType.indexOf('image') === 0 ) {
+                resizeAndCopyImage( req, origName, function( err ){
+                  if( err ) req.flash('error', err);
+                  getInfoAndSave( file, origName, function( err ){
+                    if( err )
+                      req.flash('error', err );
+                    else
+                      req.flash('notice', req.i18n.t('files.success', {name: file.name}));
+                    res.json({ success: err===null, flash: req.flash(), data: file });
+                  });
+                });
+              } else {
+                req.flash('notice', req.i18n.t('files.success', {name: file.name}));
+                file.holder = file.holder.toSafeJSON();
+                res.json({ success: true, flash: req.flash(), data: file });
+              }
+            });
+          });
+
+        }
+      })
+
+    } // if xhr
+
+  });
+
 }
 
 function getWebbits( user, q, callback ){
@@ -210,6 +318,31 @@ function getWebbit( req, res, next ){
   WebBit.findById(req.params.id, function( err, webbit ){
     req.webbit = webbit;
     next();
+  });
+}
+
+function resizeAndCopyImage( req, origName, callback ){
+
+  var def = ioco.config.datastore.resizeDefaultPX;
+
+  //var dest = path.dirname(origName) + '/' + path.basename(origName, path.extname(origName)) + '_' + def + path.extname(origName);
+  var dest = origName;
+  var resizeOpts = { src: origName, dst: dest, width: def, height: def };
+  easyimg.resize( resizeOpts, callback );
+
+}
+
+function getInfoAndSave( file, filePath, callback ){
+  easyimg.info( filePath, function( err, stdout ){
+
+    if( stdout && stdout.width && stdout.height )
+      file.dimension = stdout.width+'x'+stdout.height;
+
+    if( err )
+      callback( err );
+    else
+      file.save( callback );
+
   });
 }
 

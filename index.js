@@ -41,6 +41,8 @@ module.exports = exports = {
 
         allowedGroups: ['manager', 'editor'],
 
+        pageDesignerJSPlugins: [ '/javascripts/ioco/pageDesigner/plugins/image-gallery.js' ],
+
         translations: __dirname+'/locales'
 
       }

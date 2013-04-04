@@ -23,6 +23,7 @@ var WebBitSchema = ioco.db.Schema({
 })
 
 WebBitSchema.plugin( ioco.getSchemaPlugin('Default') );
+WebBitSchema.plugin( ioco.getSchemaPlugin('Label') );
 WebBitSchema.plugin( ioco.getSchemaPlugin('Versioning') );
 
 /**
