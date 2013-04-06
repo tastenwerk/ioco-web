@@ -17,6 +17,7 @@
                 moveLeft: {
                   icn: 'icn-win-arrange-left',
                   callback: function( $modal ){
+                    $($modal.find('.sidebar-nav li')[1]).click();
                     $modal.toggleClass('arrange-left');
                     $('#ioco-modal-overlay').toggle(200);
                   }
@@ -41,7 +42,17 @@
             e.preventDefault();
         }
       }
-    ]
+    ],
+    defaults: {
+
+      properties: {
+        cssClasses: 'span1 img-gallery'
+      }
+  
+    },
+
+    serverSide: true
+
   };
 
   // expose imageGallery to the global namespace
@@ -49,7 +60,9 @@
   //
   if (typeof(module) !== 'undefined' && module.exports) {
     // nodejs
+
     module.exports = imageGallery;
+
   } else {
     if( !root.ioco.pageDesigner )
       throw new Error('ioco.pageDesigner is not defined. Load this plugin AFTER ioco.pageDesigner has been loaded!')

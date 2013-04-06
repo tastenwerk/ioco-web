@@ -58,7 +58,21 @@ WebBitSchema.static( 'getAndRender', function( id, callback ){
     if( !webbit ) return callback( 'webbit not found' );
     callback( null, new pageDesigner.WebBit( webbit ) );
   });
-} );
+});
+
+/**
+ * checks if serverProcContent is available
+ * and attaches it to the objectified webbit
+ * (it is not passed on to toObject() or toJSON() by default
+ * as it is no virtual or getter method)
+ *
+ */
+WebBitSchema.method( 'toProcObject', function(){
+  var webbitJSON = this.toObject();
+  if( this.serverProcContent )
+    webbitJSON.serverProcContent = this.serverProcContent;
+  return webbitJSON;
+});
 
 /**
  * check if webbit is root webbit.

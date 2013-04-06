@@ -63,8 +63,10 @@ module.exports = exports = function( app ){
    */
   app.get( '/p/:slug*', ioco.plugins.auth.checkWithoutRedirect, getPublicWebPage, function( req, res ){
 
+    var attrs = {$inc: {'stat.views': 1}};
+
     if( req.webpage )
-      WebPage.update({_id: req.webpage._id}, {$inc: {'stat.views': 1}}, {safe: true}, function( err ){
+      WebPage.update({_id: req.webpage._id}, attrs, {safe: true}, function( err ){
         if( err ) console.log('error: ', err);
 
         var webBits = [];
@@ -76,6 +78,7 @@ module.exports = exports = function( app ){
           res.render( __dirname + '/../views/webpages/show.jade', { includeCSS: rwb.properties.includeCSS && rwb.properties.includeCSS.replace(/ /g,'').split(','),
                                                                     includeJS: rwb.properties.includeJS && rwb.properties.includeJS.replace(/ /g,'').split(','),
                                                                     webpage: webpage,
+                                                                    currentUser: res.locals.currentUser || null,
                                                                     renderedContent: webpage.render() } );
         });
 

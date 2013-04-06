@@ -69,30 +69,6 @@ module.exports = exports = function( app ){
   app.get('/webbits/:id/edit:format?', ioco.plugins.auth.check, getWebbit, function( req, res ){
     res.render( ioco.view.lookup( '/webbits/edit.jade' ), {flash: req.flash(), webbit: req.webbit });
   });
-  
-  /**
-   * get a webbit freshly rendered
-   * with api settings
-   *
-   * but don't save the webbit
-   * to the database
-   */
-  app.put('/webbits/:id/preview.json', ioco.plugins.auth.check, function( req, res ){
-
-    pageDesigner.WebBit.loadById( req.params.id, { api: req.body.api }, req, res, function( err, webbit ){
-
-      if( err )
-        return res.json({ error: [ err.toString() ] });
-
-      var webbitJSON = webbit.toObject();
-      if( webbit.serverProcContent )
-        webbitJSON.serverProcContent = webbit.serverProcContent;
-
-      res.json( webbitJSON );
-
-    })
-
-  });
 
   /**
    * update a webbit
@@ -204,14 +180,6 @@ module.exports = exports = function( app ){
   });
 
   /**
-   * get a specific webbit
-   *
-   */
-  app.get('/webbits/:id.json', ioco.plugins.auth.check, getWebbit, function( req, res ){
-    res.json( req.webbit );
-  });
-
-  /**
    * show files of a webbit
    */
   app.get( '/webbits/:id/files', ioco.plugins.auth.check, getWebbit, function( req, res ){
@@ -248,8 +216,6 @@ module.exports = exports = function( app ){
       var fileName = req.header('x-file-name');
       var fileSize = req.header('content-length');
       var fileType = req.header('x-mime-type');
-
-      console.log( fileName, fileSize, fileType, req.query );
 
       var fileOpts = { holder: res.locals.currentUser, 
         name: fileName, 
@@ -307,6 +273,40 @@ module.exports = exports = function( app ){
     } // if xhr
 
   });
+
+  /**
+   * get a webbit freshly rendered
+   * with api settings
+   *
+   * but don't save the webbit
+   * to the database
+   */
+  app.put('/webbits/:id/preview.json', ioco.plugins.auth.check, function( req, res ){
+
+    pageDesigner.WebBit.loadById( req.params.id, { api: req.body.api }, req, res, function( err, webbit ){
+
+      if( err )
+        return res.json({ error: [ err.toString() ] });
+
+      res.json( webbit ? webbit.toProcObject() : null );
+
+    })
+
+  });
+  
+  /**
+   * get a webbit by its id as json
+   *
+   */
+  app.get('/webbits/:id.json', ioco.plugins.auth.check, function( req, res ){
+
+    pageDesigner.WebBit.loadById( req.params.id, null, req, res, function( err, webbit ){
+      if( err ) return res.json({ error: [ err.toString() ] });
+      res.json( webbit ? webbit.toProcObject() : null );
+    });
+
+  });
+
 
 }
 
