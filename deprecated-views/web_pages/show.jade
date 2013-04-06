@@ -10,5 +10,5 @@ html
     input( type='hidden', id='_csrf', value=_csrf )
     input( type='hidden', id='_host_master', value='http://'+ioco.config.site.domain+':'+ioco.config.port )
 
-    .content
-    != webPage.content
+    .page-content
+      != webPage.content

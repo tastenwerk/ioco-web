@@ -16,4 +16,7 @@ html
     input( type='hidden', id='_csrf', value=_csrf )
     if( currentUser && ( currentUser.groups.indexOf('designer') > 0 || currentUser.groups.indexOf('editor') > 0 ) )
       include _admin_pane
-    !=renderedContent
+      #pd-content
+
+    #page-content
+      !=renderedContent

@@ -163,6 +163,10 @@ module.exports = exports = function( app ){
     res.render( ioco.view.lookup( '/webpages/edit.jade' ), {flash: req.flash(), webpage: req.webpage });
   });
 
+  app.get('/webpages/:id', ioco.plugins.auth.check, getWebpage, function( req, res ){
+    res.json( req.webpage );
+  });
+
 }
 
 function getWebpages( user, q, callback ){
