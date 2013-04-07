@@ -12,7 +12,11 @@ html
       each js in includeJS
         script(type='text/javascript', src=js)
 
-  body
+  body.ioco-pd-area
+
+    style
+      .ioco-pd-area .ioco-web-bit{ position: auto }
+
     input( type='hidden', id='_csrf', value=_csrf )
     if( currentUser && ( currentUser.groups.indexOf('designer') > 0 || currentUser.groups.indexOf('editor') > 0 ) )
       include _admin_pane

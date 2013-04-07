@@ -51,14 +51,35 @@ script(type='text/javascript')
 
 :stylus
   .admin-panel
-    margin: 2px
+    margin: 5px
     background: #eee
     border: 1px solid #ccc
-    padding: 5px
+    height: 30px
+
+    #ioco-logo
+      width: 50px
+      margin: 3px 10px 1px
+      float: left
+
+    #page-title
+      font-size: 18px
+      float: left
+      margin: 0 20px 0 10px
+
+    .btn
+      margin: 1px
+
+    .w-icn-only
+      width: 0
+      height: 17px
 
 
 .admin-panel
-  span.btn#toggle-editor EDIT
+  img#ioco-logo( src='/images/logo_200x200.png' )
+  span#page-title=webpage.name
+  a.pull-right.btn#toggle-editor=t('edit')
+  a.pull-right.btn.w-icn-only#change-public-status
+    span.icn.icn-locked( class=( webpage.published ? 'unlocked' : '' ) )
 
 script(type='text/javascript') 
 
@@ -72,7 +93,6 @@ script(type='text/javascript')
         $('#page-content').hide();
         $('#pd-content').iocoPageDesigner({
           i18n: true,
-          disableRootWebBitControls: true,
           revisions: true,
           roles: { designer: !{currentUser.groups.indexOf('designer') >= 0} },
           _csrf: $('#_csrf').val(),
@@ -92,6 +112,8 @@ script(type='text/javascript')
           }
         });
       });
+
+      $('.ioco-pd-area').css('top',50);
 
     });
 
