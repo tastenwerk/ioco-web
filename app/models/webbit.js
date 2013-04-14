@@ -7,7 +7,8 @@
  *
  */
 
-var ioco = require('ioco');
+var ioco = require('ioco')
+  , pageDesigner = require('ioco-pagedesigner');
 
 var WebBitSchema = ioco.db.Schema({
   pluginName: String,
@@ -167,6 +168,13 @@ function parseWebBit( webbit, callback ){
   parseForWebBits();
 
 }
+
+// pageDesigner extensions
+WebBitSchema.method( 'getRevision', pageDesigner.renderer.getRevision );
+WebBitSchema.method( 'getView', pageDesigner.renderer.getRevision );
+WebBitSchema.method( 'getLang', pageDesigner.renderer.getRevision );
+WebBitSchema.method( 'renderStyles', pageDesigner.renderer.renderStyles );
+WebBitSchema.method( 'render', pageDesigner.renderer.render );
 
 ioco.db.model( 'WebBit', WebBitSchema );
 ioco.db.model( 'WebBit' ).setVersionAttrs([ 'name', 'properties', 'api', 'template', 'library', 'locked', 'root', 'content', 'category' ]);

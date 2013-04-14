@@ -13,7 +13,7 @@
  */
 
 var pageDesigner = require('ioco-pagedesigner').lib;
-  
+
 pageDesigner.WebBit.loadById = function loadWebBitById( id, tmpAttrs, req, res, callback ){
 
   if( typeof(tmpAttrs) === 'function' ){
@@ -94,7 +94,7 @@ pageDesigner.initPlugins = function initPlugins(){
           var pdPluginPath = path.join(getPluginBaseName( plugin ), 'public', pdPlugin);
           var initializedPdPlugin = require( pdPluginPath );
           initializedPdPlugin.__basePath = getPluginBaseName( plugin );
-          pageDesigner.addPlugin( initializedPdPlugin );
+          pageDesigner.registerPlugin( initializedPdPlugin );
         }
   }
 }

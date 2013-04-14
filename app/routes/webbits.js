@@ -275,36 +275,11 @@ module.exports = exports = function( app ){
   });
 
   /**
-   * get a webbit freshly rendered
-   * with api settings
-   *
-   * but don't save the webbit
-   * to the database
-   */
-  app.put('/webbits/:id/preview.json', ioco.plugins.auth.check, function( req, res ){
-
-    pageDesigner.WebBit.loadById( req.params.id, { api: req.body.api }, req, res, function( err, webbit ){
-
-      if( err )
-        return res.json({ error: [ err.toString() ] });
-
-      res.json( webbit ? webbit.toProcObject() : null );
-
-    })
-
-  });
-  
-  /**
    * get a webbit by its id as json
    *
    */
-  app.get('/webbits/:id.json', ioco.plugins.auth.check, function( req, res ){
-
-    pageDesigner.WebBit.loadById( req.params.id, null, req, res, function( err, webbit ){
-      if( err ) return res.json({ error: [ err.toString() ] });
-      res.json( webbit ? webbit.toProcObject() : null );
-    });
-
+  app.get('/webbits/:id.json', ioco.plugins.auth.check, getWebbit, function( req, res ){
+    res.json( webbit );
   });
 
 
@@ -345,5 +320,3 @@ function getInfoAndSave( file, filePath, callback ){
 
   });
 }
-
-var pageDesigner = require( __dirname + '/../helper/page_designer_ext' );

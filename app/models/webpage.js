@@ -1,5 +1,5 @@
 /*
- * ioco-web / WebPage model
+ * ioco-web / Webpage model
  *
  * (c) 2013 by TASTENWERK
  *
@@ -8,10 +8,11 @@
  */
 
 var ioco = require('ioco')
-  , qs = require('querystring');
+  , qs = require('querystring')
+  , pageDesigner = require('ioco-pagedesigner');
 
-var WebPageSchema = ioco.db.Schema({
-  _type: { type: String, default: 'WebPage' },
+var WebpageSchema = ioco.db.Schema({
+  _type: { type: String, default: 'Webpage' },
   slug: { type: String, required: true, index: { unique: true }, lowercase: true },
   stat: {type: ioco.db.Schema.Types.Mixed, default: {}},
   template: {type: Boolean, default: false },
@@ -20,27 +21,27 @@ var WebPageSchema = ioco.db.Schema({
   rootWebBitId: { type: ioco.db.Schema.Types.ObjectId, ref: 'WebBit' }
 })
 
-WebPageSchema.plugin( ioco.getSchemaPlugin('Default') );
-WebPageSchema.plugin( ioco.getSchemaPlugin('Versioning') );
-WebPageSchema.plugin( ioco.getSchemaPlugin('Label') );
-WebPageSchema.plugin( ioco.getSchemaPlugin('Access') );
+WebpageSchema.plugin( ioco.getSchemaPlugin('Default') );
+WebpageSchema.plugin( ioco.getSchemaPlugin('Versioning') );
+WebpageSchema.plugin( ioco.getSchemaPlugin('Label') );
+WebpageSchema.plugin( ioco.getSchemaPlugin('Access') );
 
 /**
- * create or update the webpage's slug
- * to keep it up-to-date with webpage's
+ * create or update the Webpage's slug
+ * to keep it up-to-date with Webpage's
  * name
  *
  * This routine only applies, if the slug has not been
  * changed manually
  */
-WebPageSchema.pre( 'validate', function createSlug( next ){
+WebpageSchema.pre( 'validate', function createSlug( next ){
 
   var self = this;
   if( self.slug && self.slug.length > 0 )
     return next();
   
   function checkUniquenessOfSlug(){
-    ioco.db.model('WebPage').findOne({slug: self.slug}, function( err, item ){
+    ioco.db.model('Webpage').findOne({slug: self.slug}, function( err, item ){
       var num = parseInt(self.name.substr( self.name.length-1, 1 ));
       if( item ){
         self.name = isNaN(num) ? self.name + ' 1' : self.name.substr(0, self.name.length-1) + (num+1).toString();
@@ -63,6 +64,13 @@ WebPageSchema.pre( 'validate', function createSlug( next ){
 
 });
 
-ioco.db.model( 'WebPage', WebPageSchema );
+// pageDesigner extensions
+WebpageSchema.method( 'getRevision', pageDesigner.renderer.getRevision );
+WebpageSchema.method( 'getView', pageDesigner.renderer.getRevision );
+WebpageSchema.method( 'getLang', pageDesigner.renderer.getRevision );
+WebpageSchema.method( 'renderStyles', pageDesigner.renderer.renderStyles );
+WebpageSchema.method( 'render', pageDesigner.renderer.render );
 
-ioco.db.model( 'WebPage' ).setVersionAttrs([ 'name', 'properties' ]);
+ioco.db.model( 'Webpage', WebpageSchema );
+
+ioco.db.model( 'Webpage' ).setVersionAttrs([ 'name', 'properties' ]);

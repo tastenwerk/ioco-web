@@ -1,5 +1,5 @@
 /*
- * ioco-web / WebPage routes
+ * ioco-web / Webpage routes
  *
  * (c) 2013 by TASTENWERK
  *
@@ -12,7 +12,7 @@ var qs = require('querystring');
 
 var ioco = require('ioco')
   , User = ioco.db.model('User')
-  , WebPage = ioco.db.model('WebPage')
+  , Webpage = ioco.db.model('Webpage')
   , WebBit = ioco.db.model('WebBit')
   , Label = ioco.db.model('Label');
 
@@ -47,7 +47,7 @@ module.exports = exports = function( app ){
                 return 1;
               return 0;
             })
-            res.json({ success: err === null, data: all });
+            res.json( all );
           });
         });
       }
@@ -61,18 +61,18 @@ module.exports = exports = function( app ){
    * name
    *
    */
-  app.get( '/p/:slug*', ioco.plugins.auth.checkWithoutRedirect, getPublicWebPage, function( req, res ){
+  app.get( '/p/:slug*', ioco.plugins.auth.checkWithoutRedirect, getPublicWebpage, function( req, res ){
 
     var attrs = {$inc: {'stat.views': 1}};
 
     if( req.webpage )
-      WebPage.update({_id: req.webpage._id}, attrs, {safe: true}, function( err ){
+      Webpage.update({_id: req.webpage._id}, attrs, {safe: true}, function( err ){
         if( err ) console.log('error: ', err);
 
         var webBits = [];
         var counter = 0;
 
-        var webpage = new pageDesigner.WebPage( req.webpage );
+        var webpage = new pageDesigner.Webpage( req.webpage );
         webpage.initialize( req, res, function( err, webpage ){
           var rwb = webpage.rootWebBit;
           res.render( __dirname + '/../views/webpages/show.jade', { includeCSS: rwb.properties.includeCSS && rwb.properties.includeCSS.replace(/ /g,'').split(','),
@@ -89,7 +89,7 @@ module.exports = exports = function( app ){
 
   app.post('/webpages', ioco.plugins.auth.check, function( req, res ){
     function createWebpage( newWebbitId ){
-      var webpage = new WebPage( { name: req.body.webpage.name, holder: res.locals.currentUser, rootWebBitId: newWebbitId } );
+      var webpage = new Webpage( { name: req.body.webpage.name, holder: res.locals.currentUser, rootWebBitId: newWebbitId } );
       if( req.body.webpage._labelIds && req.body.webpage._labelIds.length > 0 )
         webpage.addLabel( req.body.webpage._labelIds[0] );
       webpage.save( function( err, webpage ){
@@ -170,7 +170,7 @@ module.exports = exports = function( app ){
 }
 
 function getWebpages( user, q, callback ){
-  WebPage.find(q).sort({position: 1, name: 1}).execWithUser( user, callback );
+  Webpage.find(q).sort({position: 1, name: 1}).execWithUser( user, callback );
 }
 
 function getWebpageLabels( user, q, callback ){
@@ -178,7 +178,7 @@ function getWebpageLabels( user, q, callback ){
 }
 
 function getWebpage( req, res, next ){
-  WebPage.findById(req.params.id).execWithUser( res.locals.currentUser || User.anybody, function( err, webpage ){
+  Webpage.findById(req.params.id).execWithUser( res.locals.currentUser || User.anybody, function( err, webpage ){
     req.webpage = webpage;
     next();
   });
@@ -197,18 +197,16 @@ function getLabel( req, res, next ){
   });
 }
 
-function getPublicWebPage( req, res, next ){
+function getPublicWebpage( req, res, next ){
   var q = {};
   if( req.params.id )
     q._id = ioco.db.Schema.Types.ObjectId( req.params.id );
   else if( req.params.slug )
     q.slug = '/' + qs.escape( req.params.slug );
   var user = res.locals.currentUser || ioco.db.model('User').anybody;
-  WebPage.findOne( q ).execWithUser( user, function( err, webpage ){
+  Webpage.findOne( q ).execWithUser( user, function( err, webpage ){
     if( err ) req.flash('error', err);
     req.webpage = webpage;
     next();
   });
 }
-
-var pageDesigner = require( __dirname + '/../helper/page_designer_ext' );
