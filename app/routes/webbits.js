@@ -1,5 +1,5 @@
 /*
- * ioco-web / WebBit routes
+ * ioco-web / Webbit routes
  *
  * (c) 2013 by TASTENWERK
  *
@@ -19,7 +19,7 @@ var sanitize = require('validator').sanitize;
 // internals
 var ioco = require('ioco')
   , User = ioco.db.model('User')
-  , WebBit = ioco.db.model('WebBit')
+  , Webbit = ioco.db.model('Webbit')
   , iocoFileUtils = require( 'ioco/lib/file_utils' )
   , streambuffer = require( 'ioco/lib/streambuffer' );
 
@@ -60,7 +60,7 @@ module.exports = exports = function( app ){
       };
       if( req.body.webbit.category )
         attrs.category = req.body.webbit.category;
-      WebBit.create( attrs, function( err, webbit ){
+      Webbit.create( attrs, function( err, webbit ){
         res.json({ success: err === null, error: err, data: webbit });
       });
     }
@@ -160,7 +160,7 @@ module.exports = exports = function( app ){
    */
   app.get( '/webbits/library.json', ioco.plugins.auth.check, function( req, res ){
 
-    WebBit.find({ library: true }).sort({name: 1}).exec( function( err, webBits ){
+    Webbit.find({ library: true }).sort({name: 1}).exec( function( err, webBits ){
       res.json( webBits );
     });
     
@@ -173,7 +173,7 @@ module.exports = exports = function( app ){
    */
   app.get( '/webbits/templates.json', ioco.plugins.auth.check, function( req, res ){
 
-    WebBit.find({ template: true }).sort({name: 1}).exec( function( err, webBits ){
+    Webbit.find({ template: true }).sort({name: 1}).exec( function( err, webBits ){
       res.json( webBits );
     });
     
@@ -193,7 +193,7 @@ module.exports = exports = function( app ){
       json: function(){
 
         if( !req.webbit ) return res.json({ error: 'not found'});
-        ioco.db.model('File').find({ _labelIds: 'WebBit:'+req.webbit._id.toString() }).execWithUser( res.locals.currentUser, function( err, files ){
+        ioco.db.model('File').find({ _labelIds: 'Webbit:'+req.webbit._id.toString() }).execWithUser( res.locals.currentUser, function( err, files ){
           res.json( files );
         });
       }
@@ -286,11 +286,11 @@ module.exports = exports = function( app ){
 }
 
 function getWebbits( user, q, callback ){
-  WebBit.find(q).sort({position: 1, name: 1}).execWithUser( user, callback );
+  Webbit.find(q).sort({position: 1, name: 1}).execWithUser( user, callback );
 }
 
 function getWebbit( req, res, next ){
-  WebBit.findById(req.params.id, function( err, webbit ){
+  Webbit.findById(req.params.id, function( err, webbit ){
     req.webbit = webbit;
     next();
   });

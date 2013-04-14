@@ -10,12 +10,52 @@ script( type='text/javascript', src='/javascripts/web.js' )
 
     .ioco-k-tree
 
-      .controls
-        a.btn( data-bind='events: { click: showNewForm }' )
-          span.icn-plus.icn
-        a.btn( data-bind='events: { click: refreshTree }' )
-          span.icn.icn-refresh
-        a.btn.enableable( data-bind='events: { click: deleteSelectedNodes }, css: {enabled: anyNodeSelected}')
-          span.icn.icn-trash
+      ul.k-menu.controls(data-role='menu')
+        li
+          a.btn
+            span.icn-plus.icn
+          ul
+            li( data-bind='click: showNewLabelForm')
+              span.inner-icn.icn.icn-folder.pull-left
+              span=t('label.title')
+            li( data-bind='click: showNewWebpageForm')
+              span.inner-icn.icn.icn-webpage.pull-left
+              span=t('webpage.title')
+        li
+          a.btn( data-bind='click: refreshTree' )
+            span.icn.icn-refresh
+        li
+          a.btn.enableable( data-bind='click: deleteSelectedNodes')
+            span.icn.icn-trash
 
-      .webpages-tree( data-role='treeview', data-drag-and-drop='true', data-text-field='name', data-bind='source: webpages' )
+      .webpages-tree
+
+  .ioco-content
+
+    .click-for-details.no-item-form
+      h1.title=t('webpages.title')
+      span=t('document.click_for_details')
+
+    .pd-content( style='position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow: auto')
+
+#new-webpage-form
+  form( data-bind='events: { submit: appendWebpage }')
+    p
+      label=t('webpage.select_template')
+      br
+      select( data-bind='source: templates')
+    p
+      label=t('webpage.name')
+      br
+      input( type='text', data-bind='value: name')
+    p
+      input.btn( type='submit', value=t('create') )
+
+#new-label-form
+
+  form( data-bind='events: { submit: appendLabel }')
+    p
+      label=t('name')
+      br
+      input( type='text', data-bind='value: name')
+    p

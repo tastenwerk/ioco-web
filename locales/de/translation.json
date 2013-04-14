@@ -1,5 +1,7 @@
 {
   "webpage": {
+    "title": "Webseite",
+    "new": "Neue Webseite",
     "name": "Name",
     "template": "von Vorlage",
     "Template": "Vorlage",

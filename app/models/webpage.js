@@ -11,15 +11,16 @@ var ioco = require('ioco')
   , qs = require('querystring')
   , pageDesigner = require('ioco-pagedesigner');
 
+require( __dirname+'/webbit' );
+
 var WebpageSchema = ioco.db.Schema({
   _type: { type: String, default: 'Webpage' },
   slug: { type: String, required: true, index: { unique: true }, lowercase: true },
   stat: {type: ioco.db.Schema.Types.Mixed, default: {}},
-  template: {type: Boolean, default: false },
-  frontpage: {type: Boolean, default: false },
-  hidden: {type: Boolean, default: false },
-  rootWebBitId: { type: ioco.db.Schema.Types.ObjectId, ref: 'WebBit' }
-})
+  revisions: { type: ioco.db.Schema.Types.Mixed, default: { master: {} } },
+  config: { type: ioco.db.Schema.Types.Mixed, default: { template: false, frontpage: false, hidden: false } },
+  items: [ { type: ioco.db.Schema.Types.ObjectId, ref: 'Webbit' }]
+});
 
 WebpageSchema.plugin( ioco.getSchemaPlugin('Default') );
 WebpageSchema.plugin( ioco.getSchemaPlugin('Versioning') );
@@ -73,4 +74,4 @@ WebpageSchema.method( 'render', pageDesigner.renderer.render );
 
 ioco.db.model( 'Webpage', WebpageSchema );
 
-ioco.db.model( 'Webpage' ).setVersionAttrs([ 'name', 'properties' ]);
+ioco.db.model( 'Webpage' ).setVersionAttrs([ 'name', 'config', 'revisions' ]);

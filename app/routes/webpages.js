@@ -12,8 +12,8 @@ var qs = require('querystring');
 
 var ioco = require('ioco')
   , User = ioco.db.model('User')
+  , Webbit = ioco.db.model('Webbit')
   , Webpage = ioco.db.model('Webpage')
-  , WebBit = ioco.db.model('WebBit')
   , Label = ioco.db.model('Label');
 
 module.exports = exports = function( app ){
@@ -29,10 +29,10 @@ module.exports = exports = function( app ){
 
       json: function(){
         var q = {};
-        if( req.query.parentId )
-          q = {_labelIds: new RegExp('^[a-zA-Z0-9]*:'+req.query.parentId+'$')};
-        if( req.query.roots )
-          q = {_labelIds: []};
+        if( req.query._id )
+          q = {_labelIds: new RegExp('^[a-zA-Z0-9]*:'+req.query._id+'$')};
+        else
+          q = { _labelIds: [] };
         getWebpages( res.locals.currentUser, q, function( err, webpages ){
           getWebpageLabels( res.locals.currentUser, q, function( err, folders ){
             var all = webpages.concat( folders );
@@ -74,7 +74,7 @@ module.exports = exports = function( app ){
 
         var webpage = new pageDesigner.Webpage( req.webpage );
         webpage.initialize( req, res, function( err, webpage ){
-          var rwb = webpage.rootWebBit;
+          var rwb = webpage.rootWebbit;
           res.render( __dirname + '/../views/webpages/show.jade', { includeCSS: rwb.properties.includeCSS && rwb.properties.includeCSS.replace(/ /g,'').split(','),
                                                                     includeJS: rwb.properties.includeJS && rwb.properties.includeJS.replace(/ /g,'').split(','),
                                                                     webpage: webpage,
@@ -89,17 +89,17 @@ module.exports = exports = function( app ){
 
   app.post('/webpages', ioco.plugins.auth.check, function( req, res ){
     function createWebpage( newWebbitId ){
-      var webpage = new Webpage( { name: req.body.webpage.name, holder: res.locals.currentUser, rootWebBitId: newWebbitId } );
+      var webpage = new Webpage( { name: req.body.webpage.name, holder: res.locals.currentUser, rootWebbitId: newWebbitId } );
       if( req.body.webpage._labelIds && req.body.webpage._labelIds.length > 0 )
         webpage.addLabel( req.body.webpage._labelIds[0] );
       webpage.save( function( err, webpage ){
-        res.json({ success: err === null, error: err, webpage: webpage });
+        res.json( webpage );
       });
     }
 
     if( req.body.webpage && req.body.webpage.name.length > 1 ){
       if( req.body.templateId )
-        WebBit.deepCopy( req.body.templateId, function( err, webbit ){
+        Webbit.deepCopy( req.body.templateId, function( err, webbit ){
           if( err )
             res.json({ success: false, error: err });
           console.log('[webpage] got: ', webbit);
@@ -112,29 +112,41 @@ module.exports = exports = function( app ){
   });
 
   app.post('/webpage_labels', ioco.plugins.auth.check, function( req, res ){
-    Label.create( { type: 'WebLabel', name: req.body.label.name, holder: res.locals.currentUser }, function( err, label ){
-      res.json({ success: err === null, error: err, label: label });
+
+    var label = new Label( { name: req.body.label.name, holder: res.locals.currentUser, _subtype: 'WebLabel' } );
+    if( req.body.label._labelIds && req.body.label._labelIds.length > 0 )
+      label.addLabel( req.body.label._labelIds[0] );
+    label.save( function( err, label ){
+      res.json( label );
     });
+
+  });
+
+  app.put('/webpages_reorder', ioco.plugins.auth.check, getWebpage, getLabel, function( req, res ){
+    res.set('Content-Type', 'application/json');
+    if( req.webpage ){
+      console.log( req.body )
+    }
+    res.json(null);
   });
 
   app.put('/webpages/:id', ioco.plugins.auth.check, getWebpage, function( req, res ){
     if( req.webpage ){
-      req.webpage.rootWebBitId = req.body.webpage.rootWebBitId || req.webpage.rootWebBitId;
       req.webpage.name = req.body.webpage.name || req.webpage.name;
-      req.webpage.properties = req.body.webpage.properties || req.webpage.properties;
-      req.webpage.frontpage = sanitize(req.body.webpage.frontpage).toBoolean();
-      req.webpage.hidden = sanitize(req.body.webpage.hidden).toBoolean();
+      req.webpage.config = req.body.webpage.config || req.webpage.config;
+      req.webpage.revisions = req.body.webpage.revisions || req.webpage.revisions;
       req.webpage.slug = req.body.webpage.slug || req.webpage.slug;
-      req.webpage.template = sanitize(req.body.webpage.template).toBoolean();
-      req.webpage.markModified( 'properties' );
+      req.webpage.markModified( 'config' );
+      req.webpage.markModified( 'revisions' );
       req.webpage.createVersion();
+      console.log( req.body.webpage.items );
       req.webpage.save( function( err ){
         if( err )
           req.flash('error', err);
         else
           req.flash('notice', req.i18n.t('saving.ok', {name: req.webpage.name}));
-        if( req.webpage.rootWebBitId ){
-          WebBit.findById( req.webpage.rootWebBitId, function( err, webbit ){
+        if( req.webpage.rootWebbitId ){
+          Webbit.findById( req.webpage.rootWebbitId, function( err, webbit ){
             if( err ) return res.json({ success: false, error: err });
             if( webbit )
               webbit.update({ template: req.webpage.template, name: req.webpage.name }, function( err ){
@@ -148,7 +160,6 @@ module.exports = exports = function( app ){
     } else
       res.json({ success: false, error: 'could not find webpage' });
   });
-
 
   app.delete('/webpages/:id', ioco.plugins.auth.check, getWebpage, getLabel, function( req, res ){
     if( req.webpage )
@@ -174,11 +185,11 @@ function getWebpages( user, q, callback ){
 }
 
 function getWebpageLabels( user, q, callback ){
-  Label.find(q).where('type', 'WebLabel').sort({position: 1, name: 1}).execWithUser( user, callback );
+  Label.find(q).where('_subtype', 'WebLabel').sort({position: 1, name: 1}).execWithUser( user, callback );
 }
 
 function getWebpage( req, res, next ){
-  Webpage.findById(req.params.id).execWithUser( res.locals.currentUser || User.anybody, function( err, webpage ){
+  Webpage.findById(req.params.id).populate('items').execWithUser( res.locals.currentUser || User.anybody, function( err, webpage ){
     req.webpage = webpage;
     next();
   });
