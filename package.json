@@ -18,5 +18,15 @@
   },
   "engine": {
     "node": ">=0.8"
+  },
+  "devDependencies": {
+    "should": "x.x.x",
+    "mocha": "1.x.x",
+    "superagent": "*"
+
+  },
+  "license": "GPL3",
+  "scripts": {
+    "test" : "mocha --reporter list"
   }
 }

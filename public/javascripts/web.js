@@ -91,20 +91,25 @@
       var item = ioco.sources.webpages.getByUid( $(e.node).attr('data-uid') );
       if( item._type === 'Webpage' ){
         $('.click-for-details.no-item-form').hide();
-        $('#ioco-webpages .pd-content').iocoPageDesigner({
-          webpage: new ioco.Webpage( { name: item.name, _id: item._id, config: item.config } ),
-          save: function( webpage, callback ){
-            console.log('saving', webpage);
-            $.ajax({ url: '/webpages/'+ webpage._id,
-                     type: 'put',
-                     dataType: 'json',
-                     data: { _csrf: ioco._csrf, webpage: webpage.toJSON() },
-                     success: function( err ){
-                        callback( err );
-                     }
-            });
-          }
+        $.getJSON( '/webpages/'+ item._id, function(json){
+
+          $('#ioco-webpages .pd-content').iocoPageDesigner({
+            webpage: json,
+            save: function( webpage, callback ){
+              $.ajax({ url: '/webpages/'+ webpage._id,
+                       type: 'put',
+                       dataType: 'json',
+                       data: { _csrf: ioco._csrf, webpage: webpage.toJSON() },
+                       success: function( err ){
+                          if( !err )
+                            ioco.notify($.i18n.t('saving.ok', {name: webpage.name})+' WARNING: RELOAD BEFORE SAVE AGAIN (BUG)');
+                          callback( err );
+                       }
+              });
+            }
+          });
         });
+
       }
     }
   });

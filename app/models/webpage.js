@@ -75,3 +75,5 @@ WebpageSchema.method( 'render', pageDesigner.renderer.render );
 ioco.db.model( 'Webpage', WebpageSchema );
 
 ioco.db.model( 'Webpage' ).setVersionAttrs([ 'name', 'config', 'revisions' ]);
+
+module.exports = exports = ioco.db.model('Webpage');

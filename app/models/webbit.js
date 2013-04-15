@@ -14,7 +14,7 @@ var WebbitSchema = ioco.db.Schema({
   pluginName: String,
   revisions: { type: ioco.db.Schema.Types.Mixed, default: { master: {} } },
   config: { type: ioco.db.Schema.Types.Mixed, default: { locked: false, library: false } },
-  items: [ { type: ioco.db.Schema.Types.ObjectId, ref: 'Webbit' }]
+  items: [ { type: ioco.db.Schema.Types.ObjectId, ref: 'Webbit' }],
 })
 
 WebbitSchema.plugin( ioco.getSchemaPlugin('Default') );
@@ -172,3 +172,6 @@ WebbitSchema.method( 'render', pageDesigner.renderer.render );
 
 ioco.db.model( 'Webbit', WebbitSchema );
 ioco.db.model( 'Webbit' ).setVersionAttrs([ 'name', 'properties', 'api', 'template', 'library', 'locked', 'root', 'content', 'category' ]);
+
+
+module.exports = exports = ioco.db.model('Webbit');

@@ -14,6 +14,7 @@ var ioco = require('ioco')
   , User = ioco.db.model('User')
   , Webbit = ioco.db.model('Webbit')
   , Webpage = ioco.db.model('Webpage')
+  , WebbitsHelper = require( __dirname+'/../helper/webbits_helper')
   , Label = ioco.db.model('Label');
 
 module.exports = exports = function( app ){
@@ -130,34 +131,47 @@ module.exports = exports = function( app ){
     res.json(null);
   });
 
+  /**
+   * update a webpage (this is only done by the pagedesigner implementation)
+   * therefore the response is exptected to be null if successful.
+   *
+   * # Parameters
+   *  * webpage
+   *  * * name, revisions, slug
+   *  * * items ( webbits array )
+   *
+   * @api public
+   */
   app.put('/webpages/:id', ioco.plugins.auth.check, getWebpage, function( req, res ){
     if( req.webpage ){
-      req.webpage.name = req.body.webpage.name || req.webpage.name;
-      req.webpage.config = req.body.webpage.config || req.webpage.config;
-      req.webpage.revisions = req.body.webpage.revisions || req.webpage.revisions;
-      req.webpage.slug = req.body.webpage.slug || req.webpage.slug;
-      req.webpage.markModified( 'config' );
+      req.webpage.name = req.body.webpage.name;
+      req.webpage.revisions = req.body.webpage.revisions;
+      req.webpage.slug = req.body.webpage.slug;
       req.webpage.markModified( 'revisions' );
-      req.webpage.createVersion();
-      console.log( req.body.webpage.items );
-      req.webpage.save( function( err ){
+
+      WebbitsHelper.attachItems( req.webpage, req.body.webpage.items, function( err ){
+
+        for( var i in req.webpage._insertedItems ){
+          var match = false;
+          for( var j in req.webpage.items )
+            if( req.webpage.items[j].toString() === req.webpage._insertedItems[i]._id.toString() )
+              match = true;
+          if( !match )
+            req.webpage.items.push( req.webpage._insertedItems[i]._id );
+        }
+
         if( err )
-          req.flash('error', err);
-        else
-          req.flash('notice', req.i18n.t('saving.ok', {name: req.webpage.name}));
-        if( req.webpage.rootWebbitId ){
-          Webbit.findById( req.webpage.rootWebbitId, function( err, webbit ){
-            if( err ) return res.json({ success: false, error: err });
-            if( webbit )
-              webbit.update({ template: req.webpage.template, name: req.webpage.name }, function( err ){
-                res.json({ success: err === null, error: err, webpage: req.webpage, flash: req.flash() });        
-              });
-          });
-          res.json({ success: err === null, error: err, webpage: req.webpage, flash: req.flash() });
-        } else
-          res.json({ success: err === null, error: err, webpage: req.webpage, flash: req.flash() });
+          console.log('error', err);
+
+        req.webpage.save( function( err ){
+          if( err )
+            return res.json( err );
+          res.json(err);
+        });
+
       });
-    } else
+
+    } else // no req.webpage
       res.json({ success: false, error: 'could not find webpage' });
   });
 
@@ -174,10 +188,34 @@ module.exports = exports = function( app ){
     res.render( ioco.view.lookup( '/webpages/edit.jade' ), {flash: req.flash(), webpage: req.webpage });
   });
 
-  app.get('/webpages/:id', ioco.plugins.auth.check, getWebpage, function( req, res ){
-    res.json( req.webpage );
+  app.get('/webpages/:id', ioco.plugins.auth.check, function( req, res ){
+    Webpage.findById(req.params.id).execWithUser( res.locals.currentUser, function( err, webpage ){
+      populateChildrenOf( webpage, function(err, webpage){
+        res.json( webpage );
+      });
+    });
   });
 
+}
+
+function populateChildrenOf( item, callback ){
+  var counter = 0
+  console.log('got entered pop', item.name, item.items);
+  function populateNextChild(){
+    if( counter >= item.items.length )
+      return callback( null, item );
+    console.log('populating ', item.name, item.items, counter );
+    Webbit.findById( item.items[counter], function( err, webbit ){
+      if( err )
+        console.log('error', err);
+      item.items[counter] = webbit;
+      populateChildrenOf( webbit, function( err, webbit ){
+        counter++;
+        populateNextChild();
+      })
+    });
+  }
+  populateNextChild();
 }
 
 function getWebpages( user, q, callback ){
