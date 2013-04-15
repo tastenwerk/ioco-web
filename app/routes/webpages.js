@@ -56,6 +56,31 @@ module.exports = exports = function( app ){
     });
   });
 
+  app.get('/p/:permaIdAndName', ioco.plugins.auth.checkWithoutRedirect, function( req, res ){
+    var permaId = (req.params.permaIdAndName.indexOf('-') ? req.params.permaIdAndName.split('-')[0] : '0');
+    Webpage.findOne({permaId: permaId}).execWithUser( res.locals.currentUser || User.anybody, function( err, webpage ){
+    if( ! webpage )
+        res.render( ioco.view.lookup('/defaults/404.jade') );
+      else{
+        
+        populateChildrenOf( webpage, function(err, webpage){
+        
+          var pageDesigner = require('ioco-pagedesigner');
+          var iocoWebpage = new pageDesigner.Webpage( webpage );
+          
+          res.render( ioco.view.lookup('/webpages/show.jade'), { 
+            webpage: webpage, 
+            currentUser: res.locals.currentUser || null,
+            content: iocoWebpage.render({ revision: 'master' }),
+            config: iocoWebpage.getRevision('master').config } );
+
+        });
+
+      }
+
+    });
+  })
+
 
   /**
    * find a web_page by it's slug

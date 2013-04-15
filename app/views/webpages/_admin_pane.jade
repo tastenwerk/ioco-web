@@ -1,60 +1,36 @@
-link(rel='stylesheet', href='/stylesheets/3rdparty/jquery.Jcrop.min.css')
-link(rel='stylesheet', href='/stylesheets/3rdparty/ioco-jquery-ui/jquery-ui-1.9.1.custom.css')
+// kendo ui -- be aware of the GPLv3 of kendo
+link(rel='stylesheet', href='/stylesheets/3rdparty/kendo.common.min.css')
+link(rel='stylesheet', href='/stylesheets/3rdparty/kendo.metro.min.css')
 
+link(rel='stylesheet', href='/stylesheets/ioco.css')
 link( rel='stylesheet', href='/stylesheets/web.css' )
 link( rel='stylesheet', href='/stylesheets/ioco-page.css')
 link( rel='stylesheet', href='/stylesheets/ioco.page-designer.css' )
 
-link(rel='stylesheet', href='/stylesheets/ioco.css')
+link(rel='stylesheet', href='/stylesheets/3rdparty/jquery.Jcrop.min.css')
+link(rel='stylesheet', href='/stylesheets/3rdparty/ioco-jquery-ui/jquery-ui-1.9.1.custom.css')
+
 
 script(type='text/javascript', src='/javascripts/3rdparty/jquery-1.8.2.min.js')
-script(type='text/javascript', src='/javascripts/3rdparty/jquery-ui-1.9.1.io.min.js')
-script(type='text/javascript', src='/javascripts/3rdparty/jquery.mjs.nestedSortable.js')
 script(type='text/javascript', src='/javascripts/3rdparty/moment.min.js')
 script(type='text/javascript', src='/javascripts/3rdparty/moment-lang-all.min.js')
 script(type='text/javascript', src='/javascripts/3rdparty/jquery.notice.js')
 script(type='text/javascript', src='/javascripts/3rdparty/i18next.min.js')
-script(type='text/javascript', src='/javascripts/3rdparty/knockout-2.2.0.js')
 
-
-// uploading
-script(type='text/javascript', src='/javascripts/3rdparty/prefixfree.min.js')
-script(type='text/javascript', src='/javascripts/3rdparty/jquery.Jcrop.min.js')
-script(type='text/javascript', src='/javascripts/3rdparty/filesize.min.js')
-script(type='text/javascript', src='/javascripts/3rdparty/jquery.fineuploader-3.0.js')
-
-script(type='text/javascript', src='/javascripts/document_base_model.js')
-script(type='text/javascript', src='/javascripts/widgets/menubar.js')
-script(type='text/javascript', src='/javascripts/widgets/side-tabs.js')
-script(type='text/javascript', src='/javascripts/widgets/top-tabs.js')
-script(type='text/javascript', src='/javascripts/widgets/dropdown.js')
-script(type='text/javascript', src='/javascripts/widgets/tree.js')
-script(type='text/javascript', src='/javascripts/widgets/ioco-multiselect.js')
-script(type='text/javascript', src='/javascripts/widgets/ioco-uploader.js')
-
-script(src='/socket.io/socket.io.js')
+script(type='text/javascript', src='/javascripts/ioco.kendo-addons.js')
 script(type='text/javascript', src='/javascripts/ioco.core.js')
-script(type='text/javascript', src='/javascripts/ioco.js')
-
-script(type='text/javascript', src='/javascripts/ioco.page-designer.js')
-script(type='text/javascript', src='/javascripts/web_files_view_model.js')
-
-script(type='text/javascript')
-  if( typeof(ace) === 'undefined' )
-    $.getScript( '/javascripts/3rdparty/ace.js' );
-
-- for( i in ioco.plugins )
-  - if( ioco.plugins[i].pageDesignerJSPlugins )
-    - for( var j in ioco.plugins[i].pageDesignerJSPlugins )
-      script(type='text/javascript', src='#{ioco.plugins[i].pageDesignerJSPlugins[j]}')
- 
+//script(type='text/javascript', src='/javascripts/ioco.page-designer.js')
 
 :stylus
   .admin-panel
-    margin: 5px
     background: #eee
     border: 1px solid #ccc
     height: 30px
+    position: absolute
+    top: 5px
+    left: 5px
+    right: 5px
+    z-index: 5
 
     #ioco-logo
       width: 50px
@@ -73,6 +49,14 @@ script(type='text/javascript')
       width: 0
       height: 17px
 
+  .ioco-pd
+    position: absolute
+    top: 0
+    left: 0
+    right: 0
+    bottom: 0
+    overflow: auto
+
 
 .admin-panel
   img#ioco-logo( src='/images/logo_200x200.png' )
@@ -85,32 +69,32 @@ script(type='text/javascript')
 
   $(function(){
 
-    ioco.initUsersCache();
+    ioco.require('/javascripts/jquery.ioco.page-designer.js'); // this can also be done through a script tag.
+    ioco.pageDesigner.registerPlugin('empty-container');
+
+    //ioco.initUsersCache();
 
     $('#toggle-editor').on('click', function(){
 
       $.getJSON( '/webpages/!{ webpage._id }', function( json ){
         $('#page-content').hide();
+
         $('#pd-content').iocoPageDesigner({
-          i18n: true,
-          revisions: true,
-          roles: { designer: !{currentUser.groups.indexOf('designer') >= 0} },
-          _csrf: $('#_csrf').val(),
-          usersCache: ioco.usersCache,
-          webPage: new ioco.pageDesigner.WebPage( json ),
-          after: {
-            create: function( plugin, webBit, boxDom, json, done ){
-              ioco.notify( json.flash );
-              done();
-            }
-          },
-          on: function( action, item, callback ){
-            if( action === 'createRootWebBit' ){
-              itemData.rootWebBitId = item.rootWebBitId;
-              callback( null );
-            }
+          webpage: json,
+          save: function( webpage, callback ){
+            $.ajax({ url: '/webpages/'+ webpage._id,
+                     type: 'put',
+                     dataType: 'json',
+                     data: { _csrf: ioco._csrf, webpage: webpage.toJSON() },
+                     success: function( err ){
+                        if( !err )
+                          ioco.notify($.i18n.t('saving.ok', {name: webpage.name})+' WARNING: RELOAD BEFORE SAVE AGAIN (BUG)');
+                        callback( err );
+                     }
+            });
           }
         });
+
       });
 
       $('.ioco-pd-area').css('top',50);

@@ -17,7 +17,8 @@ var WebpageSchema = ioco.db.Schema({
   _type: { type: String, default: 'Webpage' },
   slug: { type: String, required: true, index: { unique: true }, lowercase: true },
   stat: {type: ioco.db.Schema.Types.Mixed, default: {}},
-  revisions: { type: ioco.db.Schema.Types.Mixed, default: { master: {} } },
+  permaId: { type: String, index: { unique: true } },
+  revisions: { type: ioco.db.Schema.Types.Mixed, default: { master: { config: { includeCss: '', includeJs: ''}, views: { default: { content: { default: '' } } } } } },
   config: { type: ioco.db.Schema.Types.Mixed, default: { template: false, frontpage: false, hidden: false } },
   items: [ { type: ioco.db.Schema.Types.ObjectId, ref: 'Webbit' }]
 });
@@ -63,6 +64,12 @@ WebpageSchema.pre( 'validate', function createSlug( next ){
     checkUniquenessOfSlug()
   });
 
+});
+
+WebpageSchema.pre( 'save', function createPermaId( next ){
+  if( this.isNew )
+    this.permaId = (new Date()).getTime().toString(36);
+  next();
 });
 
 // pageDesigner extensions

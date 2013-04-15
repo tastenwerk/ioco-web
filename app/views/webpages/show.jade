@@ -4,12 +4,12 @@ html
 
     title=webpage.name
 
-    if( includeCSS )
-      each css in includeCSS
+    if( config.includeCss )
+      each css in config.includeCSS.split(' ')
         link( rel='stylesheet', href=css )
 
-    if( includeJS )
-      each js in includeJS
+    if( config.includeJs )
+      each js in config.includeJs.split(' ')
         script(type='text/javascript', src=js)
 
   body.ioco-pd-area
@@ -23,4 +23,4 @@ html
       #pd-content
 
     #page-content
-      !=renderedContent
+      !=content
