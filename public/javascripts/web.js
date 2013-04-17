@@ -14,51 +14,36 @@
 
   this.ioco.sources.webpages =  new kendo.data.HierarchicalDataSource({
     transport: {
-      read: function( options ){
-        $.getJSON( '/webpages', options.data, function(json){
-          options.success(json);
-        });
+      read: {
+        url: '/webpages',
+        dataType: 'json'
       },
-      update: function( options ){
-
-        console.log('update', options)
-        if( !options.data.models )
-          return;
-
-        for( var i in options.data.models ){
-          var doc = options.data.models[i];
-          var childrenIds = [];
-          doc.items.forEach( function( item ){
-            childrenIds.push( item._type+':'+item._id );
-          });
-          $.ajax({
-            url: '/documents/'+doc._id+'/children',
-            data: { _csrf: ioco._csrf, _childrenIds: childrenIds },
-            type: 'post',
-            dataType: 'json',
-            success: function( json ){
-              if( json.success ){
-                options.success();
-                //ioco.sources.webpages.cancelChanges()
-              } else
-                ioco.notify( json.error, 'error' );
-            }
-          });
-        }
-
+      update: {
+        url: '/webpages/update',
+        type: 'put',
+        data: {_csrf: ioco._csrf}
       },
-      destroy: function( options ){
-        console.log('keep quite, dont destroy', options);
-        options.success();
+      destroy: {
+        url: function(item ){ return '/webpages/order_children/'+getParent(item._id)._id },
+        data: function(item){
+          return { _csrf: ioco._csrf,
+            childrenIds: getSiblingIds(item._id) 
+          }
+        },
+        type: 'put'
       },
-      create: function( options ){
-        console.log('no creationhere')
+      create: {
+        url: '/webpages',
+        type: 'post',
+        data: {_csrf: ioco._csrf}
       }
     },
     schema: {
       model: {
-        id: '_id',
-        hasChildren: true
+        hasChildren: function(){
+          console.log('checking children');
+          return this._childrenIds.length > 0;
+        }
       }
     }
   });
@@ -92,11 +77,11 @@
     dataTextField: 'name',
     dragAndDrop: true,
     dataSpriteCssClassField: '_subtype',
+    template: '#= item.name # <input type="hidden" data-ioco-id="#= item._id #"/>',
     dragend: function(){
-
       console.log('triggering sync');
       //console.log('new sort order', ioco.sources.webpages.sort() );
-      //ioco.sources.webpages.sync();
+      ioco.sources.webpages.sync();
       //setTimeout( function(){ ioco.sources.webpages.cancelChanges()  }, 1000 );
     },
     select: function( e ){
@@ -127,7 +112,7 @@
     }
   });
 
-  this.ioco.sources.webpages.fetch();
+  //this.ioco.sources.webpages.fetch();
 
   function showNewWebpageForm( e ){
     $('#new-webpage-form').data('kendoWindow').open().center();
@@ -144,12 +129,31 @@
     } else
       return [];
   }
+
+  function getParent(itemId){
+    var $thisNode = $('.webpages-tree input[data-ioco-id='+itemId+']').closest('li');
+    var thisNode = $('.webpages-tree').data('kendoTreeView').dataItem( $thisNode );
+    console.log($thisNode, thisNode);
+    return thisNode.parentNode();
+  }
+
+  function getSiblingIds(itemId){
+    var $thisNode = $('.webpages-tree input[data-ioco-id='+itemId+']').closest('li');
+    var tree = $('.webpages-tree').data('kendoTreeView');
+    var $parent = tree.parent( $thisNode );
+    var siblings = [];
+    $parent.find('>ul>li').each( function(){
+      siblings.push( tree.dataItem( $(this) )._id );
+    });
+    return siblings;
+  }
   
   function appendWebpage( e ){
     e.preventDefault();
     var labelIds = [];
     getParents().forEach( function( item ){
-      labelIds.push( item._type + ':' + item._id );
+      if( item._type !== 'Domain' )
+        labelIds.push( item._type + ':' + item._id );
     });
     if( labelIds.length < 1 )
       $('.webpages-tree').data('kendoTreeView').select( $('.webpages-tree .k-item:first') );

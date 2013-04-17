@@ -30,13 +30,13 @@ module.exports = exports = function( app ){
 
       json: function(){
         var q = {};
-        if( req.query._id && req.query._id !== '000000' )
-          q = {_labelIds: new RegExp('^[a-zA-Z0-9]*:'+req.query._id+'$')};
+        if( req.query.id && req.query.id !== '000000' )
+          q = {_labelIds: new RegExp('^[a-zA-Z0-9]*:'+req.query.id+'$')};
         else
           q = { _labelIds: [] };
         getWebpages( res.locals.currentUser, q, function( err, webpages ){
-          if( !req.query._id )
-            webpages = [ { name: ioco.config.site.title, _subtype: 'Domain', hasChildren: true, _type: 'Domain', expanded: true, items: webpages, _id: '000000', id: '000000' } ];
+          if( !req.query.id )
+            webpages = [ { name: ioco.config.site.title, _subtype: 'Domain', _childrenIds: [1], _type: 'Domain', expanded: true, _id: '000000', id: '000000' } ];
           res.json( webpages );
         });
       }
@@ -140,6 +140,19 @@ module.exports = exports = function( app ){
       res.json({ success: false, error: 'could not find webpage' });
   });
 
+/**
+ * change order of webpage's children
+ *
+ * @api public
+ */
+app.put( '/webpages/order_children/:id', ioco.plugins.auth.check, getWebpage, function( req, res ){
+
+  reorderChildren( 0, req.body.childrenIds, req.webpage, function( err ){
+    res.json( err )
+  });
+
+});
+
   /**
    * get a webpage by it's id
    *
@@ -153,6 +166,32 @@ module.exports = exports = function( app ){
     });
   });
 
+}
+
+function reorderChildren( count, children, parent, callback ){
+  if( count >= children.length )
+    return callback(null);
+  Webpage.findById( children[count], function( err, child ){
+    if( err )
+      return callback( err );
+    child.pos = count;
+    child.clearLabels();
+    if( parent )
+      child.addLabel( parent );
+    child.save( function( err ){
+      if( err )
+        return callback( err );
+      if( parent && !parent.hasChild( child ) ){
+        parent.addChild( child );
+        parent.save( function( err ){
+          if( err )
+            return callback( err );
+          reorderChildren( ++count, children, parent, callback );          
+        });
+      } else
+        reorderChildren( ++count, children, parent, callback );
+    });
+  });
 }
 
 function populateChildrenOf( item, callback ){
@@ -176,15 +215,15 @@ function populateChildrenOf( item, callback ){
 }
 
 function getWebpages( user, q, callback ){
-  Webpage.find(q).sort({position: 1, name: 1}).execWithUser( user, callback );
+  Webpage.find(q).sort({pos: 1, name: 1}).execWithUser( user, callback );
 }
 
 function getWebpageLabels( user, q, callback ){
-  Label.find(q).where('_subtype', 'WebLabel').sort({position: 1, name: 1}).execWithUser( user, callback );
+  Label.find(q).where('_subtype', 'WebLabel').sort({pos: 1, name: 1}).execWithUser( user, callback );
 }
 
 function getWebpage( req, res, next ){
-  Webpage.findById(req.params.id).populate('items').execWithUser( res.locals.currentUser || User.anybody, function( err, webpage ){
+  Webpage.findById(req.params.id).execWithUser( res.locals.currentUser || User.anybody, function( err, webpage ){
     req.webpage = webpage;
     next();
   });
