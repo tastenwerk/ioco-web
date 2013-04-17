@@ -12,15 +12,8 @@ script( type='text/javascript', src='/javascripts/web.js' )
 
       ul.k-menu.controls(data-role='menu')
         li
-          a.btn
+          a.btn( data-bind='click: showNewWebpageForm')
             span.icn-plus.icn
-          ul
-            li( data-bind='click: showNewLabelForm')
-              span.inner-icn.icn.icn-folder.pull-left
-              span=t('label.title')
-            li( data-bind='click: showNewWebpageForm')
-              span.inner-icn.icn.icn-webpage.pull-left
-              span=t('webpage.title')
         li
           a.btn( data-bind='click: refreshTree' )
             span.icn.icn-refresh
@@ -50,12 +43,3 @@ script( type='text/javascript', src='/javascripts/web.js' )
       input( type='text', data-bind='value: name')
     p
       input.btn( type='submit', value=t('create') )
-
-#new-label-form
-
-  form( data-bind='events: { submit: appendLabel }')
-    p
-      label=t('name')
-      br
-      input( type='text', data-bind='value: name')
-    p

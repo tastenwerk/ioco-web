@@ -30,34 +30,22 @@ module.exports = exports = function( app ){
 
       json: function(){
         var q = {};
-        if( req.query._id )
+        if( req.query._id && req.query._id !== '000000' )
           q = {_labelIds: new RegExp('^[a-zA-Z0-9]*:'+req.query._id+'$')};
         else
           q = { _labelIds: [] };
         getWebpages( res.locals.currentUser, q, function( err, webpages ){
-          getWebpageLabels( res.locals.currentUser, q, function( err, folders ){
-            var all = webpages.concat( folders );
-            all = all.sort( function( a, b ){
-              if( a.pos < b.pos )
-                return -1;
-              if( a.pos > b.pos )
-                return 1;
-              if( a.name < b.name )
-                return -1;
-              if( a.name > b.name )
-                return 1;
-              return 0;
-            })
-            res.json( all );
-          });
+          if( !req.query._id )
+            webpages = [ { name: ioco.config.site.title, _subtype: 'Domain', hasChildren: true, _type: 'Domain', expanded: true, items: webpages, _id: '000000', id: '000000' } ];
+          res.json( webpages );
         });
       }
 
     });
   });
 
-  app.get('/p/:permaIdAndName', ioco.plugins.auth.checkWithoutRedirect, function( req, res ){
-    var permaId = (req.params.permaIdAndName.indexOf('-') ? req.params.permaIdAndName.split('-')[0] : '0');
+  app.get('/p/:nameAndPermaId', ioco.plugins.auth.checkWithoutRedirect, function( req, res ){
+    var permaId = (req.params.nameAndPermaId.indexOf('-') ? req.params.nameAndPermaId.split('-')[req.params.nameAndPermaId.split('-').length-1] : '0');
     Webpage.findOne({permaId: permaId}).execWithUser( res.locals.currentUser || User.anybody, function( err, webpage ){
     if( ! webpage )
         res.render( ioco.view.lookup('/defaults/404.jade') );
@@ -81,43 +69,14 @@ module.exports = exports = function( app ){
     });
   })
 
-
-  /**
-   * find a web_page by it's slug
-   * name
-   *
-   */
-  app.get( '/p/:slug*', ioco.plugins.auth.checkWithoutRedirect, getPublicWebpage, function( req, res ){
-
-    var attrs = {$inc: {'stat.views': 1}};
-
-    if( req.webpage )
-      Webpage.update({_id: req.webpage._id}, attrs, {safe: true}, function( err ){
-        if( err ) console.log('error: ', err);
-
-        var webBits = [];
-        var counter = 0;
-
-        var webpage = new pageDesigner.Webpage( req.webpage );
-        webpage.initialize( req, res, function( err, webpage ){
-          var rwb = webpage.rootWebbit;
-          res.render( __dirname + '/../views/webpages/show.jade', { includeCSS: rwb.properties.includeCSS && rwb.properties.includeCSS.replace(/ /g,'').split(','),
-                                                                    includeJS: rwb.properties.includeJS && rwb.properties.includeJS.replace(/ /g,'').split(','),
-                                                                    webpage: webpage,
-                                                                    currentUser: res.locals.currentUser || null,
-                                                                    renderedContent: webpage.render() } );
-        });
-
-      });
-    else
-      res.send(404);
-  });
-
   app.post('/webpages', ioco.plugins.auth.check, function( req, res ){
+    
     function createWebpage( newWebbitId ){
-      var webpage = new Webpage( { name: req.body.webpage.name, holder: res.locals.currentUser, rootWebbitId: newWebbitId } );
+      var webpage = new Webpage( { name: req.body.webpage.name, holder: res.locals.currentUser } );
       if( req.body.webpage._labelIds && req.body.webpage._labelIds.length > 0 )
         webpage.addLabel( req.body.webpage._labelIds[0] );
+      if( req.body._subtype )
+        webpage._subtype = req.body._subtype;
       webpage.save( function( err, webpage ){
         res.json( webpage );
       });
@@ -135,25 +94,6 @@ module.exports = exports = function( app ){
       else
         createWebpage();
     }
-  });
-
-  app.post('/webpage_labels', ioco.plugins.auth.check, function( req, res ){
-
-    var label = new Label( { name: req.body.label.name, holder: res.locals.currentUser, _subtype: 'WebLabel' } );
-    if( req.body.label._labelIds && req.body.label._labelIds.length > 0 )
-      label.addLabel( req.body.label._labelIds[0] );
-    label.save( function( err, label ){
-      res.json( label );
-    });
-
-  });
-
-  app.put('/webpages_reorder', ioco.plugins.auth.check, getWebpage, getLabel, function( req, res ){
-    res.set('Content-Type', 'application/json');
-    if( req.webpage ){
-      console.log( req.body )
-    }
-    res.json(null);
   });
 
   /**
@@ -200,19 +140,11 @@ module.exports = exports = function( app ){
       res.json({ success: false, error: 'could not find webpage' });
   });
 
-  app.delete('/webpages/:id', ioco.plugins.auth.check, getWebpage, getLabel, function( req, res ){
-    if( req.webpage )
-      req.webpage.remove( function( err ){
-        res.json({ success: err === null, error: err, webpage: req.webpage });
-      });
-    else
-      res.json({ success: false, error: 'not found' });
-  });
-
-  app.get('/webpages/:id/edit:format?', ioco.plugins.auth.check, getWebpage, function( req, res ){
-    res.render( ioco.view.lookup( '/webpages/edit.jade' ), {flash: req.flash(), webpage: req.webpage });
-  });
-
+  /**
+   * get a webpage by it's id
+   *
+   * @api public
+   */
   app.get('/webpages/:id', ioco.plugins.auth.check, function( req, res ){
     Webpage.findById(req.params.id).execWithUser( res.locals.currentUser, function( err, webpage ){
       populateChildrenOf( webpage, function(err, webpage){
