@@ -6,11 +6,6 @@ module.exports = exports = {
       webPages: {
 
         /**
-         * depending
-         */
-        depends: [ 'ioco-pagedesigner' ],
-
-        /**
          * routes for expressjs
          */
         routes: __dirname+'/app/routes',
@@ -22,6 +17,8 @@ module.exports = exports = {
           WebPage: require( __dirname+'/app/models/webpage' ),
           WebBit: require( __dirname+'/app/models/webbit' )
         },
+
+        middleware: require( __dirname+'/app/middleware/web' ),
 
         /**
          * static paths to be added to expressjs globals

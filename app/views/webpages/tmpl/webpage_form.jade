@@ -1,0 +1,38 @@
+script( type='text/x-kendo-template', id='webpage-form' )
+  div
+    ul.action-nav
+      li
+        a.close-btn.btn(data-bind='click: hideForm')
+          span &times;
+      li
+        a.btn.w-icn-only(data-bind='click: toggleProperties')
+          span.icn.icn-properties
+      li
+        a.btn.w-icn-only(data-bind='click: publish')
+          span.icn.icn-locked(data-bind='css: {unlocked: published}')
+      li
+        a.btn.green(data-bind='click: submitForm')
+          =t('save')
+
+    .ioco-subcontent
+      p(data-bind='html: content')
+
+script( type='text/x-kendo-template', id='webpage-properties')
+  .properties-win
+    ul.panelbar
+      li.k-state-active=t('webpage.general')
+        div
+          p.item
+            label=t('webpage.name')
+            br
+            input(type='text', data-bind='value: name')
+          p.item
+            label=t('webpage.content')
+            br
+            input(type='text', data-bind='value: content')
+      li=t('webpage.Search Engines')
+        div
+          p search engine
+      li=t('webpage.Revisions')
+        div
+          p revisions

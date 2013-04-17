@@ -9,7 +9,9 @@
 
 var ioco = require('ioco')
   , qs = require('querystring')
-  , pageDesigner = require('ioco-pagedesigner');
+  , fs = require('fs')
+  , pageDesigner = require('ioco-pagedesigner')
+  , jade = require('jade');
 
 require( __dirname+'/webbit' );
 
@@ -19,8 +21,8 @@ var WebpageSchema = ioco.db.Schema({
   stat: {type: ioco.db.Schema.Types.Mixed, default: {}},
   permaId: { type: String, index: { unique: true } },
   revisions: { type: ioco.db.Schema.Types.Mixed, default: { master: { config: { includeCss: '', includeJs: ''}, views: { default: { content: { default: '' } } } } } },
-  config: { type: ioco.db.Schema.Types.Mixed, default: { template: false, frontpage: false, hidden: false } },
-  items: [ { type: ioco.db.Schema.Types.ObjectId, ref: 'Webbit' }]
+  config: { type: ioco.db.Schema.Types.Mixed, default: { template: '', frontpage: false, hidden: false } },
+  webbits: [ { type: ioco.db.Schema.Types.ObjectId, ref: 'Webbit' }]
 });
 
 WebpageSchema.plugin( ioco.getSchemaPlugin('Default') );
@@ -72,12 +74,29 @@ WebpageSchema.pre( 'save', function createPermaId( next ){
   next();
 });
 
-// pageDesigner extensions
-WebpageSchema.method( 'getRevision', pageDesigner.renderer.getRevision );
-WebpageSchema.method( 'getView', pageDesigner.renderer.getRevision );
-WebpageSchema.method( 'getLang', pageDesigner.renderer.getRevision );
-WebpageSchema.method( 'renderStyles', pageDesigner.renderer.renderStyles );
-WebpageSchema.method( 'render', pageDesigner.renderer.render );
+WebpageSchema.virtual('content').get(function(){ return this._content }).set(function(val){ this._content = val; });
+
+WebpageSchema.method('render', function render ( options ){
+  options = options || {};
+  options.locals = options.locals || {};
+
+  if( ! (this.config.template in ioco.web.templates) )
+    return '<h1>template'+this.config.template+' not known</h1>';
+
+  var tmpl = ioco.web.templates[this.config.template];
+
+  // add locals if tmpl has a compile function
+  if( typeof( tmpl.compile ) === 'function' ){
+    var addLocals = tmpl.compile( options );
+    if( typeof( addLocals) !== 'object' )
+      ioco.log.throwError('compiling of '+this.config.template+' did not return a valid object');
+    for( var i in addLocals )
+      options.locals[i] = addLocals[i];
+  }
+
+  var compiledJade = jade.compile( fs.readFileSync( tmpl._tmplFile ), { filename: tmpl._tmplFile } );
+  return compiledJade( options.locals );
+});
 
 ioco.db.model( 'Webpage', WebpageSchema );
 

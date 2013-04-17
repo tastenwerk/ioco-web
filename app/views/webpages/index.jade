@@ -1,7 +1,6 @@
 link( rel='stylesheet', href='/stylesheets/web.css' )
-link( rel='stylesheet', href='/stylesheets/ioco-page.css')
-link( rel='stylesheet', href='/stylesheets/ioco.page-designer.css' )
-
+script( type='text/javascript' )
+  ioco.pageTemplates = !{JSON.stringify(pageTemplates)};
 script( type='text/javascript', src='/javascripts/web.js' )
 #ioco-webpages
   .ioco-sidebar
@@ -29,17 +28,23 @@ script( type='text/javascript', src='/javascripts/web.js' )
       h1.title=t('webpages.title')
       span=t('document.click_for_details')
 
-    .pd-content( style='position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow: auto')
+    .ioco-inner-content
+
+      .page-content( data-template='webpage-form', data-bind='source: this', style='position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow: auto;')
+
+      .page-properties( data-template='webpage-properties', data-bind='source: this', style='visibility: hidden' )
+
+include tmpl/webpage_form
 
 #new-webpage-form
   form( data-bind='events: { submit: appendWebpage }')
     p
       label=t('webpage.select_template')
       br
-      select( data-bind='source: templates')
+      select( data-bind='source: templates, value: template', data-text-field='text', data-value-field='value', style='width:100%', data-role='combobox' )
     p
       label=t('webpage.name')
       br
-      input( type='text', data-bind='value: name')
+      input( type='text', data-bind='value: name', style='width:100%')
     p
       input.btn( type='submit', value=t('create') )

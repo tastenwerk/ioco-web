@@ -25,6 +25,7 @@ module.exports = exports = function( app ){
     res.format({
 
       html: function(){
+        res.locals.pageTemplates = Object.keys( ioco.web.templates ).map(function(tmpl){ return { value: tmpl, text: ioco.web.templates[tmpl].name } });
         res.render( ioco.view.lookup('/webpages/index.jade'))
       },
 
@@ -46,54 +47,31 @@ module.exports = exports = function( app ){
 
   app.get('/p/:nameAndPermaId', ioco.plugins.auth.checkWithoutRedirect, function( req, res ){
     var permaId = (req.params.nameAndPermaId.indexOf('-') ? req.params.nameAndPermaId.split('-')[req.params.nameAndPermaId.split('-').length-1] : '0');
-    Webpage.findOne({permaId: permaId}).execWithUser( res.locals.currentUser || User.anybody, function( err, webpage ){
+    Webpage.findOne({permaId: permaId}).populate('webbits').execWithUser( res.locals.currentUser || User.anybody, function( err, webpage ){
     if( ! webpage )
         res.render( ioco.view.lookup('/defaults/404.jade') );
-      else{
+      else
         
-        populateChildrenOf( webpage, function(err, webpage){
-        
-          var pageDesigner = require('ioco-pagedesigner');
-          var iocoWebpage = new pageDesigner.Webpage( webpage );
-          
-          res.render( ioco.view.lookup('/webpages/show.jade'), { 
-            webpage: webpage, 
-            currentUser: res.locals.currentUser || null,
-            content: iocoWebpage.render({ revision: 'master' }),
-            config: iocoWebpage.getRevision('master').config } );
-
-        });
-
-      }
+        res.render( ioco.view.lookup('/webpages/show.jade'), { 
+          webpage: webpage, 
+          currentUser: res.locals.currentUser || null } );
 
     });
   })
 
   app.post('/webpages', ioco.plugins.auth.check, function( req, res ){
     
-    function createWebpage( newWebbitId ){
-      var webpage = new Webpage( { name: req.body.webpage.name, holder: res.locals.currentUser } );
-      if( req.body.webpage._labelIds && req.body.webpage._labelIds.length > 0 )
-        webpage.addLabel( req.body.webpage._labelIds[0] );
-      if( req.body._subtype )
-        webpage._subtype = req.body._subtype;
-      webpage.save( function( err, webpage ){
-        res.json( webpage );
-      });
-    }
+    var webpage = new Webpage( { name: req.body.webpage.name, config: { template: req.body.webpage.template, frontpage: false, hidden: false }, holder: res.locals.currentUser } );
+    
+    if( req.body.webpage._labelIds && req.body.webpage._labelIds.length > 0 )
+      webpage.addLabel( req.body.webpage._labelIds[0] );
+    if( req.body._subtype )
+      webpage._subtype = req.body._subtype;
 
-    if( req.body.webpage && req.body.webpage.name.length > 1 ){
-      if( req.body.templateId )
-        Webbit.deepCopy( req.body.templateId, function( err, webbit ){
-          if( err )
-            res.json({ success: false, error: err });
-          console.log('[webpage] got: ', webbit);
-          if( webbit )
-            createWebpage( webbit._id );
-        });
-      else
-        createWebpage();
-    }
+    webpage.save( function( err, webpage ){
+      res.json( webpage );
+    });
+
   });
 
   /**
@@ -111,29 +89,14 @@ module.exports = exports = function( app ){
     if( req.webpage ){
       req.webpage.name = req.body.webpage.name;
       req.webpage.revisions = req.body.webpage.revisions;
-      req.webpage.slug = req.body.webpage.slug;
       req.webpage.markModified( 'revisions' );
 
-      WebbitsHelper.attachItems( req.webpage, req.body.webpage.items, function( err ){
-
-        for( var i in req.webpage._insertedItems ){
-          var match = false;
-          for( var j in req.webpage.items )
-            if( req.webpage.items[j].toString() === req.webpage._insertedItems[i]._id.toString() )
-              match = true;
-          if( !match )
-            req.webpage.items.push( req.webpage._insertedItems[i]._id );
-        }
-
+      req.webpage.save( function( err ){
         if( err )
-          console.log('error', err);
-
-        req.webpage.save( function( err ){
-          if( err )
-            return res.json( err );
-          res.json(err);
-        });
-
+          req.flash('error', err);
+        else
+          req.flash('notice', req.i18n.t('saving.ok', {name: req.webpage.name}) );
+        res.json({ success: err===null, flash: req.flash() });
       });
 
     } else // no req.webpage
@@ -159,10 +122,9 @@ app.put( '/webpages/order_children/:id', ioco.plugins.auth.check, getWebpage, fu
    * @api public
    */
   app.get('/webpages/:id', ioco.plugins.auth.check, function( req, res ){
-    Webpage.findById(req.params.id).execWithUser( res.locals.currentUser, function( err, webpage ){
-      populateChildrenOf( webpage, function(err, webpage){
-        res.json( webpage );
-      });
+    Webpage.findById(req.params.id).populate('webbits').execWithUser( res.locals.currentUser, function( err, webpage ){
+      webpage.content = webpage.render();
+      res.json( webpage );
     });
   });
 
@@ -194,49 +156,12 @@ function reorderChildren( count, children, parent, callback ){
   });
 }
 
-function populateChildrenOf( item, callback ){
-  var counter = 0
-  console.log('got entered pop', item.name, item.items);
-  function populateNextChild(){
-    if( counter >= item.items.length )
-      return callback( null, item );
-    console.log('populating ', item.name, item.items, counter );
-    Webbit.findById( item.items[counter], function( err, webbit ){
-      if( err )
-        console.log('error', err);
-      item.items[counter] = webbit;
-      populateChildrenOf( webbit, function( err, webbit ){
-        counter++;
-        populateNextChild();
-      })
-    });
-  }
-  populateNextChild();
-}
-
 function getWebpages( user, q, callback ){
   Webpage.find(q).sort({pos: 1, name: 1}).execWithUser( user, callback );
 }
 
-function getWebpageLabels( user, q, callback ){
-  Label.find(q).where('_subtype', 'WebLabel').sort({pos: 1, name: 1}).execWithUser( user, callback );
-}
-
 function getWebpage( req, res, next ){
   Webpage.findById(req.params.id).execWithUser( res.locals.currentUser || User.anybody, function( err, webpage ){
-    req.webpage = webpage;
-    next();
-  });
-}
-
-/**
- * get a webLabel, if no webpage with given
- * id was found
- */
-function getLabel( req, res, next ){
-  if( req.webpage )
-    return next();
-  Label.findById(req.params.id).execWithUser( res.locals.currentUser || User.anybody, function( err, webpage ){
     req.webpage = webpage;
     next();
   });

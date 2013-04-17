@@ -9,9 +9,6 @@
 
 ( function(){
 
-  ioco.require('/javascripts/jquery.ioco.page-designer.js'); // this can also be done through a script tag.
-  ioco.pageDesigner.registerPlugin('empty-container');
-
   this.ioco.sources.webpages =  new kendo.data.HierarchicalDataSource({
     transport: {
       read: {
@@ -40,9 +37,46 @@
     },
     schema: {
       model: {
+        published: kendo.observable( this.published ),
         hasChildren: function(){
-          console.log('checking children');
           return this._childrenIds.length > 0;
+        },
+        hideForm: function(){
+          $('.ioco-inner-content').hide();
+          $('.click-for-details.no-item-form').show();
+        },
+        submitForm: function(){
+          $.ajax({ url: '/webpages/'+ this._id,
+                   data: { _csrf: ioco._csrf, webpage: this.toJSON() },
+                   type: 'put',
+                   dataType: 'json',
+                   success: function( json ){
+                    ioco.notify(json.flash);
+
+                   }
+          });
+        },
+        preview: function(){
+
+        },
+        toggleProperties: function(e){
+          $propertiesWin.data('kendoWindow').open();
+        },
+        publish: function(e){
+          var self = this;
+          $.ajax({ url: '/documents/'+this._id+'/change_public_status',
+                   dataType: 'json',
+                   type: 'put',
+                   data: { _csrf: ioco._csrf },
+                   success: function( json ){
+                    ioco.notify( json.flash );
+                    self.set('published', json.published);
+                    if( json.published )
+                      $('.page-content .icn-locked').addClass('unlocked');
+                    else
+                      $('.page-content .icn-locked').removeClass('unlocked');
+                   }
+          });
         }
       }
     }
@@ -62,7 +96,8 @@
                  data: {_csrf: ioco._csrf},
                  success: function( json ){
                   if( json.success )
-                    ioco.sources.webpages.remove( item );
+                      $('.webpages-tree').data('kendoTreeView').select().remove();
+                      //ioco.sources.webpages.remove( item );
                 }
         });
       });
@@ -71,6 +106,8 @@
   });
 
   kendo.bind( $('#ioco-webpages .k-menu.controls'), webpagesViewModel );
+
+  var $propertiesWin;
 
   $('.webpages-tree').kendoTreeView({
     dataSource: ioco.sources.webpages,
@@ -86,29 +123,36 @@
     },
     select: function( e ){
       $('.ioco-k-tree .icn-trash').closest('a').addClass('enabled');
-      var item = ioco.sources.webpages.getByUid( $(e.node).attr('data-uid') );
-      if( item._type === 'Webpage' ){
+      var item = kendo.observable( ioco.sources.webpages.getByUid( $(e.node).attr('data-uid') ) );
+      $.getJSON( '/webpages/'+ item._id, function(json){
+        
+        item.content = json.content;
+
+        kendo.bind( $('.page-content'), item );
+        kendo.bind( $('.page-properties'), item );
+        
+        if( $propertiesWin )
+          $propertiesWin.data('kendoWindow').destroy();
+
         $('.click-for-details.no-item-form').hide();
-        $.getJSON( '/webpages/'+ item._id, function(json){
 
-          $('#ioco-webpages .pd-content').iocoPageDesigner({
-            webpage: json,
-            save: function( webpage, callback ){
-              $.ajax({ url: '/webpages/'+ webpage._id,
-                       type: 'put',
-                       dataType: 'json',
-                       data: { _csrf: ioco._csrf, webpage: webpage.toJSON() },
-                       success: function( err ){
-                          if( !err )
-                            ioco.notify($.i18n.t('saving.ok', {name: webpage.name})+' WARNING: RELOAD BEFORE SAVE AGAIN (BUG)');
-                          callback( err );
-                       }
-              });
-            }
-          });
+        $propertiesWin = $('.properties-win');
+        $propertiesWin.kendoWindow({
+          title: $.i18n.t('webpage.Properties'),
+          width: 200,
+          activate: function(){
+            this.wrapper.css({
+              top: 100,
+              left: $(window).width()-this.wrapper.width()-15
+            });
+          }
         });
+        $propertiesWin.find('.panelbar').kendoPanelBar({
+          expandMode: 'single'
+        });
+        
 
-      }
+      });
     }
   });
 
@@ -172,6 +216,8 @@
             item.append( json );
             var $item = $('.webpages-tree').data('kendoTreeView').findByUid( item.uid );
             $('.webpages-tree').data('kendoTreeView').expand( $item );
+            console.log( $item );
+            $('.webpages-tree').data('kendoTreeView').select( $item );
           });
         else
           ioco.sources.webpages.add( json );
@@ -191,7 +237,7 @@
 
   function setupNewForm( e ){
     e.sender.element.find('input[type=text]:first').focus();
-    kendo.bind( e.sender.element, { templates: [''],
+    kendo.bind( e.sender.element, { templates: ioco.pageTemplates,
                                     template: '',
                                     appendLabel: appendLabel,
                                     appendWebpage: appendWebpage,
