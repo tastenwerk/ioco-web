@@ -4,12 +4,12 @@ html
 
     title=webpage.name
 
-    if( config.includeCss )
-      each css in config.includeCSS.split(' ')
+    if( ioco.web.config.includeCss )
+      each css in ioco.web.config.includeCSS.split(' ')
         link( rel='stylesheet', href=css )
 
-    if( config.includeJs )
-      each js in config.includeJs.split(' ')
+    if( ioco.web.config.includeJs )
+      each js in ioco.web.config.includeJs.split(' ')
         script(type='text/javascript', src=js)
 
   body.ioco-pd-area
@@ -18,9 +18,6 @@ html
       .ioco-pd-area .ioco-web-bit{ position: auto }
 
     input( type='hidden', id='_csrf', value=_csrf )
-    if( currentUser && ( currentUser.groups.indexOf('designer') > 0 || currentUser.groups.indexOf('editor') > 0 ) )
-      include _admin_pane
-      #pd-content
 
     #page-content
-      !=content
+      !=webpage.content

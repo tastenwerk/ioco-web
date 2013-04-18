@@ -44,6 +44,7 @@
         hideForm: function(){
           $('.ioco-inner-content').hide();
           $('.click-for-details.no-item-form').show();
+          $propertiesWin.data('kendoWindow').destroy();
         },
         submitForm: function(){
           $.ajax({ url: '/webpages/'+ this._id,
@@ -116,25 +117,30 @@
     dataSpriteCssClassField: '_subtype',
     template: '#= item.name # <input type="hidden" data-ioco-id="#= item._id #"/>',
     dragend: function(){
-      console.log('triggering sync');
       //console.log('new sort order', ioco.sources.webpages.sort() );
       ioco.sources.webpages.sync();
       //setTimeout( function(){ ioco.sources.webpages.cancelChanges()  }, 1000 );
     },
     select: function( e ){
-      $('.ioco-k-tree .icn-trash').closest('a').addClass('enabled');
       var item = kendo.observable( ioco.sources.webpages.getByUid( $(e.node).attr('data-uid') ) );
+      if( item._type === 'Domain' )
+        return;
+      $('.ioco-k-tree .icn-trash').closest('a').addClass('enabled');
       $.getJSON( '/webpages/'+ item._id, function(json){
         
         item.content = json.content;
+        item.tmpl = json.tmpl;
+        item.revision = json.revisions[ json.config.activeRevision || 'master' ];
+        console.log(item.revision);
 
         kendo.bind( $('.page-content'), item );
         kendo.bind( $('.page-properties'), item );
         
-        if( $propertiesWin )
+        if( $propertiesWin && $propertiesWin.data && $propertiesWin.data('kendoWindow') )
           $propertiesWin.data('kendoWindow').destroy();
 
         $('.click-for-details.no-item-form').hide();
+        $('.ioco-inner-content').show();
 
         $propertiesWin = $('.properties-win');
         $propertiesWin.kendoWindow({
@@ -150,7 +156,8 @@
         $propertiesWin.find('.panelbar').kendoPanelBar({
           expandMode: 'single'
         });
-        
+
+        //e.node.addClass('k-state-selected');
 
       });
     }
@@ -205,7 +212,7 @@
       url: '/webpages',
       data: { _csrf: ioco._csrf, 
         webpage: { name: e.data.name,
-                   template: e.data.template,
+                   template: e.data.template.value,
                  _labelIds: labelIds }
       },
       type: 'post',
@@ -238,7 +245,7 @@
   function setupNewForm( e ){
     e.sender.element.find('input[type=text]:first').focus();
     kendo.bind( e.sender.element, { templates: ioco.pageTemplates,
-                                    template: '',
+                                    template: ioco.pageTemplates[0],
                                     appendLabel: appendLabel,
                                     appendWebpage: appendWebpage,
                                     name: '' } );

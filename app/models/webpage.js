@@ -19,8 +19,7 @@ var WebpageSchema = ioco.db.Schema({
   _type: { type: String, default: 'Webpage' },
   slug: { type: String, required: true, index: { unique: true }, lowercase: true },
   stat: {type: ioco.db.Schema.Types.Mixed, default: {}},
-  permaId: { type: String, index: { unique: true } },
-  revisions: { type: ioco.db.Schema.Types.Mixed, default: { master: { config: { includeCss: '', includeJs: ''}, views: { default: { content: { default: '' } } } } } },
+  revisions: { type: ioco.db.Schema.Types.Mixed, default: { master: { config: { includeCss: '', includeJs: ''}, views: { default: { webbits: {} } } } } },
   config: { type: ioco.db.Schema.Types.Mixed, default: { template: '', frontpage: false, hidden: false } },
   webbits: [ { type: ioco.db.Schema.Types.ObjectId, ref: 'Webbit' }]
 });
@@ -68,34 +67,43 @@ WebpageSchema.pre( 'validate', function createSlug( next ){
 
 });
 
-WebpageSchema.pre( 'save', function createPermaId( next ){
-  if( this.isNew )
-    this.permaId = (new Date()).getTime().toString(36);
-  next();
+WebpageSchema.virtual( 'humanLink' ).get(function getHumanLink(){
+  return '/p'+this.slug+'-'+this._id;
 });
 
 WebpageSchema.virtual('content').get(function(){ return this._content }).set(function(val){ this._content = val; });
 
-WebpageSchema.method('render', function render ( options ){
-  options = options || {};
-  options.locals = options.locals || {};
+WebpageSchema.virtual('tmpl').get(function(){ return this._tmpl }).set(function(val){ this._tmpl = val; });
+
+WebpageSchema.method('render', function render ( req, res, options, callback ){
+
+  if( typeof(options) === 'function' ){
+    callback = options;
+    options = {};
+  }
 
   if( ! (this.config.template in ioco.web.templates) )
     return '<h1>template'+this.config.template+' not known</h1>';
 
   var tmpl = ioco.web.templates[this.config.template];
 
+  res.locals.webpage = this;
+
   // add locals if tmpl has a compile function
   if( typeof( tmpl.compile ) === 'function' ){
-    var addLocals = tmpl.compile( options );
-    if( typeof( addLocals) !== 'object' )
-      ioco.log.throwError('compiling of '+this.config.template+' did not return a valid object');
-    for( var i in addLocals )
-      options.locals[i] = addLocals[i];
+    tmpl.compile( req, res, options, function( err, addLocals ){
+      if( typeof( addLocals) !== 'object' )
+        ioco.log.throwError('compiling of '+this.config.template+' did not return a valid object');
+      for( var i in addLocals ){
+        res.locals[i] = addLocals[i];
+      }
+      var compiledJade = jade.compile( fs.readFileSync( tmpl._tmplFile ), { filename: tmpl._tmplFile } );
+      callback( null, compiledJade( res.locals ) );
+    });
+  } else {
+    var compiledJade = jade.compile( fs.readFileSync( tmpl._tmplFile ), { filename: tmpl._tmplFile } );
+    callback( null, compiledJade( res.locals ) );
   }
-
-  var compiledJade = jade.compile( fs.readFileSync( tmpl._tmplFile ), { filename: tmpl._tmplFile } );
-  return compiledJade( options.locals );
 });
 
 ioco.db.model( 'Webpage', WebpageSchema );

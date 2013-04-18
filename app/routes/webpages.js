@@ -14,7 +14,7 @@ var ioco = require('ioco')
   , User = ioco.db.model('User')
   , Webbit = ioco.db.model('Webbit')
   , Webpage = ioco.db.model('Webpage')
-  , WebbitsHelper = require( __dirname+'/../helper/webbits_helper')
+  , PageDesigner = require(__dirname+'/../../lib/page_designer')
   , Label = ioco.db.model('Label');
 
 module.exports = exports = function( app ){
@@ -46,30 +46,40 @@ module.exports = exports = function( app ){
   });
 
   app.get('/p/:nameAndPermaId', ioco.plugins.auth.checkWithoutRedirect, function( req, res ){
-    var permaId = (req.params.nameAndPermaId.indexOf('-') ? req.params.nameAndPermaId.split('-')[req.params.nameAndPermaId.split('-').length-1] : '0');
-    Webpage.findOne({permaId: permaId}).populate('webbits').execWithUser( res.locals.currentUser || User.anybody, function( err, webpage ){
+    var _id = (req.params.nameAndPermaId.indexOf('-') ? req.params.nameAndPermaId.split('-')[req.params.nameAndPermaId.split('-').length-1] : '0');
+    
+    Webpage.findById( _id ).populate('webbits').execWithUser( res.locals.currentUser || User.anybody, function( err, webpage ){
     if( ! webpage )
-        res.render( ioco.view.lookup('/defaults/404.jade') );
-      else
-        
-        res.render( ioco.view.lookup('/webpages/show.jade'), { 
-          webpage: webpage, 
-          currentUser: res.locals.currentUser || null } );
-
+        return res.render( ioco.view.lookup('/defaults/404.jade') );
+    
+    webpage.render( req, res, function( err, content ){
+      webpage.content = content;
+      if( webpage.template && webpage.template.length > 0 )
+        webpage.tmpl = ioco.web.templates[webpage.template];
+      res.render( ioco.view.lookup('/webpages/show.jade'), { 
+        webpage: webpage, 
+        currentUser: res.locals.currentUser || null } );
+      });
     });
+
   })
 
   app.post('/webpages', ioco.plugins.auth.check, function( req, res ){
     
-    var webpage = new Webpage( { name: req.body.webpage.name, config: { template: req.body.webpage.template, frontpage: false, hidden: false }, holder: res.locals.currentUser } );
-    
+    var webpage = new Webpage( { name: req.body.webpage.name, config: { activeRevision: 'master', template: req.body.webpage.template, frontpage: false, hidden: false }, holder: res.locals.currentUser } );
+
     if( req.body.webpage._labelIds && req.body.webpage._labelIds.length > 0 )
       webpage.addLabel( req.body.webpage._labelIds[0] );
     if( req.body._subtype )
       webpage._subtype = req.body._subtype;
 
-    webpage.save( function( err, webpage ){
-      res.json( webpage );
+    var pageDesigner = new PageDesigner( webpage );
+    pageDesigner.init( function( err, webpage ){
+      if( err )
+        ioco.log.throwError( err );
+      webpage.save( function( err ){
+        res.json( webpage );
+      });
     });
 
   });
@@ -123,8 +133,14 @@ app.put( '/webpages/order_children/:id', ioco.plugins.auth.check, getWebpage, fu
    */
   app.get('/webpages/:id', ioco.plugins.auth.check, function( req, res ){
     Webpage.findById(req.params.id).populate('webbits').execWithUser( res.locals.currentUser, function( err, webpage ){
-      webpage.content = webpage.render();
-      res.json( webpage );
+      webpage.render( req, res, function( err, content ){
+      
+        if( webpage.config.template && webpage.config.template.length > 0 )
+          webpage.tmpl = ioco.web.templates[webpage.config.template];
+      
+        webpage.content = content;
+        res.json( webpage );
+      });
     });
   });
 
@@ -143,14 +159,14 @@ function reorderChildren( count, children, parent, callback ){
     child.save( function( err ){
       if( err )
         return callback( err );
-      if( parent && !parent.hasChild( child ) ){
+      /*if( parent && !parent.hasChild( child ) ){
         parent.addChild( child );
         parent.save( function( err ){
           if( err )
             return callback( err );
           reorderChildren( ++count, children, parent, callback );          
         });
-      } else
+      } else*/
         reorderChildren( ++count, children, parent, callback );
     });
   });
