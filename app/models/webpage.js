@@ -10,18 +10,23 @@
 var ioco = require('ioco')
   , qs = require('querystring')
   , fs = require('fs')
-  , pageDesigner = require('ioco-pagedesigner')
+  , PageDesigner = require( __dirname + '/../../lib/page_designer' )
   , jade = require('jade');
 
-require( __dirname+'/webbit' );
+var WebbitSchema = ioco.db.Schema({
+  type: String,
+  name: String,
+  revisions: { type: ioco.db.Schema.Types.Mixed, default: PageDesigner.revisionSchemaTemplate() },
+  config: {}
+})
 
 var WebpageSchema = ioco.db.Schema({
   _type: { type: String, default: 'Webpage' },
   slug: { type: String, required: true, index: { unique: true }, lowercase: true },
   stat: {type: ioco.db.Schema.Types.Mixed, default: {}},
-  revisions: { type: ioco.db.Schema.Types.Mixed, default: { master: { config: { includeCss: '', includeJs: ''}, views: { default: { webbits: {} } } } } },
+  revisions: { type: ioco.db.Schema.Types.Mixed, default: PageDesigner.revisionSchemaTemplate() },
   config: { type: ioco.db.Schema.Types.Mixed, default: { template: '', frontpage: false, hidden: false } },
-  webbits: [ { type: ioco.db.Schema.Types.ObjectId, ref: 'Webbit' }]
+  webbits: [ WebbitSchema ]
 });
 
 WebpageSchema.plugin( ioco.getSchemaPlugin('Default') );
@@ -75,36 +80,8 @@ WebpageSchema.virtual('content').get(function(){ return this._content }).set(fun
 
 WebpageSchema.virtual('tmpl').get(function(){ return this._tmpl }).set(function(val){ this._tmpl = val; });
 
-WebpageSchema.method('render', function render ( req, res, options, callback ){
-
-  if( typeof(options) === 'function' ){
-    callback = options;
-    options = {};
-  }
-
-  if( ! (this.config.template in ioco.web.templates) )
-    return '<h1>template'+this.config.template+' not known</h1>';
-
-  var tmpl = ioco.web.templates[this.config.template];
-
-  res.locals.webpage = this;
-
-  // add locals if tmpl has a compile function
-  if( typeof( tmpl.compile ) === 'function' ){
-    tmpl.compile( req, res, options, function( err, addLocals ){
-      if( typeof( addLocals) !== 'object' )
-        ioco.log.throwError('compiling of '+this.config.template+' did not return a valid object');
-      for( var i in addLocals ){
-        res.locals[i] = addLocals[i];
-      }
-      var compiledJade = jade.compile( fs.readFileSync( tmpl._tmplFile ), { filename: tmpl._tmplFile } );
-      callback( null, compiledJade( res.locals ) );
-    });
-  } else {
-    var compiledJade = jade.compile( fs.readFileSync( tmpl._tmplFile ), { filename: tmpl._tmplFile } );
-    callback( null, compiledJade( res.locals ) );
-  }
-});
+for( var i in PageDesigner.proto )
+  WebpageSchema.method(i, PageDesigner.proto[i]);
 
 ioco.db.model( 'Webpage', WebpageSchema );
 

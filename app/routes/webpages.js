@@ -48,14 +48,11 @@ module.exports = exports = function( app ){
   app.get('/p/:nameAndPermaId', ioco.plugins.auth.checkWithoutRedirect, function( req, res ){
     var _id = (req.params.nameAndPermaId.indexOf('-') ? req.params.nameAndPermaId.split('-')[req.params.nameAndPermaId.split('-').length-1] : '0');
     
-    Webpage.findById( _id ).populate('webbits').execWithUser( res.locals.currentUser || User.anybody, function( err, webpage ){
+    Webpage.findById( _id ).execWithUser( res.locals.currentUser || User.anybody, function( err, webpage ){
     if( ! webpage )
         return res.render( ioco.view.lookup('/defaults/404.jade') );
     
-    webpage.render( req, res, function( err, content ){
-      webpage.content = content;
-      if( webpage.template && webpage.template.length > 0 )
-        webpage.tmpl = ioco.web.templates[webpage.template];
+    webpage.render( res.locals, function( err, content ){
       res.render( ioco.view.lookup('/webpages/show.jade'), { 
         webpage: webpage, 
         currentUser: res.locals.currentUser || null } );
@@ -73,11 +70,12 @@ module.exports = exports = function( app ){
     if( req.body._subtype )
       webpage._subtype = req.body._subtype;
 
-    var pageDesigner = new PageDesigner( webpage );
-    pageDesigner.init( function( err, webpage ){
+    webpage.initWebbits( function( err, webpage ){
       if( err )
         ioco.log.throwError( err );
       webpage.save( function( err ){
+        if( err )
+          ioco.log.throwError(err);
         res.json( webpage );
       });
     });
@@ -132,13 +130,9 @@ app.put( '/webpages/order_children/:id', ioco.plugins.auth.check, getWebpage, fu
    * @api public
    */
   app.get('/webpages/:id', ioco.plugins.auth.check, function( req, res ){
-    Webpage.findById(req.params.id).populate('webbits').execWithUser( res.locals.currentUser, function( err, webpage ){
-      webpage.render( req, res, function( err, content ){
-      
-        if( webpage.config.template && webpage.config.template.length > 0 )
-          webpage.tmpl = ioco.web.templates[webpage.config.template];
-      
-        webpage.content = content;
+    Webpage.findById(req.params.id).execWithUser( res.locals.currentUser, function( err, webpage ){
+
+      webpage.render( res.locals, function( err, content ){
         res.json( webpage );
       });
     });

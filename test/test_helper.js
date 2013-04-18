@@ -26,7 +26,9 @@ TestHelper.prepareDb = function prepareDb( done ){
       Webpage.remove( function( err ){
         if( err ) return done( err );
         Webbit.remove( function( err ){
-          done( err, user );
+          Webpage.remove( function( err ){
+            done( err, user );
+          });
         });
       });
     });

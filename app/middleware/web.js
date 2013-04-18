@@ -40,7 +40,7 @@ var webMiddleware = function webMiddleware( app ){
 
     var addonController = require(addonFilename);
 
-    if( fs.existsSync( addonFilename ) )
+    if( fs.existsSync( addonFilename + '.js' ) )
       addonController._tmplFile = tmplFilename;
 
     addonController._path = absPath;
