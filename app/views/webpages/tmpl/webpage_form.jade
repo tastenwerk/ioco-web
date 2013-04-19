@@ -18,7 +18,6 @@ script( type='text/x-kendo-template', id='webpage-form' )
           =t('save')
 
     .ioco-subcontent( data-bind='style: { width: tmpl.designer.width }', style='box-shadow: 2px 2px 3px rgba(0,0,0,0.2); margin: 10px' )
-      p(data-bind='html: content')
 
 script( type='text/x-kendo-template', id='webpage-properties')
   .properties-win
@@ -46,3 +45,5 @@ script( type='text/x-kendo-template', id='webpage-properties')
       li=t('webpage.Revisions')
         div
           p revisions
+    h2=t('webpage.Addon Settings')
+    .addonbar-container

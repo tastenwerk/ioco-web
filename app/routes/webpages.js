@@ -26,6 +26,7 @@ module.exports = exports = function( app ){
 
       html: function(){
         res.locals.pageTemplates = Object.keys( ioco.web.templates ).map(function(tmpl){ return { value: tmpl, text: ioco.web.templates[tmpl].name } });
+        res.locals.pageAddons = ioco.web.addons;
         res.render( ioco.view.lookup('/webpages/index.jade'))
       },
 

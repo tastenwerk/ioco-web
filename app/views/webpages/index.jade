@@ -1,6 +1,14 @@
 link( rel='stylesheet', href='/stylesheets/web.css' )
+
+script( type='/text/javascript', src='/javascripts/ioco.page-designer-cs.js' )
+
 script( type='text/javascript' )
   ioco.pageTemplates = !{JSON.stringify(pageTemplates)};
+
+-for( var i in pageAddons )
+  script( type='text/javascript' )
+    PageDesignerCS.addons.!{i} = { name: '!{i}', decorate: !{pageAddons[i].decorate.toString()}, addControls: !{pageAddons[i].addControls.toString()} }
+
 script( type='text/javascript', src='/javascripts/web.js' )
 #ioco-webpages
   .ioco-sidebar

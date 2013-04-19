@@ -41,6 +41,8 @@
         hasChildren: function(){
           return this._childrenIds.length > 0;
         },
+        decoratedContent: PageDesignerCS.decoratedContent,
+        addControls: PageDesignerCS.addControls,
         hideForm: function(){
           $('.ioco-inner-content').hide();
           $('.click-for-details.no-item-form').show();
@@ -131,7 +133,6 @@
         item.content = json.content;
         item.tmpl = json.tmpl;
         item.revision = json.revisions[ json.config.activeRevision || 'master' ];
-        console.log(item.revision);
 
         kendo.bind( $('.page-content'), item );
         kendo.bind( $('.page-properties'), item );
@@ -153,11 +154,22 @@
             });
           }
         });
-        $propertiesWin.find('.panelbar').kendoPanelBar({
+
+        var propertiesBar = $propertiesWin.find('.panelbar').kendoPanelBar({
           expandMode: 'single'
         });
 
-        //e.node.addClass('k-state-selected');
+        item.decoratedContent( function( err, $decoratedContent ){
+          if( err )
+            ioco.notice(err, 'error');
+
+          console.log($('.page-content .ioco-subcontent') );
+          $('.page-content .ioco-subcontent').html('').append( $decoratedContent );
+
+          item.addControls( $propertiesWin.find('.addonbar-container'), $decoratedContent );
+
+          console.log('done');
+        });
 
       });
     }
