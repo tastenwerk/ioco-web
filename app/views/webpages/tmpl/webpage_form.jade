@@ -17,7 +17,7 @@ script( type='text/x-kendo-template', id='webpage-form' )
         a.btn.green(data-bind='click: submitForm')
           =t('save')
 
-    .ioco-subcontent( data-bind='style: { width: tmpl.designer.width }', style='box-shadow: 2px 2px 3px rgba(0,0,0,0.2); margin: 10px' )
+    .ioco-subcontent( data-bind='style: { width: tmpl.designer.width }' )
 
 script( type='text/x-kendo-template', id='webpage-properties')
   .properties-win
@@ -28,10 +28,6 @@ script( type='text/x-kendo-template', id='webpage-properties')
             label=t('webpage.name')
             br
             input(type='text', data-bind='value: name')
-          p.item
-            label=t('webpage.content')
-            br
-            input(type='text', data-bind='value: content')
       li=t('webpage.Search Engines')
         div
           p.item

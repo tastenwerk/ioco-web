@@ -133,6 +133,7 @@
         item.content = json.content;
         item.tmpl = json.tmpl;
         item.revision = json.revisions[ json.config.activeRevision || 'master' ];
+        PageDesignerCS.addJSCSS( item.tmpl.js, item.tmpl.css );
 
         kendo.bind( $('.page-content'), item );
         kendo.bind( $('.page-properties'), item );
@@ -163,12 +164,10 @@
           if( err )
             ioco.notice(err, 'error');
 
-          console.log($('.page-content .ioco-subcontent') );
           $('.page-content .ioco-subcontent').html('').append( $decoratedContent );
 
           item.addControls( $propertiesWin.find('.addonbar-container'), $decoratedContent );
 
-          console.log('done');
         });
 
       });

@@ -2,6 +2,15 @@
   
   var PageDesignerCS = {};
 
+  PageDesignerCS.addJSCSS = function addJSCSS( js, css ){
+    if( js )
+      if( !$('head script[src="'+js+'""]').length )
+        $('head').append('<script type="text/javascript" src="'+js+'"></script>');
+    if( css )
+      if( !$('head link[href="'+css+'""]').length )
+        $('head').append('<link rel="stylesheet" href="'+css+'">');
+  }
+
   /**
    * decorate container with given actions and items
    * or nothing
@@ -16,6 +25,7 @@
 
     var self = this;
     $addonContent.attr('data-webbit-id', addon.name + '_'+(new Date().getTime().toString(36)));
+    console.log('addon content', $addonContent);
     if( addon.decorate )
       addon.decorate( $addonContent, function(){ self._decorateNextAddon( ++counter, $content, callback ) } );
 
