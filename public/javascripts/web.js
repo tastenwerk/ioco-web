@@ -35,6 +35,9 @@
         data: {_csrf: ioco._csrf}
       }
     },
+    change: function( e ){
+      console.log('change', e);
+    },
     schema: {
       model: {
         published: kendo.observable( this.published ),
