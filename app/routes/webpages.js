@@ -96,8 +96,10 @@ module.exports = exports = function( app ){
    */
   app.put('/webpages/:id', ioco.plugins.auth.check, getWebpage, function( req, res ){
     if( req.webpage ){
+
       req.webpage.name = req.body.webpage.name;
       req.webpage.revisions = req.body.webpage.revisions;
+
       req.webpage.markModified( 'revisions' );
 
       req.webpage.save( function( err ){
@@ -105,7 +107,32 @@ module.exports = exports = function( app ){
           req.flash('error', err);
         else
           req.flash('notice', req.i18n.t('saving.ok', {name: req.webpage.name}) );
-        res.json({ success: err===null, flash: req.flash() });
+
+        var count = 0;
+
+        function saveNextWebbit(){
+          
+          if( count >= req.body.webpage.webbits.length )
+            return res.json({ success: true, flash: req.flash() });
+
+          var webbit = req.body.webpage.webbits[count++];
+          set = {};
+          set['webbits.$.revisions'] = webbit.revisions;
+          set['webbits.$.name'] = webbit.name;
+          set['webbits.$.config'] = webbit.config;
+          ioco.db.model('Webpage').update({_id: req.webpage._id, 'webbits._id': webbit._id},
+            { $set: set },
+            function( err, numAffected ){
+              if( err )
+                req.flash('error', err);
+              saveNextWebbit();
+            }
+          );
+        
+        }
+
+        saveNextWebbit();
+
       });
 
     } else // no req.webpage
@@ -131,6 +158,10 @@ app.put( '/webpages/order_children/:id', ioco.plugins.auth.check, getWebpage, fu
    * @api public
    */
   app.get('/webpages/:id', ioco.plugins.auth.check, function( req, res ){
+    
+    if( req.query.pageDesignerView )
+      res.locals.pageDesignerView = true;
+    
     Webpage.findById(req.params.id).execWithUser( res.locals.currentUser, function( err, webpage ){
 
       webpage.render( res.locals, function( err, content ){

@@ -165,10 +165,15 @@ ul.web-files li .loader .circle:after {
   left: 0;
   font-size: 11px;
 }
-.ioco-subcontent {
-  margin: 10px;
+.page-content {
+  position: absolute;
+  top: 40px;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  overflow: auto;
 }
-.ioco-subcontent div[data-webbit-id] {
+.page-content div[data-webbit-id] {
   outline: 2px dashed #ccc;
   outline-offset: -3px;
 }

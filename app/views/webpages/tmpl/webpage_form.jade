@@ -1,5 +1,5 @@
 script( type='text/x-kendo-template', id='webpage-form' )
-  div
+  div.page-label-info( data-bind='attr: { data-page-id: _id, data-page-type: _type }' )
     ul.action-nav
       li
         a.close-btn.btn(data-bind='click: hideForm')
@@ -17,8 +17,6 @@ script( type='text/x-kendo-template', id='webpage-form' )
         a.btn.green(data-bind='click: submitForm')
           =t('save')
 
-    .ioco-subcontent( data-bind='style: { width: tmpl.designer.width }' )
-
 script( type='text/x-kendo-template', id='webpage-properties')
   .properties-win
     ul.panelbar
@@ -28,6 +26,10 @@ script( type='text/x-kendo-template', id='webpage-properties')
             label=t('webpage.name')
             br
             input(type='text', data-bind='value: name')
+          p.item
+            label=t('webpage.revision')
+            br
+            select(data-bind='source: revisionsArray, value: config.activeRevision', data-role='dropdownlist')
       li=t('webpage.Search Engines')
         div
           p.item

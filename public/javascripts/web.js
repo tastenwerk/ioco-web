@@ -35,9 +35,6 @@
         data: {_csrf: ioco._csrf}
       }
     },
-    change: function( e ){
-      console.log('change', e);
-    },
     schema: {
       model: {
         published: kendo.observable( this.published ),
@@ -46,8 +43,9 @@
         },
         decoratedContent: PageDesignerCS.decoratedContent,
         addControls: PageDesignerCS.addControls,
+        revisionsArray: [],
         hideForm: function(){
-          $('.ioco-inner-content').hide();
+          $('.page-content,.page-form').hide();
           $('.click-for-details.no-item-form').show();
           $propertiesWin.data('kendoWindow').destroy();
         },
@@ -57,13 +55,9 @@
                    type: 'put',
                    dataType: 'json',
                    success: function( json ){
-                    ioco.notify(json.flash);
-
+                     ioco.notify(json.flash);
                    }
           });
-        },
-        preview: function(){
-
         },
         toggleProperties: function(e){
           $propertiesWin.data('kendoWindow').open();
@@ -131,21 +125,22 @@
       if( item._type === 'Domain' )
         return;
       $('.ioco-k-tree .icn-trash').closest('a').addClass('enabled');
-      $.getJSON( '/webpages/'+ item._id, function(json){
+      $.getJSON( '/webpages/'+ item._id+'?pageDesignerView=true', function(json){
         
         item.content = json.content;
         item.tmpl = json.tmpl;
         item.revision = json.revisions[ json.config.activeRevision || 'master' ];
+        item.revisionsArray = Object.keys(json.revisions);
         PageDesignerCS.addJSCSS( item.tmpl.js, item.tmpl.css );
 
-        kendo.bind( $('.page-content'), item );
+        kendo.bind( $('.page-form'), item );
         kendo.bind( $('.page-properties'), item );
         
         if( $propertiesWin && $propertiesWin.data && $propertiesWin.data('kendoWindow') )
           $propertiesWin.data('kendoWindow').destroy();
 
         $('.click-for-details.no-item-form').hide();
-        $('.ioco-inner-content').show();
+        $('.page-content,.page-form').show();
 
         $propertiesWin = $('.properties-win');
         $propertiesWin.kendoWindow({
@@ -167,7 +162,9 @@
           if( err )
             ioco.notice(err, 'error');
 
-          $('.page-content .ioco-subcontent').html('').append( $decoratedContent );
+          $('.page-content').html('').append( $decoratedContent );
+          if( item.tmpl.designer && item.tmpl.designer.width )
+            $('.page-content').css({width: item.tmpl.designer.width});
 
           item.addControls( $propertiesWin.find('.addonbar-container'), $decoratedContent );
 

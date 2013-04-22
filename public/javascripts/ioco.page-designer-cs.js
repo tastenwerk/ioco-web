@@ -17,17 +17,23 @@
    */
   PageDesignerCS._decorateNextAddon = function _decorateNextAddon( counter, $content, callback ){
 
-    if( counter >= $content.find('[data-webbit-type]').length )
+    if( counter >= $content.find('[data-webbit-name]').length )
       return callback( null, $content );
 
-    var $addonContent = $($content.find('[data-webbit-type]')[counter]);
+    var $addonContent = $($content.find('[data-webbit-name]')[counter]);
     var addon = PageDesignerCS.addons[ $addonContent.attr('data-webbit-type') ];
+    var webbit = PageDesignerCS.getWebbitByName.call( this, $addonContent.attr('data-webbit-name') );
 
     var self = this;
     $addonContent.attr('data-webbit-id', addon.name + '_'+(new Date().getTime().toString(36)));
-    console.log('addon content', $addonContent);
     if( addon.decorate )
-      addon.decorate( $addonContent, function(){ self._decorateNextAddon( ++counter, $content, callback ) } );
+      addon.decorate( webbit, 
+        { revision: this.config.activeRevision, 
+          view: 'default',
+          lang: 'default' },
+        $addonContent, 
+        function(){ self._decorateNextAddon( ++counter, $content, callback ) }
+      );
 
   }
 
@@ -101,6 +107,21 @@
     this._nextAddonControls( 0, $decoratedContent, $addonContainer, callback );
 
   }
+
+  /**
+   * gets a webbit by its name
+   * from page
+   *
+   * @param {string} name
+   *
+   * @api private
+   */
+  PageDesignerCS.getWebbitByName = function getWebbitByName( name ){
+    for( var i in this.webbits )
+      if( this.webbits[i].name === name )
+        return this.webbits[i];
+  }
+
 
   PageDesignerCS.addons = {};
 

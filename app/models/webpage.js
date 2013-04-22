@@ -25,7 +25,7 @@ var WebpageSchema = ioco.db.Schema({
   slug: { type: String, required: true, index: { unique: true }, lowercase: true },
   stat: {type: ioco.db.Schema.Types.Mixed, default: {}},
   revisions: { type: ioco.db.Schema.Types.Mixed, default: PageDesigner.revisionSchemaTemplate() },
-  config: { type: ioco.db.Schema.Types.Mixed, default: { template: '', frontpage: false, hidden: false } },
+  config: { type: ioco.db.Schema.Types.Mixed, default: { template: '', frontpage: false, hidden: false, activeRevision: 'master' } },
   webbits: [ WebbitSchema ]
 });
 
