@@ -47,10 +47,14 @@ var webMiddleware = function webMiddleware( app ){
     addonController.name = addonController.name || basename;
     addonController._basename = basename;
 
+    addonController.addControls = addonController.addControls || function(){};
+
     ioco.web.addons[ basename ] = addonController;
     ioco.log.info('[ADDON]', basename, 'registered' );
 
   }
+
+  ioco.web.registerAddon( __dirname + '/../web/addons/text' );
 
 }
 
