@@ -30,6 +30,14 @@ script( type='text/x-kendo-template', id='webpage-properties')
             label=t('webpage.revision')
             br
             select(data-bind='source: revisionsArray, value: config.activeRevision', data-role='dropdownlist')
+          p.item
+            label=t('webpage.view')
+            br
+            select(data-bind='source: viewsArray, value: currentView', data-role='dropdownlist')
+          p.item
+            label=t('webpage.lang')
+            br
+            select(data-bind='source: langArray, value: currentLang', data-role='dropdownlist')
       li=t('webpage.Search Engines')
         div
           p.item

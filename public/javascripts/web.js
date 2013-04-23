@@ -43,7 +43,12 @@
         },
         decoratedContent: PageDesignerCS.decoratedContent,
         addControls: PageDesignerCS.addControls,
+        currentRevision: '',
+        currentView: 'default',
+        currentLang: 'default',
         revisionsArray: [],
+        viewsArray: [],
+        langArray: [],
         hideForm: function(){
           $('.page-content,.page-form').hide();
           $('.click-for-details.no-item-form').show();
@@ -129,8 +134,14 @@
         
         item.content = json.content;
         item.tmpl = json.tmpl;
-        item.revision = json.revisions[ json.config.activeRevision || 'master' ];
+
+        item.currentRevision = json.config.activeRevision || 'master';
+
+        item.revision = json.revisions[ item.currentRevision ];
         item.revisionsArray = Object.keys(json.revisions);
+        item.viewsArray = Object.keys(item.revision.views);
+        item.langArray = Object.keys(item.revision.views.default.content);
+
         PageDesignerCS.addJSCSS( item.tmpl.js, item.tmpl.css );
 
         kendo.bind( $('.page-form'), item );

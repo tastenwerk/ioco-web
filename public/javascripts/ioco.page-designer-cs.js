@@ -28,9 +28,9 @@
     $addonContent.attr('data-webbit-id', addon.name + '_'+(new Date().getTime().toString(36)));
     if( addon.decorate )
       addon.decorate( webbit, 
-        { revision: this.config.activeRevision, 
-          view: 'default',
-          lang: 'default' },
+          { revision: this.currentRevision, 
+            view: this.currentView,
+            lang: this.currentLang },
         $addonContent, 
         function(){ self._decorateNextAddon( ++counter, $content, callback ) }
       );
@@ -49,13 +49,18 @@
 
     var $addonContent = $($content.find('[data-webbit-type]')[counter]);
     var addon = PageDesignerCS.addons[ $addonContent.attr('data-webbit-type') ];
+    var webbit = PageDesignerCS.getWebbitByName.call( this, $addonContent.attr('data-webbit-name') );
 
     var self = this;
     if( typeof(addon.addControls) === 'function' ){
 
       var $addonBar = $('<ul/>').attr( 'data-addon-for-webbit', $addonContent.attr('data-webbit-id') );
 
-      addon.addControls( $addonBar, $addonContent, function(){ 
+      addon.addControls( webbit, $addonBar, $addonContent, 
+          { revision: this.currentRevision, 
+            view: this.currentView,
+            lang: this.currentLang },
+          function(){ 
 
         $addonContainer.append( $addonBar );
         $addonBar.kendoPanelBar({
