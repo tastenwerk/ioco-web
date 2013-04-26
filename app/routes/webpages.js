@@ -47,16 +47,19 @@ module.exports = exports = function( app ){
     });
   });
 
-  app.get('/p/:nameAndPermaId', ioco.plugins.auth.checkWithoutRedirect, function( req, res ){
+  app.get('/p/:nameAndPermaId*', ioco.plugins.auth.checkWithoutRedirect, function( req, res ){
+    console.log(req.params.nameAndPermaId);
     var _id = (req.params.nameAndPermaId.indexOf('-') ? req.params.nameAndPermaId.split('-')[req.params.nameAndPermaId.split('-').length-1] : '0');
     
     Webpage.findById( _id ).execWithUser( res.locals.currentUser || User.anybody, function( err, webpage ){
     if( ! webpage )
         return res.render( ioco.view.lookup('/defaults/404.jade') );
     
+    res.locals.webpage = webpage;
+
     webpage.render( res.locals, function( err, content ){
       res.render( ioco.view.lookup('/webpages/show.jade'), { 
-        webpage: webpage, 
+        webpage: res.locals.webpage, 
         currentUser: res.locals.currentUser || null } );
       });
     });
@@ -72,7 +75,10 @@ module.exports = exports = function( app ){
     if( req.body._subtype )
       webpage._subtype = req.body._subtype;
 
-    webpage.initWebbits( function( err, webpage ){
+    res.locals.webpage = webpage;
+    res.locals.dates = [];
+    
+    webpage.initWebbits( res.locals, function( err, webpage ){
       if( err )
         ioco.log.throwError( err );
       webpage.save( function( err ){
@@ -172,6 +178,8 @@ app.put( '/webpages/order_children/:id', ioco.plugins.auth.check, getWebpage, fu
       res.locals.pageDesignerView = true;
     
     Webpage.findById(req.params.id).execWithUser( res.locals.currentUser, function( err, webpage ){
+
+      res.locals.webpage = webpage;
 
       webpage.render( res.locals, function( err, content ){
         res.json( webpage );

@@ -39,11 +39,13 @@ var decorate = function decorate( webbit, options, $box, done ){
   function initEditor(){
     CKEDITOR.disableAutoInline = true;
     CKEDITOR.basePath = '/javascripts/3rdparty/ckeditor/';
+    CKEDITOR.config.bodyClass = 'main-text';
+    CKEDITOR.config.contentsCss = '/stylesheets/application.css';
     CKEDITOR.config.toolbar = [
       [ 'Cut','Copy','Paste','PasteText','PasteFromWord'],
       [ 'Undo','Redo' ],
       [ 'Bold','Italic','Underline','Strike','-','RemoveFormat', 'NumberedList','BulletedList','-',
-'-','JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock','-', 'Link','Unlink','Anchor' ]
+'-','JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock','-', 'Link','Unlink','Anchor', 'Format', 'Styles', 'Font', 'FontSize' ]
     ];
 
     CKEDITOR.inline( $box.get(0), {

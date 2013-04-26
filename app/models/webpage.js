@@ -73,7 +73,7 @@ WebpageSchema.pre( 'validate', function createSlug( next ){
 });
 
 WebpageSchema.virtual( 'humanLink' ).get(function getHumanLink(){
-  return '/p'+this.slug+'-'+this._id;
+  return '/p'+escape(this.slug)+'-'+this._id;
 });
 
 WebpageSchema.virtual('content').get(function(){ return this._content }).set(function(val){ this._content = val; });
