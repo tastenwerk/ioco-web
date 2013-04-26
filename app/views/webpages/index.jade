@@ -4,10 +4,20 @@ script( type='/text/javascript', src='/javascripts/ioco.page-designer-cs.js' )
 
 script( type='text/javascript' )
   ioco.pageTemplates = !{JSON.stringify(pageTemplates)};
+  ioco.web = ioco.web || {};
+  ioco.web.tmpls = ioco.web.tmpls || {};
+
+-for( var i in rawTemplates )
+  script( type='text/javascript' )
+    ioco.web.tmpls.!{i} = { name: '!{i}', 
+                            procOptions: !{rawTemplates[i].designer && rawTemplates[i].designer.procOptions && JSON.stringify(rawTemplates[i].designer.procOptions) || 'null' },
+                            addControls: !{rawTemplates[i].designer && rawTemplates[i].designer.addControls && rawTemplates[i].designer.addControls.toString() || 'null' } };
 
 -for( var i in pageAddons )
   script( type='text/javascript' )
-    PageDesignerCS.addons.!{i} = { name: '!{i}', decorate: !{pageAddons[i].decorate.toString()}, addControls: !{pageAddons[i].addControls.toString()} }
+    PageDesignerCS.addons.!{i} = { name: '!{i}', procOptions: !{pageAddons[i].procOptions && JSON.stringify(pageAddons[i].procOptions) || 'null' }, 
+                                  decorate: !{pageAddons[i].decorate && pageAddons[i].decorate.toString() || 'null'}, 
+                                  addControls: !{pageAddons[i].addControls && pageAddons[i].addControls.toString() || 'null'} }
 
 script( type='text/javascript', src='/javascripts/web.js' )
 #ioco-webpages

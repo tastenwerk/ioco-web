@@ -55,6 +55,7 @@
           $propertiesWin.data('kendoWindow').destroy();
         },
         submitForm: function(){
+          $('[contenteditable]').blur();
           $.ajax({ url: '/webpages/'+ this._id,
                    data: { _csrf: ioco._csrf, webpage: this.toJSON() },
                    type: 'put',
@@ -146,7 +147,7 @@
 
         kendo.bind( $('.page-form'), item );
         kendo.bind( $('.page-properties'), item );
-        
+
         if( $propertiesWin && $propertiesWin.data && $propertiesWin.data('kendoWindow') )
           $propertiesWin.data('kendoWindow').destroy();
 
@@ -156,7 +157,7 @@
         $propertiesWin = $('.properties-win');
         $propertiesWin.kendoWindow({
           title: $.i18n.t('webpage.Properties'),
-          width: 200,
+          width: 250,
           activate: function(){
             this.wrapper.css({
               top: 100,
@@ -165,14 +166,23 @@
           }
         });
 
-        var propertiesBar = $propertiesWin.find('.panelbar').kendoPanelBar({
+        var $propertiesBar = $propertiesWin.find('.panelbar');
+
+        if( ioco.web.tmpls[item.tmpl._basename] && typeof(ioco.web.tmpls[item.tmpl._basename].addControls) === 'function' ){
+          var $addC = ioco.web.tmpls[item.tmpl._basename].addControls( item, ioco.web.tmpls[item.tmpl._basename].procOptions );
+          $propertiesBar.append( $addC );
+          kendo.bind( $addC, item );
+        }
+
+        $propertiesBar.kendoPanelBar({
           expandMode: 'single'
         });
-
+        
         item.decoratedContent( function( err, $decoratedContent ){
           if( err )
             ioco.notice(err, 'error');
 
+          console.log(item.tmpl);
           $('.page-content').html('').append( $decoratedContent );
           if( item.tmpl.designer && item.tmpl.designer.width )
             $('.page-content').css({width: item.tmpl.designer.width});

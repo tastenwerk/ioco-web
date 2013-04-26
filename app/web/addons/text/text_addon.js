@@ -19,7 +19,7 @@ var ioco = require('ioco');
  */
 var render = function render( content, $tmplContent, locals, callback ){
   // fill $tmplContent with content
-  $tmplContent.find('.images').append(content);
+  $tmplContent.append(content);
   callback( null, $tmplContent );
 }
 
@@ -39,56 +39,46 @@ var decorate = function decorate( webbit, options, $box, done ){
   function initEditor(){
     CKEDITOR.disableAutoInline = true;
     CKEDITOR.basePath = '/javascripts/3rdparty/ckeditor/';
-    $box.attr('contenteditable', true).attr('id', webbit._id );
     CKEDITOR.config.toolbar = [
       [ 'Cut','Copy','Paste','PasteText','PasteFromWord'],
       [ 'Undo','Redo' ],
       [ 'Bold','Italic','Underline','Strike','-','RemoveFormat', 'NumberedList','BulletedList','-',
 '-','JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock','-', 'Link','Unlink','Anchor' ]
-    ]
-    $box.focus();
+    ];
+
+    CKEDITOR.inline( $box.get(0), {
+      on: {
+        blur: function( event ) {
+          webbit.revisions[options.revision].views[options.view].content[options.lang] = event.editor.getData();
+          //event.editor.destroy();
+          //$box.attr('contenteditable', false)
+        },
+        key: function( event ){
+          webbit.revisions[options.revision].views[options.view].content[options.lang] = event.editor.getData();
+        },
+        click: function( event ){
+          $('ul[data-addon-for-webbit]').hide();
+          $('ul[data-addon-for-webbit=addon_'+webbit._id+']').show();
+        }
+      }
+    });
+
+    $box.attr('contenteditable', true).attr('id', 'ed_'+webbit._id );
+
   }
   
   if( typeof(CKEDITOR) === 'undefined')
-    $.getScript( '/javascripts/3rdparty/ckeditor/ckeditor.js', initEditor);
+    $.getScript( '/javascripts/3rdparty/ckeditor/ckeditor.js', function(){
+      $.getScript( '/javascripts/3rdparty/ckeditor/plugins/link/dialogs/link.js', function(){
+        $.getScript( '/javascripts/3rdparty/ckeditor/plugins/clipboard/dialogs/paste.js', initEditor);
+      });
+    });
   else
     initEditor();
 
   done();
 }
 
-/**
- * add upload buttons to the properties
- * dialog
- *
- * @param {jquery} addon bar the panel bar item which can be styled with li html tags
- * @param {jquery} addon content the decorated content element
- *
- * @api public
- */
-var addControls = function addControls( webbit, $addonBar, $addonContent, options, done ){
-  $addonBar.append('<li class="k-state-active">Text<div class="text-control">'+
-    '<p><a href="#" class="edit-text">'$.i18n.t('webpage.edit text')+'</a></p>'+
-    '<p><a href="#" class="edit-source">'$.i18n.t('webpage.edit source')+'</a></p>'+
-    '</div></li>');
-
-  $addonBar.find('.edit-text').on('click', function(){
-    CKEDITOR.inline( webbit._id, {
-      on: {
-        blur: function( event ) {
-          webbit.revisions[options.revision].views[options.view].content[options.lang] = event.editor.getData();
-          event.editor.destroy();
-          $box.attr('contenteditable', false)
-        }
-      }
-    });
-  });
-
-  $addonBar.find('.edit-source').on('click', function(){
-    console.log('not yet');
-  });
-
-}
 
 module.exports = exports = {
   

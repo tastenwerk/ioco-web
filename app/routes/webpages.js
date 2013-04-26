@@ -25,6 +25,7 @@ module.exports = exports = function( app ){
     res.format({
 
       html: function(){
+        res.locals.rawTemplates = ioco.web.templates;
         res.locals.pageTemplates = Object.keys( ioco.web.templates ).map(function(tmpl){ return { value: tmpl, text: ioco.web.templates[tmpl].name } });
         res.locals.pageAddons = ioco.web.addons;
         res.render( ioco.view.lookup('/webpages/index.jade'))
@@ -99,6 +100,7 @@ module.exports = exports = function( app ){
 
       req.webpage.name = req.body.webpage.name;
       req.webpage.revisions = req.body.webpage.revisions;
+      req.webpage.config = req.body.webpage.config;
 
       req.webpage.markModified( 'revisions' );
 
@@ -117,12 +119,19 @@ module.exports = exports = function( app ){
 
           var webbit = req.body.webpage.webbits[count++];
           set = {};
-          set['webbits.$.revisions'] = webbit.revisions;
+          if( webbit.revisions )
+            set['webbits.$.revisions'] = webbit.revisions;
           set['webbits.$.name'] = webbit.name;
-          set['webbits.$.config'] = webbit.config;
+          if( webbit.config )
+            set['webbits.$.config'] = webbit.config;
           ioco.db.model('Webpage').update({_id: req.webpage._id, 'webbits._id': webbit._id},
             { $set: set },
             function( err, numAffected ){
+
+              ioco.db.model('Webpage').findById( req.webpage._id, function(err, webpage){
+                console.log('having webpage webbits', webpage.webbits );
+              });
+
               if( err )
                 req.flash('error', err);
               saveNextWebbit();

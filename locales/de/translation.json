@@ -1,28 +1,3 @@
 {
-  "webpage": {
-    "title": "Webseite",
-    "new": "Neue Webseite",
-    "name": "Name",
-    "template": "von Vorlage",
-    "Template": "Vorlage",
-    "Template desc": "Diese Seite als Vorlage für andere Seiten speichern",
-    "new_name": "Neue Webseite",
-    "name_required": "Name erforderlich",
-    "create_title": "Neue Webseite erstellen",
-    "create": "Seite erstellen",
-    "create_label_title": "Neues Label erstellen",
-    "create_label": "Label erstellen",
-    "Slug": "Slug",
-    "Layout": "Layout",
-    "Properties": "Eigenschaften",
-    "No robots": "Keine Suchmaschinen",
-    "Frontpage": "Startseite",
-    "Hidden": "Versteckt",
-    "Enter name": "Name der Webseite",
-    "Designer Context": "Designer Context Einstellungen",
-    "open designer context": "Einstellungen bearbeiten",
-    "Common": "Allgemein",
-    "new_label": "Neues Label",
-    "new_webpage": "Neue Webseite"
-  }
+  "nowebpage": {}
 }

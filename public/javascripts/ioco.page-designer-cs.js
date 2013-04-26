@@ -1,5 +1,5 @@
 ( function(){
-  
+
   var PageDesignerCS = {};
 
   PageDesignerCS.addJSCSS = function addJSCSS( js, css ){
@@ -34,6 +34,8 @@
         $addonContent, 
         function(){ self._decorateNextAddon( ++counter, $content, callback ) }
       );
+    else
+      self._decorateNextAddon( ++counter, $content, callback );
 
   }
 
@@ -51,33 +53,110 @@
     var addon = PageDesignerCS.addons[ $addonContent.attr('data-webbit-type') ];
     var webbit = PageDesignerCS.getWebbitByName.call( this, $addonContent.attr('data-webbit-name') );
 
+    var $addonBar = $('<ul/>').attr( 'data-addon-for-webbit', $addonContent.attr('data-webbit-id') );
     var self = this;
     if( typeof(addon.addControls) === 'function' ){
+      var options = { revision: this.currentRevision, 
+                      view: this.currentView,
+                      lang: this.currentLang };
 
-      var $addonBar = $('<ul/>').attr( 'data-addon-for-webbit', $addonContent.attr('data-webbit-id') );
+      if( addon.procOptions )
+        for( var i in addon.procOptions )
+          options[i] = addon.procOptions[i];
 
-      addon.addControls( webbit, $addonBar, $addonContent, 
-          { revision: this.currentRevision, 
-            view: this.currentView,
-            lang: this.currentLang },
-          function(){ 
+      addon.addControls( webbit, $addonBar, $addonContent, options, function(){ 
+              PageDesignerCS._addDefaultControls.call( self, counter, $content, $addonContent, $addonContainer, $addonBar, webbit, callback ) 
+      });
 
-        $addonContainer.append( $addonBar );
-        $addonBar.kendoPanelBar({
-          expandMode: 'single'
-        });
+    } else
+      PageDesignerCS._addDefaultControls.call( self, counter, $content, $addonContent, $addonContainer, $addonBar, webbit, callback ) 
 
-        // activate panel and show it on mouse click
-        $addonContent.on('click', function(e){
-          $('ul[data-addon-for-webbit]').hide();
-          $addonBar.show();
-        });
+  }
 
-        self._nextAddonControls( ++counter, $content, $addonContainer, callback ) 
+  /**
+   * add default controls
+   *
+   * @api private
+   */
+  PageDesignerCS._addDefaultControls = function _addDefaultControls( counter, $content, $addonContent, $addonContainer, $addonBar, webbit, callback ){
+
+    var self = this;
+
+    PageDesignerCS._renderSourceEditorLi(webbit, $addonBar, $addonContent,
+        { revision: this.currentRevision, 
+          view: this.currentView,
+          lang: this.currentLang
+      });
+
+    $addonContainer.append( $addonBar );
+
+    $addonBar.kendoPanelBar({
+      expandMode: 'single'
+    });
+
+    // activate panel and show it on mouse click
+    $addonContent.on('click', function(e){
+      $('ul[data-addon-for-webbit]').hide();
+      $addonBar.show();
+    });
+
+    self._nextAddonControls( ++counter, $content, $addonContainer, callback ) 
+
+  }
+
+  /**
+   * get source editor Html
+   *
+   */
+  PageDesignerCS._renderSourceEditorLi = function _renderSourceEditorLi( webbit, $addonBar, $addonContent, options ){
+
+    var $content = $('<li>').append( $.i18n.t('webpage.general') ).append( $('<div style="margin: 10px 0; padding: 10px"/>').append(
+      $('<a/>').addClass('btn edit-source').text($.i18n.t('webpage.edit source'))
+      ) );
+
+    var srcEditor;
+
+    $content.find('a.edit-source').on('click', function(e){
+
+      var $srcEditorWin = $('<div />').html('<div class="src-editor-win"></div>');
+      $('body').append($srcEditorWin);
+
+      $srcEditorWin.kendoWindow({
+        title: $.i18n.t('webpage.edit source'),
+        actions: ['Tick', 'Close'],
+        activate: function(){
+
+          $.getScript('/javascripts/3rdparty/ace.js', function(){
+
+            ace.config.set("modePath", "/javascripts/3rdparty/ace");
+            ace.config.set("workerPath", "/javascripts/3rdparty/ace");
+            ace.config.set("themePath", "/javascripts/3rdparty/ace");
+
+            srcEditor = ace.edit( $srcEditorWin.find('.src-editor-win').get(0) );
+            srcEditor.getSession().setMode('ace/mode/html');
+            srcEditor.getSession().setUseWrapMode(true);
+            srcEditor.getSession().setWrapLimitRange(80, 80);
+
+            srcEditor.setValue( webbit.revisions[ options.revision ].views[ options.view ].content[ options.lang ] );
+
+          });
+
+        }
 
       });
 
-    }
+      $srcEditorWin.data('kendoWindow').center();
+
+      $srcEditorWin.data('kendoWindow').wrapper.find(".k-i-tick").click(function(e){
+        webbit.revisions[ options.revision ].views[ options.view ].content[ options.lang ] = srcEditor.getSession().getValue();
+        $srcEditorWin.data('kendoWindow').close();
+        e.preventDefault();
+      });
+
+
+    });
+
+    $addonBar.append( $content );
 
   }
 
